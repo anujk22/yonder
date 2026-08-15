@@ -23,20 +23,26 @@ export function VerificationReceipt({ label, detail, delay = 0 }: { label: strin
 
   return (
     <View style={styles.row}>
-      <Svg width={21} height={21} viewBox="0 0 24 24">
-        <AnimatedPath d="M4 12.5 9.2 17 20 6" fill="none" stroke={theme.fresh} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" strokeDasharray="24 24" animatedProps={animatedProps} />
+      <Svg width={18} height={18} viewBox="0 0 24 24">
+        <AnimatedPath
+          d="M4 12.5 9.2 17 20 6"
+          fill={theme.transparent}
+          stroke={theme.fresh}
+          strokeWidth={2.2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeDasharray="24 24"
+          animatedProps={animatedProps}
+        />
       </Svg>
-      <View style={styles.copy}>
-        <Text style={[type.mono, styles.label, { color: theme.ink }]}>{label}</Text>
-        <Text style={[type.mono, styles.detail, { color: theme.inkSoft }]}>{detail}</Text>
-      </View>
+      <Text style={[type.mono, styles.label, { color: theme.ink }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.86}>{label}</Text>
+      <Text style={[type.mono, styles.detail, { color: theme.inkSoft }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72}>{detail}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: space.sm, alignItems: 'flex-start', paddingVertical: space.sm },
-  copy: { flex: 1, gap: 2 },
-  label: { fontSize: 12, lineHeight: 17 },
-  detail: { fontSize: 11, lineHeight: 16 },
+  row: { minHeight: 50, flexDirection: 'row', gap: space.xs, alignItems: 'center' },
+  label: { width: 114, fontSize: 10, lineHeight: 15, letterSpacing: 0.25 },
+  detail: { flex: 1, fontSize: 10, lineHeight: 15, textAlign: 'right' },
 });

@@ -3,7 +3,8 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { AnswerTierCard } from '@/components/AnswerTierCard';
-import { AppScreen, Entrance, ScreenHeader } from '@/components/ui';
+import { YMark } from '@/components/YMark';
+import { AppScreen, Entrance, MissingDataState } from '@/components/ui';
 import { freshness } from '@/lib/freshness';
 import { OBSERVERS_NEARBY } from '@/lib/places';
 import { useActiveTheme, useYonderStore } from '@/lib/store';
@@ -33,7 +34,7 @@ export default function OptionsScreen() {
   const recentAnswer = matchingAnswers.find((answer) => freshness(answer.observedAt, answer.ttlSeconds).band === 'FRESH');
   const lastKnownAnswer = matchingAnswers.find((answer) => freshness(answer.observedAt, answer.ttlSeconds).band !== 'FRESH');
 
-  if (!query) return null;
+  if (!query) return <MissingDataState title="No query is ready for answer options." />;
 
   const openCachedAnswer = (answerId: string, priceCents: number) => {
     chooseCachedAnswer(answerId, priceCents);
@@ -41,11 +42,23 @@ export default function OptionsScreen() {
   };
 
   return (
-    <AppScreen>
-      <ScreenHeader eyebrow="REALITY CACHE" title="Choose your answer" />
-      <Entrance style={styles.questionBlock}>
-        <Text style={[type.micro, { color: theme.inkSoft }]}>YOUR QUERY</Text>
-        <Text style={[type.heading, { color: theme.ink }]}>{query.question}</Text>
+    <AppScreen style={styles.screen}>
+      <Entrance style={styles.brandMark}>
+        <View style={[styles.brandDisc, { backgroundColor: theme.accent }]}>
+          <YMark size={42} bodyColor={theme.onAccent} headColor={theme.onAccent} />
+        </View>
+      </Entrance>
+
+      <Entrance index={1} style={styles.intro}>
+        <Text
+          style={[type.serifDisplay, styles.title, { color: theme.ink }]}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.82}
+        >
+          Choose your answer
+        </Text>
+        <Text style={[type.mono, styles.question, { color: theme.ink }]}>{query.question}</Text>
       </Entrance>
 
       <View style={styles.tiers}>
@@ -72,7 +85,7 @@ export default function OptionsScreen() {
         ) : null}
         <AnswerTierCard
           kind="dispatch"
-          headline="Verified answer in about 2 minutes"
+          headline="Verified answer in\nabout 2 minutes"
           priceCents={query.bountyCents}
           observersNearby={OBSERVERS_NEARBY[query.placeId]}
           onPress={() => {
@@ -83,16 +96,21 @@ export default function OptionsScreen() {
         />
       </View>
 
-      <Entrance index={3} style={styles.promise}>
-        <Text style={[type.mono, styles.promiseText, { color: theme.inkSoft }]}>Fresh evidence costs more. Cached truth costs less.</Text>
+      <Entrance index={4} style={[styles.promiseBand, { backgroundColor: theme.accent }]}>
+        <Text style={[type.mono, styles.promiseText, { color: theme.onAccent }]}>Fresh evidence costs more. Cached truth costs less.</Text>
       </Entrance>
     </AppScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  questionBlock: { gap: space.xs, marginBottom: space.lg },
-  tiers: { gap: space.md },
-  promise: { alignItems: 'center', paddingVertical: space.lg },
-  promiseText: { fontSize: 11, textAlign: 'center' },
+  screen: { paddingTop: space.xs },
+  brandMark: { alignItems: 'center' },
+  brandDisc: { width: 62, height: 62, borderRadius: 31, alignItems: 'center', justifyContent: 'center' },
+  intro: { marginTop: space.lg, gap: space.sm },
+  title: { fontSize: 43, lineHeight: 47 },
+  question: { fontSize: 14, lineHeight: 21 },
+  tiers: { gap: space.sm, marginTop: space.lg },
+  promiseBand: { marginHorizontal: -space.lg, marginTop: space.md, paddingHorizontal: space.lg, paddingVertical: 14 },
+  promiseText: { fontSize: 10, lineHeight: 15, textAlign: 'center' },
 });

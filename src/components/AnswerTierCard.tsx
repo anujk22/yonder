@@ -56,33 +56,40 @@ export function AnswerTierCard({
         }}
         style={({ pressed }) => [
           styles.card,
+          isDispatch && styles.dispatchCard,
           {
             backgroundColor: theme.surface,
             borderColor: isDispatch ? theme.accent : theme.border,
-            opacity: kind === 'last' ? 0.72 : pressed ? 0.86 : 1,
+            opacity: kind === 'last' ? 0.74 : pressed ? 0.86 : 1,
             transform: [{ scale: pressed ? 0.985 : 1 }],
           },
-          isDispatch && styles.dispatchCard,
-          mode === 'ask' && styles.askShadow,
-          mode === 'ask' && { shadowColor: theme.shadow },
+          isDispatch && mode === 'ask' && styles.dispatchShadow,
+          isDispatch && mode === 'ask' && { shadowColor: theme.shadow },
         ]}
       >
         <View style={styles.topRow}>
-          <Text style={[type.micro, { color: isDispatch ? theme.accent : theme.inkSoft }]}>{EYEBROWS[kind]}</Text>
+          <Text style={[type.mono, styles.eyebrow, { color: theme.inkSoft }]}>{EYEBROWS[kind]}</Text>
           {priceCents === 0 ? (
             <Text style={[type.mono, styles.price, { color: foreground }]}>FREE</Text>
           ) : (
             <TickingNumber
               value={priceCents}
               duration={620}
-              color={isDispatch ? theme.accent : foreground}
+              color={foreground}
               formatter={(value) => `$${(Math.round(value) / 100).toFixed(2)}`}
-              style={styles.price}
+              style={isDispatch ? styles.dispatchPrice : styles.price}
             />
           )}
         </View>
 
-        <Text style={[type.heading, styles.headline, { color: foreground }]}>{headline}</Text>
+        <Text
+          style={[isDispatch ? type.serifTitle : type.serifHeading, styles.headline, isDispatch && styles.dispatchHeadline, { color: foreground }]}
+          numberOfLines={isDispatch ? 2 : 1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.86}
+        >
+          {headline}
+        </Text>
 
         {observedAt !== undefined && ttlSeconds !== undefined ? (
           kind === 'recent' ? (
@@ -121,21 +128,15 @@ function RecentFreshness({ observedAt, ttlSeconds }: { observedAt: number; ttlSe
 }
 
 const styles = StyleSheet.create({
-  card: {
-    minHeight: 148,
-    borderRadius: radii.card,
-    borderWidth: 1,
-    padding: space.lg,
-  },
-  dispatchCard: { borderWidth: 2 },
-  askShadow: {
-    shadowOpacity: 0.08,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 8 },
-  },
+  card: { minHeight: 122, borderRadius: 18, borderWidth: 1, paddingHorizontal: 20, paddingVertical: 18 },
+  dispatchCard: { minHeight: 190, borderRadius: radii.card, borderWidth: 2, paddingHorizontal: 24, paddingVertical: 22 },
+  dispatchShadow: { shadowOpacity: 0.12, shadowRadius: 22, shadowOffset: { width: 0, height: 10 } },
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.sm },
-  price: { width: 92, textAlign: 'right', fontSize: 16, lineHeight: 21 },
-  headline: { marginTop: space.md },
-  meta: { marginTop: space.xs, fontSize: 12, lineHeight: 17 },
-  reason: { marginTop: space.sm, fontSize: 12, lineHeight: 17 },
+  eyebrow: { flex: 1, fontSize: 11, lineHeight: 15, letterSpacing: 0.8 },
+  price: { width: 74, textAlign: 'right', fontSize: 14, lineHeight: 20 },
+  dispatchPrice: { width: 106, textAlign: 'right', fontSize: 29, lineHeight: 34 },
+  headline: { marginTop: space.sm },
+  dispatchHeadline: { marginTop: space.md, fontSize: 34, lineHeight: 38 },
+  meta: { marginTop: space.xs, fontSize: 11, lineHeight: 16 },
+  reason: { marginTop: space.md, fontSize: 12, lineHeight: 17 },
 });
