@@ -149,7 +149,7 @@ export default function AnswerScreen() {
             <Text style={[type.mono, styles.paymentTotal, { color: theme.ink }]}>{formatMoney(bountyCents)} paid</Text>
           </View>
           <Text style={[type.label, styles.paymentBreakdown, { color: theme.inkSoft }]}>
-            {formatMoney(observerRewardCents)} to observer  ·  {formatMoney(platformFeeCents)} fees
+            {formatMoney(observerRewardCents)} to you  ·  {formatMoney(platformFeeCents)} fees
           </Text>
         </Entrance>
       ) : null}
