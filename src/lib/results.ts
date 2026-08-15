@@ -10,7 +10,7 @@ export type MockResult = {
 };
 
 export const RESULTS: Record<string, MockResult> = {
-  'pier2:availability': { headline: 'One court is available', detail: '3 of 4 courts occupied. 11 players on site.', structured: { availableCourts: 1, occupiedCourts: 3, playersDetected: 11 }, confidence: 0.96, ttlSeconds: 300, facesBlurred: 4 },
+  'pier2:availability': { headline: 'One court is available', detail: '4 of 5 courts occupied. 18 players on site.', structured: { availableCourts: 1, occupiedCourts: 4, playersDetected: 18 }, confidence: 0.96, ttlSeconds: 300, facesBlurred: 4 },
   'joes:queue': { headline: 'About a 12 minute wait', detail: '9 people in line, 2 registers open.', structured: { peopleInQueue: 9, estimatedWaitMinutes: 12 }, confidence: 0.94, ttlSeconds: 300, facesBlurred: 6 },
   'unionsq:accessibility': { headline: 'The north elevator is working', detail: 'Doors cycling, no service notice posted.', structured: { operational: true, noticePosted: false }, confidence: 0.93, ttlSeconds: 1800, facesBlurred: 2 },
   'nikesoho:stock_check': { headline: 'Yes, 2 pairs on the shelf', detail: 'Black Pegasus 41, size 10, wall display aisle 3.', structured: { productPresent: true, unitsVisible: 2, location: 'wall display, aisle 3' }, confidence: 0.92, ttlSeconds: 1800, facesBlurred: 1 },
@@ -30,7 +30,7 @@ export const resultFor = (placeId: string, queryType: QueryType) =>
 
 export const compileSpec = (placeId: string, queryType: QueryType) => {
   if (placeId === 'pier2' && queryType === 'availability') {
-    return ['All four courts, full playing surface', 'Whether at least one court is unoccupied', 'availableCourts, occupiedCourts', '5 minutes'];
+    return ['All five courts, full playing surface', 'Whether at least one court is unoccupied', 'availableCourts, occupiedCourts', '5 minutes'];
   }
 
   const map: Record<QueryType, string[]> = {

@@ -83,7 +83,7 @@ const makeSeedQuery = (
 });
 
 const SEEDED_QUERIES: Query[] = [
-  makeSeedQuery('seed-pier2', 'Are any pickleball courts free?', 'pier2', 'availability', 125, 100, 12_000),
+  makeSeedQuery('seed-pier2', 'Are any basketball courts free?', 'pier2', 'availability', 125, 100, 12_000),
   makeSeedQuery('seed-joes-query', "How long is the line at Joe's Pizza?", 'joes', 'queue', 165, 140, 22_000),
   makeSeedQuery('seed-unionsq', 'Is the Union Sq north elevator working?', 'unionsq', 'accessibility', 115, 90, 31_000),
   makeSeedQuery('seed-nike', 'Is the black Pegasus 41 in a 10 at Nike SoHo?', 'nikesoho', 'stock_check', 210, 185, 44_000),

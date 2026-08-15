@@ -23,7 +23,7 @@ export default function VerifyingScreen() {
   const [declineVisible, setDeclineVisible] = useState(false);
   const completed = useRef(false);
   const sceneDetail = query?.placeId === 'pier2'
-    ? '4 court surfaces detected'
+    ? '5 court surfaces detected'
     : query?.placeId === 'nikesoho'
       ? 'Pegasus 41 display detected'
       : query?.placeId === 'unionsq'

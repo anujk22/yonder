@@ -83,7 +83,7 @@ export default function AnswerScreen() {
   const deadlineMinutes = query?.deadlineMinutes ?? 10;
   const freshPrice = priceQuery(answer.placeId, answer.queryType, deadlineMinutes).bountyCents;
   const targetReceipt = answer.placeId === 'pier2' && answer.queryType === 'availability'
-    ? '4 court surfaces · full coverage'
+    ? '5 court surfaces · full coverage'
     : TARGET_RECEIPTS[answer.queryType];
 
   const requestFreshAnswer = () => {

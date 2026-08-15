@@ -67,7 +67,7 @@ export type Query = {
 };
 
 export const PLACES: Place[] = [
-  { id: 'pier2', name: 'Pier 2 Pickleball Courts', area: 'Brooklyn Bridge Park', lat: 40.6975, lng: -73.9975, status: 'public', geofenceM: 75, categories: ['availability', 'crowd'] },
+  { id: 'pier2', name: 'Pier 2 Basketball Courts', area: 'Brooklyn Bridge Park', lat: 40.6975, lng: -73.9975, status: 'public', geofenceM: 75, categories: ['availability', 'crowd'] },
   { id: 'bryant', name: 'Bryant Park Lawn Terrace', area: 'Midtown', lat: 40.7536, lng: -73.9832, status: 'public', geofenceM: 60, categories: ['availability', 'crowd'] },
   { id: 'joes', name: "Joe's Pizza", area: 'Carmine St, West Village', lat: 40.7305, lng: -74.002, status: 'public', geofenceM: 40, categories: ['queue', 'open_closed'] },
   { id: 'tjs', name: "Trader Joe's Union Square", area: '14th St', lat: 40.7359, lng: -73.9911, status: 'indoor', geofenceM: 50, categories: ['queue', 'stock_check'] },

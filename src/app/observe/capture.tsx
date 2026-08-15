@@ -18,11 +18,13 @@ import { DeclineSheet } from '@/components/DeclineSheet';
 import { Glyph } from '@/components/Glyph';
 import { PrimaryButton } from '@/components/ui';
 import { YMark } from '@/components/YMark';
+import { DEMO_FLAGS } from '@/lib/demoFlags';
 import { useActiveTheme, useYonderStore } from '@/lib/store';
 import { radii, space, type } from '@/lib/theme';
 import { TIMING } from '@/lib/timing';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+const pierTwoProof = require('../../../assets/proof/pier-two-live.png');
 
 const captureInstruction = (placeId?: string, wideShot = false) => {
   if (wideShot) return "Capture the whole area from where you're standing";
@@ -64,9 +66,11 @@ export default function CaptureScreen() {
   const cameraRef = useRef<CameraView>(null);
   const reticleScale = useSharedValue(1.18);
   const captureScale = useSharedValue(1);
+  const demoCapture = DEMO_FLAGS.usePresetCapture && query?.placeId === 'pier2';
+  const captureReady = demoCapture || cameraReady;
 
   useEffect(() => {
-    if (!permission?.granted || !cameraReady) return;
+    if (!captureReady || (!demoCapture && !permission?.granted)) return;
     setTargetFound(false);
     reticleScale.value = 1.18;
     reticleScale.value = withTiming(1, { duration: TIMING.reticleLockMs });
@@ -75,13 +79,14 @@ export default function CaptureScreen() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }, TIMING.reticleLockMs);
     return () => clearTimeout(timer);
-  }, [cameraReady, permission?.granted, reticleScale]);
+  }, [captureReady, demoCapture, permission?.granted, reticleScale]);
 
   const reticleStyle = useAnimatedStyle(() => ({ transform: [{ scale: reticleScale.value }] }));
   const captureStyle = useAnimatedStyle(() => ({ transform: [{ scale: captureScale.value }] }));
 
   const captureFrames = async () => {
-    if (!cameraReady || capturing || !cameraRef.current) return;
+    const camera = cameraRef.current;
+    if (capturing || (!demoCapture && (!cameraReady || !camera))) return;
     setCapturing(true);
     setCaptureError(false);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -90,13 +95,15 @@ export default function CaptureScreen() {
     try {
       const captured: string[] = [];
       for (let index = 0; index < 3; index += 1) {
-        const photo = await cameraRef.current.takePictureAsync({ quality: 0.78 });
-        captured.push(photo.uri);
+        const frameUri = demoCapture
+          ? `preset-${index}`
+          : (await camera!.takePictureAsync({ quality: 0.78 })).uri;
+        captured.push(frameUri);
         setFrames([...captured]);
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         if (index < 2) await new Promise((resolve) => setTimeout(resolve, TIMING.frameIntervalMs));
       }
-      setCapturedFrames(captured);
+      setCapturedFrames(demoCapture ? [] : captured);
       router.replace('/observe/verifying');
     } catch {
       setCaptureError(true);
@@ -104,7 +111,7 @@ export default function CaptureScreen() {
     }
   };
 
-  if (!permission) {
+  if (!demoCapture && !permission) {
     return (
       <View style={[styles.permissionScreen, { backgroundColor: theme.bg }]}>
         <YMark size={72} bodyColor={theme.accent} headPulse />
@@ -112,7 +119,7 @@ export default function CaptureScreen() {
     );
   }
 
-  if (!permission.granted) {
+  if (!demoCapture && !permission?.granted) {
     return (
       <View style={[styles.permissionScreen, { backgroundColor: theme.bg, paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <YMark size={76} bodyColor={theme.accent} />
@@ -127,15 +134,19 @@ export default function CaptureScreen() {
 
   return (
     <Animated.View entering={FadeIn.duration(220)} style={[styles.flex, { backgroundColor: theme.bg }]}>
-      <CameraView
-        ref={cameraRef}
-        active={isFocused && !declineVisible}
-        animateShutter
-        facing="back"
-        mode="picture"
-        onCameraReady={() => setCameraReady(true)}
-        style={StyleSheet.absoluteFill}
-      />
+      {demoCapture ? (
+        <Image source={pierTwoProof} resizeMode="cover" style={StyleSheet.absoluteFill} />
+      ) : (
+        <CameraView
+          ref={cameraRef}
+          active={isFocused && !declineVisible}
+          animateShutter
+          facing="back"
+          mode="picture"
+          onCameraReady={() => setCameraReady(true)}
+          style={StyleSheet.absoluteFill}
+        />
+      )}
 
       <View style={[styles.overlay, { paddingTop: insets.top + space.sm, paddingBottom: insets.bottom + space.md }]}> 
         <View style={styles.topArea}>
@@ -189,7 +200,7 @@ export default function CaptureScreen() {
                 <View key={index} style={styles.frameSlot}>
                   {frames[index] ? (
                     <Animated.View entering={FadeInDown.springify().damping(18).stiffness(140)} style={styles.frameImageWrap}>
-                      <Image source={{ uri: frames[index] }} style={styles.frameImage} />
+                      <Image source={demoCapture ? pierTwoProof : { uri: frames[index] }} style={styles.frameImage} />
                       <Text style={[type.mono, styles.frameLabel, { color: theme.ink }]}>frame {index + 1} / 3</Text>
                     </Animated.View>
                   ) : (
@@ -203,7 +214,7 @@ export default function CaptureScreen() {
           <AnimatedPressable
             accessibilityRole="button"
             accessibilityLabel="Capture three live frames"
-            disabled={!cameraReady || capturing}
+            disabled={!captureReady || capturing}
             onPress={captureFrames}
             onPressIn={() => {
               captureScale.value = withTiming(0.92, { duration: 60 });
@@ -213,7 +224,7 @@ export default function CaptureScreen() {
             }}
             style={[
               styles.captureButton,
-              { borderColor: theme.ink, backgroundColor: theme.accent, opacity: cameraReady && !capturing ? 1 : 0.5 },
+              { borderColor: theme.ink, backgroundColor: theme.accent, opacity: captureReady && !capturing ? 1 : 0.5 },
               captureStyle,
             ]}
           >
