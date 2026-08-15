@@ -4,29 +4,33 @@ import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
-import { Entrance, AppScreen, SectionLabel } from '@/components/ui';
-import { Glyph } from '@/components/Glyph';
+import { Entrance, AppScreen } from '@/components/ui';
+import { YMark } from '@/components/YMark';
 import { useActiveTheme, useYonderStore } from '@/lib/store';
 import { money } from '@/lib/pricing';
 import { radii, space, type } from '@/lib/theme';
 
-const PROXIMITY_ORDER = ['pier2', 'joes', 'unionsq', 'nikesoho', 'wsp', 'tjs', 'bryant', 'applesq'];
+const PROXIMITY_ORDER = ['pier2', 'joes', 'nikesoho', 'unionsq', 'wsp', 'tjs', 'bryant', 'applesq'];
 
-const proximityLabel = (placeId: string) => {
-  const labels: Record<string, string> = {
-    pier2: "YOU'RE HERE",
-    joes: '3 min away',
-    unionsq: '5 min away',
-    nikesoho: '6 min away',
-    wsp: '4 min away',
-    tjs: '5 min away',
-    bryant: '8 min away',
-    applesq: '5 min away',
+const cameraCopy = (placeId: string) => {
+  const copy: Record<string, string> = {
+    pier2: 'Show Court 3\nwith your camera',
+    joes: 'Show the front window display',
+    nikesoho: 'Show the price tag on\nthe featured item',
+    unionsq: 'Show the north elevator\nwith your camera',
+    wsp: 'Show the park conditions\nwith your camera',
+    tjs: 'Show the end of the checkout line',
+    bryant: 'Show the terrace tables\nwith your camera',
+    applesq: 'Show the featured item\nwith your camera',
   };
-  return labels[placeId] ?? 'Nearby';
+  return copy[placeId] ?? 'Show the requested place\nwith your camera';
 };
 
-const durationLabel = (placeId: string) => (placeId === 'pier2' ? '~20 sec' : '~30 sec');
+const durationLabel = (placeId: string) => {
+  if (placeId === 'pier2') return '~20 sec';
+  if (placeId === 'joes') return '~30 sec';
+  return '~25 sec';
+};
 
 export default function ObserveHome() {
   const router = useRouter();
@@ -54,34 +58,24 @@ export default function ObserveHome() {
       style={styles.flex}
     >
       <AppScreen>
-        <Entrance style={styles.topline}>
-          <View>
-            <Text style={[type.micro, { color: theme.inkSoft }]}>OBSERVE NEARBY</Text>
-            <Text style={[type.mono, styles.available, { color: theme.accent }]}>$4.15 available within 5 minutes</Text>
-          </View>
-          <View style={[styles.sensorBadge, { borderColor: theme.border, backgroundColor: theme.surface }]}>
-            <View style={[styles.liveDot, { backgroundColor: theme.fresh }]} />
-            <Text style={[type.micro, { color: theme.inkSoft }]}>LIVE</Text>
-          </View>
+        <Entrance>
+          <Text style={[type.serifDisplay, styles.title, { color: theme.ink }]}>Observe{`\n`}nearby</Text>
         </Entrance>
 
-        <Entrance index={1}>
-          <Text style={[type.title, styles.title, { color: theme.ink }]}>Turn what you see into ground truth.</Text>
-        </Entrance>
-
-        <Entrance index={2} style={styles.listLabel}>
-          <SectionLabel>OPEN OBSERVATIONS · NEAREST FIRST</SectionLabel>
+        <Entrance index={1} style={styles.availableWrap}>
+          <Text style={[type.mono, styles.available, { color: theme.ink }]}>$4.15 available within 5 minutes</Text>
         </Entrance>
 
         <View style={styles.list}>
           {observations.map((query, index) => {
             const place = places.find((item) => item.id === query.placeId);
+            if (!place) return null;
             const hero = index === 0;
             return (
-              <Entrance key={query.id} index={index + 3}>
+              <Entrance key={query.id} index={index + 2}>
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel={`${money(query.observerRewardCents)} observation at ${place?.name}`}
+                  accessibilityLabel={`${money(query.observerRewardCents)}. ${cameraCopy(query.placeId)}. ${place?.name}`}
                   onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     setActiveTask(query.id);
@@ -91,7 +85,7 @@ export default function ObserveHome() {
                     styles.card,
                     hero && styles.heroCard,
                     {
-                      backgroundColor: theme.surface,
+                      backgroundColor: hero ? theme.surface : theme.transparent,
                       borderColor: hero ? theme.accent : theme.border,
                       opacity: pressed ? 0.84 : 1,
                       transform: [{ scale: pressed ? 0.988 : 1 }],
@@ -99,25 +93,30 @@ export default function ObserveHome() {
                   ]}
                 >
                   <View style={styles.cardTopline}>
-                    <Text style={[type.monoBig, hero ? styles.heroReward : styles.reward, { color: theme.accent }]}>
-                      {money(query.observerRewardCents)}
-                    </Text>
                     <View style={styles.cardBadges}>
+                      <View style={[hero ? styles.heroMark : styles.mark, hero && { borderColor: theme.border }]}>
+                        <YMark size={hero ? 34 : 38} bodyColor={theme.accent} />
+                      </View>
+                      {hero ? (
+                        <View style={[styles.hereBadge, { borderColor: theme.fresh }]}>
+                          <Text style={[type.micro, styles.hereText, { color: theme.ink }]}>YOU'RE{`\n`}HERE</Text>
+                        </View>
+                      ) : null}
                       {query.isNew ? (
                         <View style={[styles.newBadge, { backgroundColor: theme.accent }]}>
                           <Text style={[type.micro, { color: theme.onAccent }]}>NEW</Text>
                         </View>
                       ) : null}
-                      <Text style={[type.micro, { color: hero ? theme.accent : theme.inkSoft }]}>{proximityLabel(query.placeId)}</Text>
                     </View>
+                    <Text style={[hero ? type.monoBig : type.mono, styles.reward, { color: theme.ink }]}>{money(query.observerRewardCents)}</Text>
                   </View>
-                  <Text style={[hero ? type.heading : type.body, styles.question, { color: theme.ink }]}>{query.question}</Text>
+
+                  <View style={[styles.hairline, { backgroundColor: theme.border }]} />
+
+                  <Text style={[hero ? type.serifTitle : type.serifHeading, styles.question, { color: theme.ink }]}>{cameraCopy(query.placeId)}</Text>
                   <View style={styles.placeRow}>
-                    <View style={styles.placeCopy}>
-                      <Text style={[type.label, { color: theme.inkSoft }]} numberOfLines={1}>{place?.name}</Text>
-                      <Text style={[type.mono, styles.duration, { color: theme.inkFaint }]}>{durationLabel(query.placeId)}</Text>
-                    </View>
-                    <Glyph name="chevron" color={theme.inkFaint} size={18} />
+                    <Text style={[type.mono, styles.place, { color: theme.ink }]} numberOfLines={1}>{place?.name}</Text>
+                    <Text style={[type.mono, styles.duration, { color: theme.ink }]}>{durationLabel(query.placeId)}</Text>
                   </View>
                 </Pressable>
               </Entrance>
@@ -131,22 +130,23 @@ export default function ObserveHome() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  topline: { minHeight: 54, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  available: { marginTop: 4, fontSize: 13, lineHeight: 19 },
-  sensorBadge: { minHeight: 32, borderWidth: 1, borderRadius: radii.pill, paddingHorizontal: 11, flexDirection: 'row', alignItems: 'center', gap: 7 },
-  liveDot: { width: 7, height: 7, borderRadius: 4 },
-  title: { maxWidth: 330, marginTop: space.lg },
-  listLabel: { marginTop: space.xl, marginBottom: space.sm },
-  list: { gap: space.sm },
-  card: { borderWidth: 1, borderRadius: radii.card, padding: 18, gap: space.sm },
-  heroCard: { borderWidth: 1.5, paddingVertical: 21 },
+  title: { fontSize: 56, lineHeight: 55, maxWidth: 330, marginTop: space.md },
+  availableWrap: { marginTop: space.lg },
+  available: { fontSize: 14, lineHeight: 20 },
+  list: { gap: space.sm, marginTop: 26 },
+  card: { borderWidth: 1, borderRadius: radii.card, padding: 18, gap: space.md },
+  heroCard: { borderWidth: 2, padding: 22, gap: 18 },
   cardTopline: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: space.sm },
-  cardBadges: { flexDirection: 'row', alignItems: 'center', gap: space.xs, paddingTop: 4 },
-  newBadge: { borderRadius: radii.pill, paddingHorizontal: 9, paddingVertical: 4 },
-  heroReward: { fontSize: 34, lineHeight: 38 },
-  reward: { fontSize: 26, lineHeight: 31 },
-  question: { maxWidth: 320 },
-  placeRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
-  placeCopy: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: space.xs },
-  duration: { fontSize: 11, lineHeight: 16 },
+  cardBadges: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: space.xs },
+  heroMark: { width: 56, height: 56, borderWidth: 1, borderRadius: 28, alignItems: 'center', justifyContent: 'center' },
+  mark: { width: 42, height: 42, alignItems: 'center', justifyContent: 'center' },
+  hereBadge: { width: 62, height: 62, borderWidth: 1, borderRadius: 31, alignItems: 'center', justifyContent: 'center' },
+  hereText: { textAlign: 'center', lineHeight: 15 },
+  newBadge: { borderRadius: radii.pill, paddingHorizontal: 9, paddingVertical: 5 },
+  reward: { textAlign: 'right', paddingTop: 4 },
+  hairline: { height: StyleSheet.hairlineWidth, width: '100%' },
+  question: { maxWidth: 325 },
+  placeRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.sm },
+  place: { flex: 1, fontSize: 12, lineHeight: 18 },
+  duration: { fontSize: 12, lineHeight: 18 },
 });
