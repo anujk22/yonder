@@ -69,6 +69,7 @@ export default function CaptureScreen() {
   const shutterRef = useRef<View>(null);
   const reticleScale = useSharedValue(1.18);
   const captureScale = useSharedValue(1);
+  const flashOpacity = useSharedValue(0);
   // DEMO: deterministic path for recording. Real implementation below.
   const demoCapture = DEMO_FLAGS.simulateCameraFeed || (DEMO_FLAGS.usePresetCapture && query?.placeId === 'pier2');
   const captureReady = demoCapture || cameraReady;
@@ -91,6 +92,7 @@ export default function CaptureScreen() {
 
   const reticleStyle = useAnimatedStyle(() => ({ transform: [{ scale: reticleScale.value }] }));
   const captureStyle = useAnimatedStyle(() => ({ transform: [{ scale: captureScale.value }] }));
+  const flashStyle = useAnimatedStyle(() => ({ opacity: flashOpacity.value }));
 
   const captureFrames = async () => {
     const camera = cameraRef.current;
@@ -103,6 +105,8 @@ export default function CaptureScreen() {
     try {
       const captured: string[] = [];
       for (let index = 0; index < 3; index += 1) {
+        flashOpacity.value = 1;
+        flashOpacity.value = withTiming(0, { duration: 180 });
         const frameUri = demoCapture
           ? `preset-${index}`
           : (await camera!.takePictureAsync({ quality: 0.78 })).uri;
@@ -155,9 +159,9 @@ export default function CaptureScreen() {
   }
 
   return (
-    <Animated.View entering={FadeIn.duration(220)} style={[styles.flex, { backgroundColor: theme.bg }]}>
+    <Animated.View entering={FadeIn.duration(220)} style={[styles.flex, { backgroundColor: '#000000' }]}>
       {demoCapture ? (
-        <View style={[styles.demoFeedBackdrop, { backgroundColor: theme.bg }]}>
+        <View style={[styles.demoFeedBackdrop, { backgroundColor: '#000000' }]}>
           <Image source={PIER_TWO_PROOF} resizeMode="contain" style={styles.demoFeedImage} />
         </View>
       ) : (
@@ -172,21 +176,23 @@ export default function CaptureScreen() {
         />
       )}
 
+      <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.flashOverlay, flashStyle]} />
+
       <View style={[styles.overlay, { paddingTop: insets.top + space.sm, paddingBottom: insets.bottom + space.md }]}> 
         <View style={styles.topArea}>
-          <View style={[styles.instructionBar, { backgroundColor: theme.scrim, borderColor: theme.border }]}>
+          <View style={[styles.instructionBar, { backgroundColor: 'rgba(0, 0, 0, 0.82)', borderColor: 'rgba(255, 255, 255, 0.14)' }]}>
             <View style={styles.instructionText}>
               <Text style={[type.micro, { color: theme.accent }]}>LIVE OBSERVATION</Text>
-              <Text style={[type.body, styles.instruction, { color: theme.ink }]}>{captureInstruction(place?.id, wideShot)}</Text>
+              <Text style={[type.body, styles.instruction, { color: '#FFFFFF' }]}>{captureInstruction(place?.id, wideShot)}</Text>
             </View>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Decline observation"
               disabled={capturing}
               onPress={() => setDeclineVisible(true)}
-              style={({ pressed }) => [styles.closeButton, { borderColor: theme.border, opacity: pressed ? 0.7 : 1 }]}
+              style={({ pressed }) => [styles.closeButton, { borderColor: 'rgba(255, 255, 255, 0.2)', backgroundColor: 'rgba(0, 0, 0, 0.6)', opacity: pressed ? 0.7 : 1 }]}
             >
-              <Glyph name="close" color={theme.ink} size={19} />
+              <Glyph name="close" color="#FFFFFF" size={19} />
             </Pressable>
           </View>
 
@@ -199,10 +205,10 @@ export default function CaptureScreen() {
 
         <View style={styles.targetArea}>
           <Animated.View style={[styles.reticle, reticleStyle]}>
-            <Reticle color={targetFound ? theme.accent : theme.inkSoft} />
+            <Reticle color={targetFound ? theme.accent : 'rgba(255, 255, 255, 0.65)'} />
           </Animated.View>
-          <View style={[styles.targetLabel, { backgroundColor: theme.scrim, borderColor: targetFound ? theme.accent : theme.border }]}>
-            <Text style={[type.micro, { color: targetFound ? theme.accent : theme.ink }]}>
+          <View style={[styles.targetLabel, { backgroundColor: 'rgba(0, 0, 0, 0.82)', borderColor: targetFound ? theme.accent : 'rgba(255, 255, 255, 0.16)' }]}>
+            <Text style={[type.micro, { color: targetFound ? theme.accent : '#FFFFFF' }]}>
               {targetFound ? 'TARGET FOUND' : 'Finding target...'}
             </Text>
           </View>
@@ -210,16 +216,16 @@ export default function CaptureScreen() {
 
         <View style={styles.captureArea}>
           {capturing ? (
-            <Animated.View entering={FadeInDown.springify().damping(18).stiffness(140)} style={[styles.capturingBanner, { backgroundColor: theme.scrim }]}>
+            <Animated.View entering={FadeInDown.springify().damping(18).stiffness(140)} style={[styles.capturingBanner, { backgroundColor: 'rgba(0, 0, 0, 0.88)', borderColor: 'rgba(255, 255, 255, 0.14)', borderWidth: 1 }]}>
               <YMark size={24} bodyColor={theme.accent} headPulse />
-              <Text style={[type.mono, styles.capturingText, { color: theme.ink }]}>Capturing 3 frames for liveness</Text>
+              <Text style={[type.mono, styles.capturingText, { color: '#FFFFFF' }]}>Capturing 3 frames for liveness</Text>
             </Animated.View>
           ) : null}
 
           {captureError ? <Text style={[type.label, styles.captureError, { color: theme.danger }]}>Capture interrupted. Try again.</Text> : null}
 
           {frames.length ? (
-            <View style={[styles.filmstrip, { backgroundColor: theme.scrim, borderColor: theme.border }]}>
+            <View style={[styles.filmstrip, { backgroundColor: 'rgba(0, 0, 0, 0.88)', borderColor: 'rgba(255, 255, 255, 0.14)' }]}>
               {[0, 1, 2].map((index) => (
                 <View key={index} style={styles.frameSlot}>
                   {frames[index] ? (
@@ -229,10 +235,10 @@ export default function CaptureScreen() {
                         resizeMode="contain"
                         style={styles.frameImage}
                       />
-                      <Text style={[type.mono, styles.frameLabel, { color: theme.ink }]}>frame {index + 1} / 3</Text>
+                      <Text style={[type.mono, styles.frameLabel, { color: '#FFFFFF' }]}>frame {index + 1} / 3</Text>
                     </Animated.View>
                   ) : (
-                    <View style={[styles.framePlaceholder, { borderColor: theme.inkFaint }]} />
+                    <View style={[styles.framePlaceholder, { borderColor: 'rgba(255, 255, 255, 0.22)', backgroundColor: 'rgba(0, 0, 0, 0.6)' }]} />
                   )}
                 </View>
               ))}
@@ -254,7 +260,7 @@ export default function CaptureScreen() {
             }}
             style={[
               styles.captureButton,
-              { borderColor: theme.ink, backgroundColor: theme.accent, opacity: captureReady && !capturing ? 1 : 0.5 },
+              { borderColor: '#FFFFFF', backgroundColor: theme.accent, opacity: captureReady && !capturing ? 1 : 0.5 },
               captureStyle,
             ]}
           >
@@ -270,6 +276,7 @@ export default function CaptureScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
+  flashOverlay: { backgroundColor: '#FFFFFF', zIndex: 100 },
   demoFeedBackdrop: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 },
   demoFeedImage: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, width: '100%', height: '100%' },
   permissionScreen: { flex: 1, paddingHorizontal: space.lg, alignItems: 'center', justifyContent: 'center' },
