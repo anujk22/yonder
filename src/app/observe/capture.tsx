@@ -16,15 +16,16 @@ import Animated, {
 
 import { DeclineSheet } from '@/components/DeclineSheet';
 import { Glyph } from '@/components/Glyph';
-import { PrimaryButton } from '@/components/ui';
+import { MissingDataState, PrimaryButton } from '@/components/ui';
 import { YMark } from '@/components/YMark';
+import { AUTOPILOT_FILMSTRIP_DWELL_MS, isAutopilotRunning, registerAutopilotAbortHandler, useAutopilotPressTarget, waitForAutopilotDelay } from '@/lib/autopilot';
 import { DEMO_FLAGS } from '@/lib/demoFlags';
+import { PIER_TWO_PROOF, PIER_TWO_PROOF_ASPECT_RATIO } from '@/lib/proofMedia';
 import { useActiveTheme, useYonderStore } from '@/lib/store';
 import { radii, space, type } from '@/lib/theme';
 import { TIMING } from '@/lib/timing';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
-const pierTwoProof = require('../../../assets/proof/pier-two-live.png');
 
 const captureInstruction = (placeId?: string, wideShot = false) => {
   if (wideShot) return "Capture the whole area from where you're standing";
@@ -56,6 +57,7 @@ export default function CaptureScreen() {
   const setCapturedFrames = useYonderStore((state) => state.setCapturedFrames);
   const updateQueryState = useYonderStore((state) => state.updateQueryState);
   const wideShot = useYonderStore((state) => state.wideShot);
+
   const [permission, requestPermission] = useCameraPermissions();
   const [cameraReady, setCameraReady] = useState(false);
   const [targetFound, setTargetFound] = useState(false);
@@ -64,9 +66,11 @@ export default function CaptureScreen() {
   const [captureError, setCaptureError] = useState(false);
   const [declineVisible, setDeclineVisible] = useState(false);
   const cameraRef = useRef<CameraView>(null);
+  const shutterRef = useRef<View>(null);
   const reticleScale = useSharedValue(1.18);
   const captureScale = useSharedValue(1);
-  const demoCapture = DEMO_FLAGS.usePresetCapture && query?.placeId === 'pier2';
+  // DEMO: deterministic path for recording. Real implementation below.
+  const demoCapture = DEMO_FLAGS.simulateCameraFeed || (DEMO_FLAGS.usePresetCapture && query?.placeId === 'pier2');
   const captureReady = demoCapture || cameraReady;
 
   useEffect(() => {
@@ -78,7 +82,11 @@ export default function CaptureScreen() {
       setTargetFound(true);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }, TIMING.reticleLockMs);
-    return () => clearTimeout(timer);
+    const unregisterAbort = registerAutopilotAbortHandler(() => clearTimeout(timer));
+    return () => {
+      clearTimeout(timer);
+      unregisterAbort();
+    };
   }, [captureReady, demoCapture, permission?.granted, reticleScale]);
 
   const reticleStyle = useAnimatedStyle(() => ({ transform: [{ scale: reticleScale.value }] }));
@@ -101,15 +109,29 @@ export default function CaptureScreen() {
         captured.push(frameUri);
         setFrames([...captured]);
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        if (index < 2) await new Promise((resolve) => setTimeout(resolve, TIMING.frameIntervalMs));
+        if (index < 2 && !(await waitForAutopilotDelay(TIMING.frameIntervalMs))) {
+          setCapturing(false);
+          return;
+        }
       }
       setCapturedFrames(demoCapture ? [] : captured);
+      // DEMO: deterministic path for recording. Real implementation below.
+      if (DEMO_FLAGS.autopilotEnabled && isAutopilotRunning()) {
+        if (!(await waitForAutopilotDelay(AUTOPILOT_FILMSTRIP_DWELL_MS))) {
+          setCapturing(false);
+          return;
+        }
+      }
       router.replace('/observe/verifying');
     } catch {
       setCaptureError(true);
       setCapturing(false);
     }
   };
+  useAutopilotPressTarget('capture-shutter', shutterRef, captureFrames);
+
+  if (!query) return <MissingDataState title="No observation is ready to capture." />;
+  if (!place) return <MissingDataState title="The observation's place is not available." />;
 
   if (!demoCapture && !permission) {
     return (
@@ -135,7 +157,9 @@ export default function CaptureScreen() {
   return (
     <Animated.View entering={FadeIn.duration(220)} style={[styles.flex, { backgroundColor: theme.bg }]}>
       {demoCapture ? (
-        <Image source={pierTwoProof} resizeMode="cover" style={StyleSheet.absoluteFill} />
+        <View style={[styles.demoFeedBackdrop, { backgroundColor: theme.bg }]}>
+          <Image source={PIER_TWO_PROOF} resizeMode="contain" style={styles.demoFeedImage} />
+        </View>
       ) : (
         <CameraView
           ref={cameraRef}
@@ -200,7 +224,11 @@ export default function CaptureScreen() {
                 <View key={index} style={styles.frameSlot}>
                   {frames[index] ? (
                     <Animated.View entering={FadeInDown.springify().damping(18).stiffness(140)} style={styles.frameImageWrap}>
-                      <Image source={demoCapture ? pierTwoProof : { uri: frames[index] }} style={styles.frameImage} />
+                      <Image
+                        source={demoCapture ? PIER_TWO_PROOF : { uri: frames[index] }}
+                        resizeMode="contain"
+                        style={styles.frameImage}
+                      />
                       <Text style={[type.mono, styles.frameLabel, { color: theme.ink }]}>frame {index + 1} / 3</Text>
                     </Animated.View>
                   ) : (
@@ -212,6 +240,8 @@ export default function CaptureScreen() {
           ) : null}
 
           <AnimatedPressable
+            ref={shutterRef}
+            testID="capture-shutter"
             accessibilityRole="button"
             accessibilityLabel="Capture three live frames"
             disabled={!captureReady || capturing}
@@ -240,6 +270,8 @@ export default function CaptureScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
+  demoFeedBackdrop: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 },
+  demoFeedImage: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, width: '100%', height: '100%' },
   permissionScreen: { flex: 1, paddingHorizontal: space.lg, alignItems: 'center', justifyContent: 'center' },
   permissionTitle: { marginTop: space.lg, textAlign: 'center', maxWidth: 320 },
   permissionCopy: { marginTop: space.sm, textAlign: 'center', maxWidth: 330 },
@@ -251,7 +283,7 @@ const styles = StyleSheet.create({
   instruction: { fontSize: 15, lineHeight: 21 },
   closeButton: { width: 40, height: 40, borderWidth: 1, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   hintChip: { alignSelf: 'flex-start', maxWidth: '90%', borderRadius: radii.small, paddingHorizontal: 13, paddingVertical: 9 },
-  targetArea: { alignItems: 'center', justifyContent: 'center' },
+  targetArea: { width: '100%', alignItems: 'center', justifyContent: 'center' },
   reticle: { width: 294, height: 294 },
   targetLabel: { marginTop: -12, borderWidth: 1, borderRadius: radii.pill, paddingHorizontal: 13, paddingVertical: 7 },
   captureArea: { alignItems: 'center', gap: space.sm },
@@ -259,9 +291,9 @@ const styles = StyleSheet.create({
   capturingText: { fontSize: 12, lineHeight: 17 },
   captureError: { textAlign: 'center' },
   filmstrip: { width: '100%', borderWidth: 1, borderRadius: radii.small, padding: space.xs, flexDirection: 'row', gap: space.xs },
-  frameSlot: { flex: 1, aspectRatio: 1.35 },
-  frameImageWrap: { flex: 1 },
-  frameImage: { flex: 1, borderRadius: 8 },
+  frameSlot: { flex: 1, aspectRatio: PIER_TWO_PROOF_ASPECT_RATIO },
+  frameImageWrap: { flex: 1, overflow: 'hidden', borderRadius: 8 },
+  frameImage: { width: '100%', height: '100%', borderRadius: 8 },
   frameLabel: { position: 'absolute', bottom: 3, left: 5, fontSize: 9, lineHeight: 12 },
   framePlaceholder: { flex: 1, borderWidth: 1, borderRadius: 8 },
   captureButton: { width: 82, height: 82, borderRadius: 41, borderWidth: 4, alignItems: 'center', justifyContent: 'center' },

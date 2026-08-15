@@ -2,6 +2,7 @@ import { forwardRef, useImperativeHandle, useState } from 'react';
 import { LayoutChangeEvent, StyleSheet, View } from 'react-native';
 
 import { CityMap } from '@/components/CityMap';
+import { StaticMapMarker } from '@/components/StaticMapMarker';
 import {
   LOWER_MANHATTAN_REGION,
   detailRegion,
@@ -11,7 +12,6 @@ import {
   MapSurfaceHandle,
   MapSurfaceProps,
 } from '@/components/MapSurface.types';
-import { YMark } from '@/components/YMark';
 import { brand } from '@/lib/theme';
 
 export { LOWER_MANHATTAN_REGION, detailRegion };
@@ -25,10 +25,11 @@ const project = ({ latitude, longitude }: MapCoordinate) => ({
 });
 
 export const MapSurface = forwardRef<MapSurfaceHandle, MapSurfaceProps>(function MapSurface(
-  { mode = 'ask', markers = [], style },
+  { mode = 'ask', initialRegion = LOWER_MANHATTAN_REGION, markers = [], style },
   ref,
 ) {
   const [height, setHeight] = useState(420);
+  const variant = initialRegion.latitudeDelta < 0.01 ? 'detail' : 'city';
 
   useImperativeHandle(ref, () => ({ animateToRegion: () => undefined }), []);
 
@@ -36,20 +37,18 @@ export const MapSurface = forwardRef<MapSurfaceHandle, MapSurfaceProps>(function
 
   return (
     <View style={[styles.root, style]} onLayout={onLayout}>
-      <CityMap height={height} compact fullBleed interactive={false} showAnswers={false} showOpenBounties={false} />
+      <CityMap height={height} fullBleed variant={variant} />
       {markers.map((marker) => {
         const position = project(marker.coordinate);
         return (
-          <View key={marker.id} pointerEvents="none" style={[styles.marker, position]}>
-            <YMark size={28} bodyColor={mode === 'ask' ? brand.espresso : brand.oat} />
-          </View>
+          <StaticMapMarker key={marker.id} mode={mode} onPress={marker.onPress} testID={marker.testID} style={[styles.marker, position]} />
         );
       })}
       <View
         pointerEvents="none"
         style={[
           StyleSheet.absoluteFill,
-          { backgroundColor: mode === 'ask' ? brand.oat : brand.espresso, opacity: mode === 'ask' ? 0.12 : 0.35 },
+          { backgroundColor: mode === 'ask' ? brand.oat : brand.espresso, opacity: mode === 'ask' ? 0.035 : 0.32 },
         ]}
       />
     </View>

@@ -7,8 +7,9 @@ import Animated, { Easing, FadeIn, useAnimatedProps, useSharedValue, withTiming 
 
 import { DeclineSheet } from '@/components/DeclineSheet';
 import { Glyph } from '@/components/Glyph';
-import { AppScreen, Entrance, PrimaryButton, ScreenHeader, SectionLabel } from '@/components/ui';
+import { AppScreen, Entrance, MissingDataState, PrimaryButton, ScreenHeader, SectionLabel } from '@/components/ui';
 import { TickingNumber } from '@/components/TickingNumber';
+import { registerAutopilotAbortHandler } from '@/lib/autopilot';
 import { useActiveTheme, useYonderStore } from '@/lib/store';
 import { radii, space, type } from '@/lib/theme';
 import { TIMING } from '@/lib/timing';
@@ -36,14 +37,19 @@ export default function ApproachScreen() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       updateQueryState(query.id, 'APPROACHING', 'Location verified', `21m from target, geofence ${place?.geofenceM ?? 75}m`);
     }, TIMING.approachMs);
-    return () => clearTimeout(timer);
+    const unregisterAbort = registerAutopilotAbortHandler(() => clearTimeout(timer));
+    return () => {
+      clearTimeout(timer);
+      unregisterAbort();
+    };
   }, [place?.geofenceM, progress, query?.id, updateQueryState]);
 
   const ringProps = useAnimatedProps(() => ({
     strokeDashoffset: CIRCUMFERENCE * (1 - (0.16 + progress.value * 0.84)),
   }));
 
-  if (!query || !place) return null;
+  if (!query) return <MissingDataState title="No observation is ready to approach." />;
+  if (!place) return <MissingDataState title="The observation's place is not available." />;
 
   return (
     <Animated.View
@@ -96,6 +102,7 @@ export default function ApproachScreen() {
 
         <Entrance index={2} style={styles.actions}>
           <PrimaryButton
+            testID="approach-capture"
             label={verified ? 'Open camera' : 'Move within geofence'}
             icon={verified ? 'camera' : 'lock'}
             disabled={!verified}

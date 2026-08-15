@@ -10,7 +10,7 @@ export type MockResult = {
 };
 
 export const RESULTS: Record<string, MockResult> = {
-  'pier2:availability': { headline: 'One court is available', detail: '4 of 5 courts occupied. 18 players on site.', structured: { availableCourts: 1, occupiedCourts: 4, playersDetected: 18 }, confidence: 0.96, ttlSeconds: 300, facesBlurred: 4 },
+  'pier2:availability': { headline: 'One court is available', detail: '3 of 4 courts occupied. 18 players on site.', structured: { availableCourts: 1, occupiedCourts: 3, playersDetected: 18 }, confidence: 0.96, ttlSeconds: 300, facesBlurred: 4 },
   'joes:queue': { headline: 'About a 12 minute wait', detail: '9 people in line, 2 registers open.', structured: { peopleInQueue: 9, estimatedWaitMinutes: 12 }, confidence: 0.94, ttlSeconds: 300, facesBlurred: 6 },
   'unionsq:accessibility': { headline: 'The north elevator is working', detail: 'Doors cycling, no service notice posted.', structured: { operational: true, noticePosted: false }, confidence: 0.93, ttlSeconds: 1800, facesBlurred: 2 },
   'nikesoho:stock_check': { headline: 'Yes, 2 pairs on the shelf', detail: 'Black Pegasus 41, size 10, wall display aisle 3.', structured: { productPresent: true, unitsVisible: 2, location: 'wall display, aisle 3' }, confidence: 0.92, ttlSeconds: 1800, facesBlurred: 1 },
@@ -30,17 +30,17 @@ export const resultFor = (placeId: string, queryType: QueryType) =>
 
 export const compileSpec = (placeId: string, queryType: QueryType) => {
   if (placeId === 'pier2' && queryType === 'availability') {
-    return ['All five courts, full playing surface', 'Whether at least one court is unoccupied', 'availableCourts, occupiedCourts', '5 minutes'];
+    return ['All four courts and the full playing surface', 'Whether at least one court is open', 'A clear availability answer', '5 minutes'];
   }
 
   const map: Record<QueryType, string[]> = {
-    availability: ['The complete public area', 'Whether space is available now', 'availableCount, occupiedCount', '5 minutes'],
-    queue: ['The full visible queue', 'Current line length and movement', 'peopleInQueue, estimatedWaitMinutes', '5 minutes'],
-    crowd: ['The main public area', 'Current crowd density', 'peopleVisible, density', '5 minutes'],
-    condition: ['The requested surface or feature', 'Its visible condition right now', 'condition, obstruction', '10 minutes'],
-    stock_check: ['The named product display', 'Whether the exact item is visible', 'productPresent, unitsVisible', '30 minutes'],
-    accessibility: ['The named access point', 'Whether it is operating right now', 'operational, noticePosted', '30 minutes'],
-    open_closed: ['The public entrance', 'Whether customers are entering', 'openNow, entranceStatus', '10 minutes'],
+    availability: ['The complete public area', 'Whether space is available now', 'A clear availability answer', '5 minutes'],
+    queue: ['The full visible queue', 'How long the wait is right now', 'An estimated wait time', '5 minutes'],
+    crowd: ['The main public area', 'Whether it feels busy right now', 'A quick crowd read', '5 minutes'],
+    condition: ['The requested surface or feature', 'What it looks like right now', 'A clear condition check', '10 minutes'],
+    stock_check: ['The named product display', 'Whether the item is on the shelf', 'A simple in-stock answer', '30 minutes'],
+    accessibility: ['The named access point', 'Whether it is working right now', 'A clear access update', '30 minutes'],
+    open_closed: ['The public entrance', 'Whether people are getting in', 'A current open or closed answer', '10 minutes'],
   };
   return map[queryType];
 };

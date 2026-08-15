@@ -25,7 +25,7 @@ export function VerificationReceipt({ label, detail, delay = 0 }: { label: strin
 
   return (
     <View style={styles.row}>
-      <Svg width={18} height={18} viewBox="0 0 24 24">
+      <Svg width={14} height={14} viewBox="0 0 24 24">
         <AnimatedPath
           d="M4 12.5 9.2 17 20 6"
           fill={theme.transparent}
@@ -44,7 +44,7 @@ export function VerificationReceipt({ label, detail, delay = 0 }: { label: strin
 }
 
 const styles = StyleSheet.create({
-  row: { minHeight: 50, flexDirection: 'row', gap: space.xs, alignItems: 'center' },
-  label: { width: 100, fontSize: 8, lineHeight: 13, letterSpacing: 0.15 },
-  detail: { flex: 1, fontSize: 7.5, lineHeight: 12, textAlign: 'right' },
+  row: { minHeight: 31, flexDirection: 'row', gap: space.xs, alignItems: 'center' },
+  label: { width: 100, fontSize: 8.5, lineHeight: 12, letterSpacing: 0.15 },
+  detail: { flex: 1, fontSize: 7.5, lineHeight: 11, textAlign: 'right' },
 });

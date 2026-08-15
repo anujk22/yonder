@@ -4,7 +4,7 @@ import { Mode } from '@/lib/places';
 
 export type MapCoordinate = { latitude: number; longitude: number };
 export type MapRegion = MapCoordinate & { latitudeDelta: number; longitudeDelta: number };
-export type MapMarkerData = { id: string; coordinate: MapCoordinate; label?: string };
+export type MapMarkerData = { id: string; coordinate: MapCoordinate; label?: string; testID?: string; onPress?: () => void };
 
 export type MapSurfaceHandle = {
   animateToRegion: (region: MapRegion, duration?: number) => void;

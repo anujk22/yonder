@@ -53,12 +53,12 @@ function TimelineStep({ item, active, completed }: { item: TimelineItem; active:
     <Animated.View
       entering={FadeInDown.springify().damping(18).stiffness(140)}
       layout={LinearTransition.springify().damping(18).stiffness(140)}
-      style={styles.step}
+      style={[styles.step, { borderBottomColor: theme.border }]}
     >
       <View style={styles.stateGlyph}>
         {completed ? <CompletedCheck /> : (
           <>
-            <Animated.View style={[styles.pulseRing, { borderColor: theme.accent }, pulseStyle]} />
+            <Animated.View style={[styles.pulseRing, { borderColor: theme.aging }, pulseStyle]} />
             <View style={[styles.activeDot, { backgroundColor: theme.accent }]} />
           </>
         )}
@@ -83,7 +83,7 @@ function CompletedCheck() {
 
   return (
     <Svg width={20} height={20} viewBox="0 0 20 20">
-      <Circle cx={10} cy={10} r={9} fill={theme.fresh} />
+      <Circle cx={10} cy={10} r={9} fill={theme.accent} />
       <AnimatedPath
         d="M5.4 10.2 8.5 13 14.8 6.9"
         fill={theme.transparent}
@@ -100,11 +100,11 @@ function CompletedCheck() {
 
 const styles = StyleSheet.create({
   timeline: { paddingVertical: space.xs },
-  step: { minHeight: 54, flexDirection: 'row', alignItems: 'flex-start' },
-  stateGlyph: { width: 34, height: 34, alignItems: 'center', justifyContent: 'center' },
+  step: { minHeight: 64, flexDirection: 'row', alignItems: 'center', borderBottomWidth: StyleSheet.hairlineWidth },
+  stateGlyph: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   activeDot: { width: 10, height: 10, borderRadius: 5 },
   pulseRing: { position: 'absolute', width: 22, height: 22, borderRadius: 11, borderWidth: 1.5 },
-  copy: { flex: 1, paddingTop: 6, gap: 1 },
-  label: { fontSize: 12, lineHeight: 17 },
+  copy: { flex: 1, gap: 1 },
+  label: { fontSize: 12, lineHeight: 18 },
   detail: { fontSize: 10, lineHeight: 15 },
 });

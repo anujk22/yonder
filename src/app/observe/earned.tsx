@@ -1,29 +1,33 @@
 import { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 
-import { AppScreen, Entrance, SectionLabel } from '@/components/ui';
+import { AppScreen, Entrance, MissingDataState, PrimaryButton, SectionLabel } from '@/components/ui';
 import { TickingNumber } from '@/components/TickingNumber';
 import { YMark } from '@/components/YMark';
 import { useActiveTheme, useYonderStore } from '@/lib/store';
 import { radii, space, type } from '@/lib/theme';
 
 export default function EarnedScreen() {
+  const router = useRouter();
   const theme = useActiveTheme();
   const query = useYonderStore((state) => state.queries.find((item) => item.id === state.activeTaskId));
-  const reward = query?.observerRewardCents ?? 100;
 
   useEffect(() => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   }, []);
+
+  if (!query) return <MissingDataState title="No completed observation is available." />;
+  const reward = query.observerRewardCents;
 
   return (
     <Animated.View
       entering={FadeIn.duration(240).withInitialValues({ opacity: 0, transform: [{ scale: 0.98 }] } as never)}
       style={styles.flex}
     >
-      <AppScreen scroll={false}>
+      <AppScreen scroll={false} bottomInset={false}>
         <View style={styles.center}>
           <Entrance style={[styles.mark, { backgroundColor: theme.surface, borderColor: theme.fresh }]}>
             <YMark size={62} bodyColor={theme.accent} />
@@ -58,6 +62,11 @@ export default function EarnedScreen() {
               <Text style={[type.mono, { color: theme.inkSoft }]}>PAYOUT</Text>
               <Text style={[type.mono, { color: theme.ink }]}>{`$${(reward / 100).toFixed(2)} instant`}</Text>
             </View>
+            <Text style={[type.mono, styles.shopifyCopy, { color: theme.inkSoft }]}>Payments processed by Shopify</Text>
+          </Entrance>
+
+          <Entrance index={5} style={styles.actions}>
+            <PrimaryButton label="Back to tasks" onPress={() => router.replace('/observe')} />
           </Entrance>
         </View>
       </AppScreen>
@@ -76,4 +85,6 @@ const styles = StyleSheet.create({
   detail: { maxWidth: 320, marginTop: space.md, textAlign: 'center' },
   receipt: { width: '100%', borderWidth: 1, borderRadius: radii.card, padding: space.md, marginTop: space.xl, gap: space.sm },
   receiptRow: { flexDirection: 'row', justifyContent: 'space-between', gap: space.md },
+  shopifyCopy: { textAlign: 'center', fontSize: 10, lineHeight: 15, marginTop: space.xs },
+  actions: { width: '100%', marginTop: space.lg },
 });

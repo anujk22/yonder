@@ -10,31 +10,40 @@ const BASE: Record<QueryType, number> = {
   open_closed: 70,
 };
 
-const DEMO_PRICES: Record<string, { bountyCents: number; observerRewardCents: number; platformFeeCents: number }> = {
-  'pier2:availability': { bountyCents: 125, observerRewardCents: 100, platformFeeCents: 25 },
-  'joes:queue': { bountyCents: 165, observerRewardCents: 140, platformFeeCents: 25 },
-  'unionsq:accessibility': { bountyCents: 115, observerRewardCents: 90, platformFeeCents: 25 },
-  'nikesoho:stock_check': { bountyCents: 210, observerRewardCents: 185, platformFeeCents: 25 },
+export const MIN_BOUNTY_CENTS = 150;
+const PLATFORM_FEE_RATE = 0.20;
+
+const DEMO_BOUNTIES: Record<string, number> = {
+  'pier2:availability': 150,
+  'joes:queue': 200,
+  'unionsq:accessibility': 150,
+  'nikesoho:stock_check': 250,
+};
+
+const roundToFiveCents = (cents: number) => Math.round(cents / 5) * 5;
+
+export const splitBounty = (rawBountyCents: number) => {
+  const bountyCents = Math.max(MIN_BOUNTY_CENTS, roundToFiveCents(rawBountyCents));
+  const platformFeeCents = roundToFiveCents(bountyCents * PLATFORM_FEE_RATE);
+  return {
+    bountyCents,
+    observerRewardCents: bountyCents - platformFeeCents,
+    platformFeeCents,
+  };
 };
 
 export const priceQuery = (placeId: string, queryType: QueryType, deadlineMinutes: number) => {
-  const demo = DEMO_PRICES[`${placeId}:${queryType}`];
-  if (demo) {
+  const demoBountyCents = DEMO_BOUNTIES[`${placeId}:${queryType}`];
+  if (demoBountyCents) {
+    // DEMO: deterministic path for recording. Real implementation below.
     const urgency = deadlineMinutes <= 5 ? 1.35 : deadlineMinutes <= 15 ? 1.1 : 1;
-    const observerRewardCents = Math.round(demo.observerRewardCents * (urgency / 1.1));
-    return {
-      bountyCents: observerRewardCents + demo.platformFeeCents,
-      observerRewardCents,
-      platformFeeCents: demo.platformFeeCents,
-    };
+    return splitBounty(demoBountyCents * (urgency / 1.1));
   }
 
   const observersNearby = OBSERVERS_NEARBY[placeId] ?? 0;
   const supply = observersNearby >= 8 ? 0.8 : observersNearby >= 3 ? 1 : 1.9;
   const urgency = deadlineMinutes <= 5 ? 1.35 : deadlineMinutes <= 15 ? 1.1 : 1;
-  const bountyCents = Math.round(BASE[queryType] * supply * urgency);
-  const platformFeeCents = Math.max(15, Math.round(bountyCents * 0.2));
-  return { bountyCents, observerRewardCents: bountyCents - platformFeeCents, platformFeeCents };
+  return splitBounty(BASE[queryType] * supply * urgency);
 };
 
 export const money = (cents: number) => `$${(cents / 100).toFixed(2)}`;

@@ -1,13 +1,14 @@
-import { PropsWithChildren, ReactNode } from 'react';
+import { PropsWithChildren, ReactNode, useRef } from 'react';
 import { Pressable, ScrollView, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
-import { useRouter } from 'expo-router';
+import { usePathname, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Glyph } from '@/components/Glyph';
+import { useAutopilotPressTarget } from '@/lib/autopilot';
 import { useActiveTheme } from '@/lib/store';
-import { radii, space, type } from '@/lib/theme';
+import { font, radii, space, type } from '@/lib/theme';
 
 export function AppScreen({ children, scroll = true, style, bottomInset = true }: PropsWithChildren<{ scroll?: boolean; style?: StyleProp<ViewStyle>; bottomInset?: boolean }>) {
   const theme = useActiveTheme();
@@ -27,12 +28,21 @@ export function AppScreen({ children, scroll = true, style, bottomInset = true }
 
 export function MissingDataState({ title = 'This step is not available yet.' }: { title?: string }) {
   const theme = useActiveTheme();
+  const pathname = usePathname();
+  const router = useRouter();
+  const isObserveRoute = pathname.startsWith('/observe');
   return (
     <AppScreen scroll={false}>
       <ScreenHeader eyebrow="DEMO STATE UNAVAILABLE" />
       <View style={styles.missingData}>
         <Text style={[type.heading, { color: theme.ink }]}>{title}</Text>
-        <Text style={[type.body, { color: theme.inkSoft }]}>Return to the previous step and try again.</Text>
+        <Text style={[type.body, { color: theme.inkSoft }]}>Return home and start the flow again.</Text>
+        <View style={styles.missingDataAction}>
+          <PrimaryButton
+            label={isObserveRoute ? 'Back to tasks' : 'Back to Ask home'}
+            onPress={() => router.replace(isObserveRoute ? '/observe' : '/ask')}
+          />
+        </View>
       </View>
     </AppScreen>
   );
@@ -71,22 +81,27 @@ export function ScreenHeader({ title, eyebrow, right }: { title?: string; eyebro
   );
 }
 
-export function PrimaryButton({ label, onPress, disabled = false, icon = 'arrow', variant = 'primary' }: { label: string; onPress: () => void; disabled?: boolean; icon?: 'arrow' | 'camera' | 'check' | 'lock'; variant?: 'primary' | 'secondary' | 'danger' }) {
+export function PrimaryButton({ label, onPress, disabled = false, icon = 'arrow', variant = 'primary', testID }: { label: string; onPress: () => void; disabled?: boolean; icon?: 'arrow' | 'camera' | 'check' | 'lock'; variant?: 'primary' | 'secondary' | 'danger'; testID?: string }) {
   const theme = useActiveTheme();
+  const ref = useRef<View>(null);
   const palette = variant === 'primary'
     ? { background: theme.accent, foreground: theme.onAccent, border: theme.accent }
     : variant === 'danger'
       ? { background: theme.danger, foreground: theme.onAccent, border: theme.danger }
       : { background: theme.surface, foreground: theme.ink, border: theme.border };
+  const handlePress = () => {
+    if (disabled) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onPress();
+  };
+  useAutopilotPressTarget(testID, ref, handlePress);
   return (
     <Pressable
+      ref={ref}
+      testID={testID}
       accessibilityRole="button"
       accessibilityState={{ disabled }}
-      onPress={() => {
-        if (disabled) return;
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        onPress();
-      }}
+      onPress={handlePress}
       style={({ pressed }) => [
         styles.primaryButton,
         { backgroundColor: palette.background, borderColor: palette.border, opacity: disabled ? 0.42 : pressed ? 0.88 : 1, transform: [{ scale: pressed ? 0.985 : 1 }] },
@@ -118,7 +133,8 @@ const styles = StyleSheet.create({
   headerTitle: { flex: 1, paddingHorizontal: space.sm, gap: 1 },
   headerRight: { minWidth: 42, alignItems: 'flex-end' },
   primaryButton: { minHeight: 58, borderRadius: radii.small, borderWidth: 1, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  buttonLabel: { fontSize: 15, textTransform: 'none', letterSpacing: 0.1 },
+  buttonLabel: { fontFamily: font.ui600, fontSize: 15, textTransform: 'none', letterSpacing: 0.1 },
   hairline: { height: StyleSheet.hairlineWidth, width: '100%' },
   missingData: { flex: 1, justifyContent: 'center', gap: space.sm, paddingBottom: space.xl },
+  missingDataAction: { marginTop: space.lg },
 });

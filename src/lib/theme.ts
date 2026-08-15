@@ -1,60 +1,61 @@
 export const brand = {
-  oat: '#DEC9A3',
-  espresso: '#3A2F20',
-  fern: '#5FB14E',
+  oat: '#EFD5AA',
+  espresso: '#342617',
+  fern: '#6B8E46',
 } as const;
 
 export const ask = {
-  bg: '#F7F1E4',
-  surface: '#FFFCF6',
-  surfaceAlt: '#EDE3D0',
-  ink: '#241C12',
-  inkSoft: '#6B5D4A',
-  inkFaint: '#A2937D',
-  border: '#E0D4BE',
-  accent: '#3A2F20',
-  accentSoft: '#EDE3D0',
-  onAccent: '#F7F1E4',
-  fresh: '#3E8E4F',
+  bg: '#F8F0E4',
+  surface: '#FBF5EB',
+  surfaceAlt: '#E8DDC9',
+  ink: '#2B2116',
+  inkSoft: '#655746',
+  inkFaint: '#9A8A73',
+  border: '#DCC9AB',
+  accent: '#342617',
+  accentSoft: '#EEE2CF',
+  onAccent: '#F8ECD8',
+  fresh: '#648A43',
   aging: '#B07A2E',
   stale: '#A2937D',
   danger: '#B4453C',
   scrim: 'rgba(36, 28, 18, 0.52)',
   glass: 'rgba(255, 252, 246, 0.76)',
   transparent: 'rgba(0, 0, 0, 0)',
-  shadow: '#3A2F20',
+  shadow: '#342617',
 } as const;
 
 export const observe = {
-  bg: '#1E1810',
-  surface: '#2C2318',
-  surfaceAlt: '#3A2F20',
-  ink: '#F5EDDC',
-  inkSoft: '#B5A48A',
-  inkFaint: '#7A6B55',
-  border: '#423528',
-  accent: '#DEC9A3',
-  accentSoft: '#3A2F20',
+  bg: '#1B160F',
+  surface: '#241C12',
+  surfaceAlt: '#342617',
+  ink: '#F3DFC0',
+  inkSoft: '#C5B08F',
+  inkFaint: '#75644D',
+  border: '#55442F',
+  accent: '#EFD5AA',
+  accentSoft: '#342617',
   onAccent: '#241C12',
   fresh: '#6FCB7F',
   aging: '#E0A24E',
   stale: '#7A6B55',
   danger: '#E07A6E',
   scrim: 'rgba(30, 24, 16, 0.72)',
-  glass: 'rgba(44, 35, 24, 0.78)',
+  glass: 'rgba(36, 28, 18, 0.86)',
   transparent: 'rgba(0, 0, 0, 0)',
   shadow: '#1E1810',
 } as const;
 
 export type AppTheme = typeof ask | typeof observe;
 
-export const radii = { small: 14, card: 22, sheet: 30, pill: 999 } as const;
+export const radii = { small: 14, card: 22, sheet: 36, pill: 999 } as const;
 export const space = { xxs: 4, xs: 8, sm: 12, md: 16, lg: 24, xl: 32, xxl: 48 } as const;
 
 export const font = {
-  serif: 'DMSerifDisplay_400Regular',
-  display600: 'SpaceGrotesk_600SemiBold',
-  display700: 'SpaceGrotesk_700Bold',
+  serif: 'CormorantGaramond_600SemiBold',
+  serifMedium: 'CormorantGaramond_500Medium',
+  display600: 'CormorantGaramond_600SemiBold',
+  display700: 'CormorantGaramond_600SemiBold',
   ui400: 'Inter_400Regular',
   ui500: 'Inter_500Medium',
   ui600: 'Inter_600SemiBold',
@@ -63,9 +64,10 @@ export const font = {
 } as const;
 
 export const type = {
-  serifDisplay: { fontFamily: font.serif, fontSize: 48, lineHeight: 50, letterSpacing: -0.8 },
-  serifTitle: { fontFamily: font.serif, fontSize: 36, lineHeight: 39, letterSpacing: -0.5 },
+  serifDisplay: { fontFamily: font.serif, fontSize: 52, lineHeight: 51, letterSpacing: -0.9 },
+  serifTitle: { fontFamily: font.serif, fontSize: 38, lineHeight: 40, letterSpacing: -0.55 },
   serifHeading: { fontFamily: font.serif, fontSize: 26, lineHeight: 30, letterSpacing: -0.25 },
+  serifMediumHeading: { fontFamily: font.serifMedium, fontSize: 26, lineHeight: 30, letterSpacing: -0.25 },
   display: { fontFamily: font.display700, fontSize: 40, lineHeight: 44, letterSpacing: -1.2 },
   title: { fontFamily: font.display700, fontSize: 28, lineHeight: 32, letterSpacing: -0.6 },
   heading: { fontFamily: font.display600, fontSize: 20, lineHeight: 26, letterSpacing: -0.3 },

@@ -1,211 +1,192 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { useRouter } from 'expo-router';
-import * as Haptics from 'expo-haptics';
-import Svg, { Circle, G, Line, Path, Polygon, Rect, Text as SvgText } from 'react-native-svg';
-import Animated, { useAnimatedProps, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
+import { StyleSheet, View } from 'react-native';
+import Svg, { Circle, G, Line, Path, Rect, Text as SvgText } from 'react-native-svg';
 
-import { freshness, freshnessColor } from '@/lib/freshness';
-import { Answer, Query } from '@/lib/places';
-import { useActiveTheme, useYonderStore } from '@/lib/store';
-import { font, radii, type } from '@/lib/theme';
-
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
-
-const VIEW_WIDTH = 400;
-const VIEW_HEIGHT = 280;
-const BOX = { minLat: 40.69, maxLat: 40.76, minLng: -74.02, maxLng: -73.96 } as const;
-
-const project = (lat: number, lng: number) => ({
-  x: ((lng - BOX.minLng) / (BOX.maxLng - BOX.minLng)) * VIEW_WIDTH,
-  y: (1 - (lat - BOX.minLat) / (BOX.maxLat - BOX.minLat)) * VIEW_HEIGHT,
-});
+import { font, radii } from '@/lib/theme';
 
 type CityMapProps = {
   height?: number;
-  compact?: boolean;
-  showOpenBounties?: boolean;
-  showAnswers?: boolean;
   fullBleed?: boolean;
-  interactive?: boolean;
-  onAnswerPress?: (answerId: string) => void;
-  onQueryPress?: (queryId: string) => void;
+  variant?: 'city' | 'detail';
 };
 
-export function CityMap({
-  height = 292,
-  compact = false,
-  showOpenBounties = true,
-  showAnswers = true,
-  fullBleed = false,
-  interactive = true,
-  onAnswerPress,
-  onQueryPress,
-}: CityMapProps) {
-  const theme = useActiveTheme();
-  const router = useRouter();
-  const places = useYonderStore((state) => state.places);
-  const answers = useYonderStore((state) => state.answers);
-  const queries = useYonderStore((state) => state.queries);
-  const setActiveTask = useYonderStore((state) => state.setActiveTask);
-  const swapMode = useYonderStore((state) => state.swapMode);
-  const pulse = useSharedValue(0);
-  const [now, setNow] = useState(Date.now());
+const palette = {
+  water: '#AFC8D2',
+  waterLine: '#8DAFBE',
+  land: '#E7E2D7',
+  street: '#F8F4EC',
+  road: '#C7BFB0',
+  park: '#B9C5A8',
+  parkDark: '#75915F',
+  ink: '#393229',
+  paper: '#F6EBDD',
+  pin: '#493721',
+  court: '#6E91A5',
+  courtLine: '#DFE8E8',
+} as const;
 
-  useEffect(() => {
-    pulse.value = withRepeat(withTiming(1, { duration: 2400 }), -1, false);
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(timer);
-  }, [pulse]);
-
-  const newestAnswers = useMemo(() => {
-    const seen = new Set<string>();
-    return answers.filter((answer) => {
-      if (seen.has(answer.placeId)) return false;
-      seen.add(answer.placeId);
-      return true;
-    });
-  }, [answers]);
-  const openQueries = useMemo(() => queries.filter((query) => query.state === 'OPEN'), [queries]);
-
-  const pulseProps = useAnimatedProps(() => ({
-    r: 8 + pulse.value * 12,
-    opacity: 0.6 * (1 - pulse.value),
-  }));
-
-  const openAnswer = (answer: Answer) => {
-    Haptics.selectionAsync();
-    if (onAnswerPress) onAnswerPress(answer.id);
-    else router.push({ pathname: '/ask/answer/[id]', params: { id: answer.id } });
-  };
-
-  const openQuery = (query: Query) => {
-    Haptics.selectionAsync();
-    if (onQueryPress) onQueryPress(query.id);
-    else {
-      setActiveTask(query.id);
-      swapMode('observe');
-      router.push({ pathname: '/observe/task/[id]', params: { id: query.id } });
-    }
-  };
-
+export function CityMap({ height = 420, fullBleed = false, variant = 'city' }: CityMapProps) {
   return (
-    <View style={[styles.shell, fullBleed && styles.fullBleed, { height, backgroundColor: theme.surfaceAlt, borderColor: theme.border }]}> 
-      <Svg width="100%" height="100%" viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}>
-        <Path d={`M0 0 H${VIEW_WIDTH} V${VIEW_HEIGHT} H0 Z`} fill={theme.surfaceAlt} />
-
-        <Path d="M86 -12 278 -12 255 44 247 91 226 151 208 219 179 296 54 296 94 231 105 172 92 114Z" fill={theme.bg} />
-        <Path d="M250 157 414 111 414 296 177 296 204 250 221 203Z" fill={theme.bg} />
-        <Path d="M0 0 72 0 82 74 63 137 72 216 40 280 0 280Z" fill={theme.bg} />
-
-        <Polygon points="201,72 235,66 231,90 198,95" fill={theme.fresh} opacity={0.16} />
-        <Polygon points="113,126 153,120 157,139 119,144" fill={theme.fresh} opacity={0.13} />
-        <Polygon points="119,222 184,213 189,244 112,251" fill={theme.fresh} opacity={0.14} />
-
-        {[118, 132, 146, 160, 174, 188, 202, 216, 230, 244].map((x, index) => (
-          <Line key={`avenue-${x}`} x1={x} y1={index % 2 === 0 ? 10 : 22} x2={x - 52} y2={264} stroke={theme.border} strokeWidth={1} />
-        ))}
-        {[54, 79, 104, 129, 154, 179, 204, 229].map((y) => (
-          <Line key={`cross-${y}`} x1={94} y1={y} x2={251} y2={y - 8} stroke={theme.border} strokeWidth={1} />
-        ))}
-        <Path d="M230 169 292 153 340 144 399 137M220 191 281 181 344 171 401 168M208 218 274 211 340 201 403 197M193 245 266 241 335 232 401 228" fill={theme.transparent} stroke={theme.border} strokeWidth={1} />
-        <Path d="M16 50 60 83 45 133M17 156 58 179 49 224" fill={theme.transparent} stroke={theme.border} strokeWidth={1} />
-
-        {showOpenBounties && openQueries.map((query, index) => {
-          const place = places.find((candidate) => candidate.id === query.placeId);
-          if (!place) return null;
-          const point = project(place.lat, place.lng);
-          const y = point.y + (index % 2 === 0 ? 8 : -8);
-          return (
-            <G key={query.id}>
-              <AnimatedCircle cx={point.x} cy={y} fill={theme.transparent} stroke={theme.accent} strokeWidth={1.4} animatedProps={pulseProps} />
-              <Circle cx={point.x} cy={y} r={6.5} fill={theme.accent} />
-              {!compact ? (
-                <>
-                  <Rect x={point.x + 10} y={y - 12} width={53} height={24} rx={12} fill={theme.surface} stroke={theme.border} />
-                  <SvgText x={point.x + 36.5} y={y + 4} fill={theme.ink} fontFamily={font.mono500} fontSize={10} textAnchor="middle">
-                    ${(query.bountyCents / 100).toFixed(2)}
-                  </SvgText>
-                </>
-              ) : null}
-            </G>
-          );
-        })}
-
-        {showAnswers && newestAnswers.map((answer, index) => {
-          const place = places.find((candidate) => candidate.id === answer.placeId);
-          if (!place) return null;
-          const point = project(place.lat, place.lng);
-          const state = freshness(answer.observedAt, answer.ttlSeconds, now);
-          const opacity = state.band === 'STALE' ? 0.25 : Math.max(0.35, 1 - state.ratio * 0.65);
-          const width = compact ? 112 : 148;
-          const x = Math.min(VIEW_WIDTH - width - 7, Math.max(7, point.x - width / 2));
-          const y = Math.min(VIEW_HEIGHT - 50, Math.max(7, point.y - 58 - index * 2));
-          const placeName = place.name.length > 23 ? `${place.name.slice(0, 21)}…` : place.name;
-          const headline = answer.headline.length > 27 ? `${answer.headline.slice(0, 25)}…` : answer.headline;
-          return (
-            <G key={answer.id} opacity={opacity}>
-              <Path d={`M${point.x} ${point.y} L${Math.min(x + width - 14, Math.max(x + 14, point.x))} ${y + 42}`} fill={theme.transparent} stroke={freshnessColor(state.band, theme)} strokeWidth={1.25} />
-              <Rect x={x} y={y} width={width} height={44} rx={11} fill={theme.surface} stroke={freshnessColor(state.band, theme)} strokeWidth={1.2} />
-              <Circle cx={x + 10} cy={y + 11} r={3.2} fill={freshnessColor(state.band, theme)} />
-              <SvgText x={x + 18} y={y + 14} fill={theme.inkSoft} fontFamily={font.ui600} fontSize={compact ? 7.5 : 8.5}>
-                {placeName}
-              </SvgText>
-              <SvgText x={x + 10} y={y + 32} fill={theme.ink} fontFamily={font.display600} fontSize={compact ? 9 : 10.5}>
-                {headline}
-              </SvgText>
-            </G>
-          );
-        })}
-      </Svg>
-      {interactive && showOpenBounties
-        ? openQueries.map((query, index) => {
-            const place = places.find((candidate) => candidate.id === query.placeId);
-            if (!place) return null;
-            const point = project(place.lat, place.lng);
-            const y = point.y + (index % 2 === 0 ? 8 : -8);
-            return (
-              <Pressable
-                key={`query-hit-${query.id}`}
-                accessibilityRole="button"
-                accessibilityLabel={`${query.question}, $${(query.bountyCents / 100).toFixed(2)} bounty`}
-                onPress={() => openQuery(query)}
-                style={[styles.queryHit, { left: `${Math.max(0, (point.x - 12) / VIEW_WIDTH) * 100}%`, top: `${Math.max(0, (y - 18) / VIEW_HEIGHT) * 100}%` }]}
-              />
-            );
-          })
-        : null}
-      {interactive && showAnswers && newestAnswers.map((answer, index) => {
-        const place = places.find((candidate) => candidate.id === answer.placeId);
-        if (!place) return null;
-        const point = project(place.lat, place.lng);
-        const width = compact ? 112 : 148;
-        const x = Math.min(VIEW_WIDTH - width - 7, Math.max(7, point.x - width / 2));
-        const y = Math.min(VIEW_HEIGHT - 50, Math.max(7, point.y - 58 - index * 2));
-        return (
-          <Pressable
-            key={`answer-hit-${answer.id}`}
-            accessibilityRole="button"
-            accessibilityLabel={`${place.name}, ${answer.headline}`}
-            onPress={() => openAnswer(answer)}
-            style={[styles.answerHit, { left: `${(x / VIEW_WIDTH) * 100}%`, top: `${(y / VIEW_HEIGHT) * 100}%`, width }]}
-          />
-        );
-      })}
-      <View style={[styles.legend, { backgroundColor: theme.glass, borderColor: theme.border }]}> 
-        <View style={[styles.legendDot, { backgroundColor: theme.fresh }]} />
-        <Text style={[type.micro, styles.legendText, { color: theme.inkSoft }]}>LIVE NYC</Text>
-      </View>
+    <View style={[styles.shell, fullBleed && styles.fullBleed, { height }]}>
+      {variant === 'detail' ? <DetailMap /> : <CityOverview />}
     </View>
   );
 }
 
+function CityOverview() {
+  return (
+    <Svg width="100%" height="100%" viewBox="0 0 400 520" preserveAspectRatio="xMidYMid slice">
+      <Rect width="400" height="520" fill={palette.water} />
+
+      <Path d="M0 0H248L238 46 229 99 220 156 208 214 191 274 171 337 142 403 111 466 86 520H0Z" fill={palette.land} />
+      <Path d="M319 0H400V520H170L191 469 221 416 248 372 270 324 287 272 298 214 302 151 307 82Z" fill={palette.land} />
+      <Path d="M0 400 33 390 77 398 113 420 132 456 111 520H0Z" fill={palette.park} opacity={0.9} />
+      <Path d="M182 404 216 381 249 368 269 388 242 431 209 464 169 488 150 459Z" fill={palette.park} />
+
+      <G stroke={palette.street} strokeWidth={4} opacity={0.96}>
+        {[18, 37, 56, 75, 94, 113, 132, 151, 170, 189, 208, 227].map((x) => (
+          <Line key={`m-avenue-${x}`} x1={x} y1={-20} x2={x - 94} y2={526} />
+        ))}
+        {[36, 63, 90, 117, 144, 171, 198, 225, 252, 279, 306, 333, 360, 387].map((y) => (
+          <Line key={`m-cross-${y}`} x1={-8} y1={y} x2={226} y2={y + 11} />
+        ))}
+      </G>
+      <G stroke={palette.road} strokeWidth={1} opacity={0.6}>
+        <Path d="M20 0 0 115M68 0 0 292M122 0 25 520M178 0 88 520M231 0 131 520" />
+        <Path d="M0 52 238 64M0 113 229 127M0 183 216 195M0 246 200 262M0 322 178 338" />
+      </G>
+
+      <G stroke={palette.street} strokeWidth={4} opacity={0.95}>
+        {[326, 350, 374, 398, 422, 446, 470, 494].map((y) => (
+          <Line key={`b-cross-${y}`} x1={214} y1={y} x2={409} y2={y - 67} />
+        ))}
+        {[224, 251, 278, 305, 332, 359, 386].map((x) => (
+          <Line key={`b-avenue-${x}`} x1={x} y1={290} x2={x + 94} y2={526} />
+        ))}
+      </G>
+
+      <Path d="M207 216C246 236 284 258 326 280" fill="none" stroke={palette.road} strokeWidth={8} />
+      <Path d="M207 216C246 236 284 258 326 280" fill="none" stroke={palette.street} strokeWidth={4} />
+      <Path d="M178 267C221 285 262 302 304 319" fill="none" stroke={palette.waterLine} strokeWidth={1.2} strokeDasharray="6 7" opacity={0.75} />
+      <Path d="M188 83C240 112 268 156 283 219" fill="none" stroke={palette.waterLine} strokeWidth={1.2} strokeDasharray="6 7" opacity={0.7} />
+
+      <Label x={112} y={58} text="MANHATTAN" size={19} />
+      <Label x={28} y={142} text="TRIBECA" size={13} />
+      <Label x={17} y={247} text="FINANCIAL" size={12} />
+      <Label x={18} y={262} text="DISTRICT" size={12} />
+      <Label x={286} y={356} text="DUMBO" size={13} />
+      <Label x={202} y={397} text={'Brooklyn\nBridge Park'} size={13} />
+      <SvgText x={271} y={162} fill="#557E9C" fontFamily={font.serif} fontSize={17} fontStyle="italic" transform="rotate(-10 271 162)">East River</SvgText>
+      <SvgText x={230} y={242} fill={palette.ink} fontFamily={font.ui500} fontSize={10} transform="rotate(27 230 242)">Brooklyn Bridge</SvgText>
+      <SvgText x={21} y={409} fill={palette.ink} fontFamily={font.ui500} fontSize={10}>Battery Park</SvgText>
+
+      <ParkGlyph x={24} y={392} />
+      <ParkGlyph x={215} y={406} />
+      <BridgeGlyph x={292} y={270} />
+
+      <MapTag x={210} y={146} text="Pier 17" />
+      <Circle cx={210} cy={173} r={4} fill={palette.pin} />
+      <MapTag x={253} y={330} text="Pier 6" />
+      <Circle cx={253} cy={357} r={4} fill={palette.pin} />
+      <MapTag x={191} y={418} text="Pier 2" />
+      <Circle cx={191} cy={445} r={4} fill={palette.pin} />
+    </Svg>
+  );
+}
+
+function DetailMap() {
+  return (
+    <Svg width="100%" height="100%" viewBox="0 0 400 520" preserveAspectRatio="xMidYMid slice">
+      <Rect width="400" height="520" fill={palette.water} />
+      <Path d="M190 196 243 154 303 131 400 143V520H56L81 446 111 378 139 310Z" fill={palette.land} />
+      <Path d="M165 222 225 180 293 159 377 171 400 247 359 304 308 348 246 388 184 423 119 441 85 412 105 345 132 278Z" fill={palette.park} />
+      <Path d="M0 404 68 373 101 403 80 475 25 520H0Z" fill={palette.land} />
+
+      <Path d="M185 -18 426 98" fill="none" stroke={palette.road} strokeWidth={18} />
+      <Path d="M185 -18 426 98" fill="none" stroke={palette.street} strokeWidth={12} />
+      <G stroke={palette.road} strokeWidth={1.2} opacity={0.8}>
+        {[196, 219, 242, 265, 288, 311, 334, 357, 380].map((x) => (
+          <Line key={`bridge-${x}`} x1={x} y1={(x - 196) * 0.48 - 6} x2={x + 7} y2={(x - 196) * 0.48 + 8} />
+        ))}
+      </G>
+
+      <Path d="M291 165C317 224 348 285 400 344" fill="none" stroke={palette.street} strokeWidth={13} />
+      <Path d="M291 165C317 224 348 285 400 344" fill="none" stroke={palette.road} strokeWidth={1.6} />
+      <Path d="M176 224C220 263 274 302 344 337" fill="none" stroke={palette.street} strokeWidth={8} />
+      <Path d="M107 402C179 379 234 358 303 316" fill="none" stroke={palette.street} strokeWidth={6} />
+      <Path d="M145 288C199 304 243 328 276 367" fill="none" stroke={palette.street} strokeWidth={5} />
+
+      <Pier x={126} y={238} width={103} height={61} label="Pier 2" courts />
+      <Pier x={206} y={163} width={95} height={54} label="Pier 1" />
+      <Pier x={39} y={373} width={101} height={62} label="Pier 3" courts />
+
+      <Circle cx={227} cy={314} r={3} fill={palette.parkDark} opacity={0.8} />
+      <Circle cx={257} cy={280} r={3} fill={palette.parkDark} opacity={0.8} />
+      <Circle cx={190} cy={349} r={3} fill={palette.parkDark} opacity={0.8} />
+      <Circle cx={304} cy={244} r={3} fill={palette.parkDark} opacity={0.8} />
+
+      <SvgText x={257} y={42} fill={palette.ink} fontFamily={font.ui600} fontSize={13} transform="rotate(25 257 42)">Brooklyn Bridge</SvgText>
+      <SvgText x={18} y={214} fill="#557E9C" fontFamily={font.serif} fontSize={16} fontStyle="italic">East River</SvgText>
+      <Label x={260} y={248} text={'Brooklyn\nBridge Park'} size={15} />
+      <SvgText x={342} y={271} fill={palette.ink} fontFamily={font.ui500} fontSize={10} transform="rotate(-51 342 271)">Furman St</SvgText>
+      <ParkGlyph x={250} y={302} />
+    </Svg>
+  );
+}
+
+function Pier({ x, y, width, height, label, courts = false }: { x: number; y: number; width: number; height: number; label: string; courts?: boolean }) {
+  return (
+    <G>
+      <Rect x={x} y={y} width={width} height={height} rx={3} fill="#C9C9BB" stroke={palette.road} strokeWidth={1} transform={`rotate(-17 ${x + width / 2} ${y + height / 2})`} />
+      {courts ? (
+        <G transform={`rotate(-17 ${x + width / 2} ${y + height / 2})`}>
+          <Rect x={x + 10} y={y + 10} width={(width - 25) / 2} height={height - 20} fill={palette.court} />
+          <Rect x={x + 15 + (width - 25) / 2} y={y + 10} width={(width - 25) / 2} height={height - 20} fill={palette.court} />
+          <Line x1={x + width / 2} y1={y + 10} x2={x + width / 2} y2={y + height - 10} stroke={palette.courtLine} strokeWidth={1} />
+        </G>
+      ) : null}
+      <SvgText x={x + width / 2} y={y + height / 2 + 4} fill={palette.ink} fontFamily={font.ui600} fontSize={12} textAnchor="middle">{label}</SvgText>
+    </G>
+  );
+}
+
+function MapTag({ x, y, text }: { x: number; y: number; text: string }) {
+  const width = text.length * 7.2 + 18;
+  return (
+    <G>
+      <Rect x={x - width / 2} y={y} width={width} height={23} rx={5} fill={palette.paper} />
+      <SvgText x={x} y={y + 16} fill={palette.ink} fontFamily={font.ui500} fontSize={11} textAnchor="middle">{text}</SvgText>
+    </G>
+  );
+}
+
+function Label({ x, y, text, size }: { x: number; y: number; text: string; size: number }) {
+  const lines = text.split('\n');
+  return (
+    <SvgText x={x} y={y} fill={palette.ink} fontFamily={font.ui600} fontSize={size} textAnchor="middle">
+      {lines.map((line, index) => <SvgText key={line} x={x} dy={index === 0 ? 0 : size + 1}>{line}</SvgText>)}
+    </SvgText>
+  );
+}
+
+function ParkGlyph({ x, y }: { x: number; y: number }) {
+  return (
+    <G>
+      <Circle cx={x} cy={y} r={8} fill={palette.parkDark} />
+      <Path d={`M${x} ${y - 5}l-4 6h3v4h2V${y + 1}h3Z`} fill={palette.street} />
+    </G>
+  );
+}
+
+function BridgeGlyph({ x, y }: { x: number; y: number }) {
+  return (
+    <G>
+      <Circle cx={x} cy={y} r={9} fill={palette.pin} />
+      <Path d={`M${x - 5} ${y + 4}h10M${x - 4} ${y + 2}v-7m8 7v-7m-8 2 4 3 4-3`} fill="none" stroke={palette.paper} strokeWidth={1} />
+    </G>
+  );
+}
+
 const styles = StyleSheet.create({
-  shell: { width: '100%', overflow: 'hidden', borderRadius: radii.card, borderWidth: 1 },
-  fullBleed: { borderRadius: 0, borderWidth: 0 },
-  legend: { position: 'absolute', top: 10, right: 10, height: 27, borderRadius: radii.pill, borderWidth: 1, paddingHorizontal: 9, flexDirection: 'row', alignItems: 'center', gap: 6, pointerEvents: 'none' },
-  legendDot: { width: 6, height: 6, borderRadius: 3 },
-  legendText: { fontSize: 9, lineHeight: 12 },
-  queryHit: { position: 'absolute', width: 78, height: 38 },
-  answerHit: { position: 'absolute', height: 48 },
+  shell: { width: '100%', overflow: 'hidden', borderRadius: radii.card, backgroundColor: palette.water },
+  fullBleed: { borderRadius: 0 },
 });

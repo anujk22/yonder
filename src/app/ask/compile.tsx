@@ -1,10 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import * as Haptics from 'expo-haptics';
 
 import { Glyph } from '@/components/Glyph';
 import { YMark } from '@/components/YMark';
-import { AppScreen, Entrance, PrimaryButton, ScreenHeader } from '@/components/ui';
+import { AppScreen, Entrance, MissingDataState, PrimaryButton, ScreenHeader } from '@/components/ui';
+import { registerAutopilotAbortHandler, useAutopilotPressTarget } from '@/lib/autopilot';
+import { DEMO_FLAGS } from '@/lib/demoFlags';
 import { inferQueryType } from '@/lib/places';
 import { compileSpec } from '@/lib/results';
 import { isUnsafeQuestion } from '@/lib/safety';
@@ -12,7 +15,7 @@ import { useActiveTheme, useYonderStore } from '@/lib/store';
 import { radii, space, type } from '@/lib/theme';
 import { TIMING } from '@/lib/timing';
 
-const LABELS = ['TARGET', 'CHECKING', 'RETURNS', 'GOOD FOR'] as const;
+const LABELS = ['AREA TO CHECK', 'QUESTION', 'ANSWER', 'FRESH FOR'] as const;
 
 export default function CompileScreen() {
   const router = useRouter();
@@ -24,9 +27,15 @@ export default function CompileScreen() {
   const setTargetHint = useYonderStore((state) => state.setTargetHint);
   const createDraftQuery = useYonderStore((state) => state.createDraftQuery);
   const [compiled, setCompiled] = useState(false);
+  const ownerRef = useRef<View>(null);
   const place = places.find((item) => item.id === resolvedPlaceId) ?? null;
   const queryType = useMemo(() => inferQueryType(draftQuestion), [draftQuestion]);
   const spec = useMemo(() => (place ? compileSpec(place.id, queryType) : []), [place, queryType]);
+  const openVendor = () => {
+    Haptics.selectionAsync();
+    router.push('/ask/vendor');
+  };
+  useAutopilotPressTarget(place?.status === 'blocked' ? 'blocked-owner' : undefined, ownerRef, openVendor);
 
   useEffect(() => {
     if (isUnsafeQuestion(draftQuestion)) {
@@ -35,10 +44,14 @@ export default function CompileScreen() {
     }
     if (place?.status === 'blocked') return;
     const timer = setTimeout(() => setCompiled(true), TIMING.compileMs);
-    return () => clearTimeout(timer);
+    const unregisterAbort = registerAutopilotAbortHandler(() => clearTimeout(timer));
+    return () => {
+      clearTimeout(timer);
+      unregisterAbort();
+    };
   }, [draftQuestion, place?.status, router]);
 
-  if (!place) return null;
+  if (!place) return <MissingDataState title="No place is attached to this query." />;
 
   if (place.status === 'blocked') {
     return (
@@ -54,6 +67,15 @@ export default function CompileScreen() {
         </Entrance>
         <Entrance index={1}>
           <PrimaryButton label="Ask about another place" onPress={() => router.replace('/ask')} variant="secondary" />
+          <Pressable
+            ref={ownerRef}
+            testID="blocked-owner"
+            accessibilityRole="link"
+            onPress={openVendor}
+            style={({ pressed }) => [styles.ownerLink, { opacity: pressed ? 0.62 : 1 }]}
+          >
+            <Text style={[type.label, { color: theme.accent }]}>Are you the owner?</Text>
+          </Pressable>
         </Entrance>
       </AppScreen>
     );
@@ -73,16 +95,22 @@ export default function CompileScreen() {
 
   return (
     <AppScreen>
-      <ScreenHeader eyebrow="QUERY COMPILED" title="Here's what we'll check" />
+      <ScreenHeader eyebrow="READY TO CHECK" title="Here's what we'll look for" />
       <Entrance style={[styles.specCard, { backgroundColor: theme.surface, borderColor: theme.border, shadowColor: theme.shadow }]}>
-        <View style={styles.specRow}>
-          <Text style={[type.mono, styles.specLabel, { color: theme.inkSoft }]}>PLACE</Text>
-          <Text style={[type.mono, styles.specValue, { color: theme.ink }]}>{place.name}</Text>
+        <View style={styles.cardIntro}>
+          <View style={[styles.liveDot, { backgroundColor: theme.fresh }]} />
+          <Text style={[type.micro, { color: theme.fresh }]}>LIVE PLACE CHECK</Text>
         </View>
+        <View style={styles.placeBlock}>
+          <Text style={[type.micro, styles.specLabel, { color: theme.inkSoft }]}>PLACE</Text>
+          <Text style={[type.title, styles.placeName, { color: theme.ink }]}>{place.name}</Text>
+          <Text style={[type.body, styles.placeArea, { color: theme.inkSoft }]}>{place.area}</Text>
+        </View>
+        <View style={[styles.cardDivider, { backgroundColor: theme.border }]} />
         {spec.map((value, index) => (
           <View key={LABELS[index]} style={styles.specRow}>
-            <Text style={[type.mono, styles.specLabel, { color: theme.inkSoft }]}>{LABELS[index]}</Text>
-            <Text style={[type.mono, styles.specValue, { color: theme.ink }]}>{value}</Text>
+            <Text style={[type.micro, styles.specLabel, { color: theme.inkSoft }]}>{LABELS[index]}</Text>
+            <Text style={[type.body, styles.specValue, { color: theme.ink }]}>{value}</Text>
           </View>
         ))}
       </Entrance>
@@ -97,13 +125,14 @@ export default function CompileScreen() {
           placeholderTextColor={theme.inkFaint}
           returnKeyType="done"
           selectionColor={theme.accent}
-          style={[type.body, styles.hintInput, { backgroundColor: theme.surface, borderColor: theme.border, color: theme.ink }]}
+          style={[type.body, styles.hintInput, DEMO_FLAGS.autopilotEnabled ? styles.demoInput : null, { backgroundColor: theme.surface, borderColor: theme.border, color: theme.ink }]}
           value={targetHint}
         />
       </Entrance>
 
       <Entrance index={2} style={styles.footer}>
         <PrimaryButton
+          testID="compile-continue"
           label="Choose your answer"
           onPress={() => {
             const queryId = createDraftQuery();
@@ -125,11 +154,19 @@ const styles = StyleSheet.create({
   blockedTitle: { maxWidth: 320 },
   blockedBody: { marginTop: space.md, maxWidth: 330 },
   blockedQuestion: { marginTop: space.xl, maxWidth: 300 },
-  specCard: { borderRadius: radii.card, borderWidth: 1, padding: space.md, gap: space.md, shadowOpacity: 0.08, shadowRadius: 24, shadowOffset: { width: 0, height: 8 } },
-  specRow: { flexDirection: 'row', alignItems: 'flex-start', gap: space.sm },
-  specLabel: { width: 74, fontSize: 11, lineHeight: 17 },
-  specValue: { flex: 1, fontSize: 12, lineHeight: 18 },
+  ownerLink: { minHeight: 44, alignItems: 'center', justifyContent: 'center', marginTop: space.sm },
+  specCard: { borderRadius: radii.card, borderWidth: 1, padding: space.lg, gap: space.md, shadowOpacity: 0.08, shadowRadius: 24, shadowOffset: { width: 0, height: 8 } },
+  cardIntro: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
+  liveDot: { width: 7, height: 7, borderRadius: 4 },
+  placeBlock: { gap: space.xxs },
+  placeName: { marginTop: space.xxs },
+  placeArea: { fontSize: 13, lineHeight: 19 },
+  cardDivider: { height: StyleSheet.hairlineWidth, width: '100%', marginVertical: space.xs },
+  specRow: { flexDirection: 'row', alignItems: 'flex-start', gap: space.md },
+  specLabel: { width: 100, fontSize: 10, lineHeight: 15 },
+  specValue: { flex: 1, fontSize: 14, lineHeight: 20 },
   hintSection: { marginTop: space.xl },
   hintInput: { minHeight: 58, borderRadius: radii.small, borderWidth: 1, paddingHorizontal: space.md, marginTop: space.sm },
+  demoInput: { outlineStyle: 'solid', outlineWidth: 0, outlineColor: 'transparent' },
   footer: { marginTop: space.xl },
 });

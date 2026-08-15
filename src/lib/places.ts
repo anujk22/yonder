@@ -29,6 +29,7 @@ export type Answer = {
   detail: string;
   structured: Record<string, string | number | boolean>;
   confidence: number;
+  charged: boolean;
   observedAt: number;
   ttlSeconds: number;
   capturedByVendor: boolean;

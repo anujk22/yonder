@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { FreshnessLabel } from '@/components/FreshnessLabel';
 import { TickingNumber } from '@/components/TickingNumber';
+import { useAutopilotPressTarget } from '@/lib/autopilot';
 import { formatAge, freshness, freshnessColor } from '@/lib/freshness';
 import { useActiveTheme, useYonderStore } from '@/lib/store';
 import { radii, space, type } from '@/lib/theme';
@@ -21,6 +22,7 @@ type AnswerTierCardProps = {
   ttlSeconds?: number;
   subtitle?: string;
   observersNearby?: number;
+  testID?: string;
 };
 
 const EYEBROWS: Record<AnswerTierKind, string> = {
@@ -39,28 +41,34 @@ export function AnswerTierCard({
   ttlSeconds,
   subtitle,
   observersNearby,
+  testID,
 }: AnswerTierCardProps) {
   const theme = useActiveTheme();
+  const ref = useRef<View>(null);
   const mode = useYonderStore((state) => state.mode);
   const isDispatch = kind === 'dispatch';
-  const foreground = kind === 'last' ? theme.inkSoft : theme.ink;
+  const foreground = theme.ink;
+  const handlePress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onPress();
+  };
+  useAutopilotPressTarget(testID, ref, handlePress);
 
   return (
     <Animated.View entering={FadeInDown.delay(index * 45).springify().damping(18).stiffness(140)}>
       <Pressable
+        ref={ref}
+        testID={testID}
         accessibilityRole="button"
         accessibilityLabel={`${EYEBROWS[kind]}, ${priceCents === 0 ? 'free' : `$${(priceCents / 100).toFixed(2)}`}, ${headline}`}
-        onPress={() => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          onPress();
-        }}
+        onPress={handlePress}
         style={({ pressed }) => [
           styles.card,
           isDispatch && styles.dispatchCard,
           {
             backgroundColor: theme.surface,
             borderColor: isDispatch ? theme.accent : theme.border,
-            opacity: kind === 'last' ? 0.74 : pressed ? 0.86 : 1,
+            opacity: pressed ? 0.86 : 1,
             transform: [{ scale: pressed ? 0.985 : 1 }],
           },
           isDispatch && mode === 'ask' && styles.dispatchShadow,
@@ -128,8 +136,8 @@ function RecentFreshness({ observedAt, ttlSeconds }: { observedAt: number; ttlSe
 }
 
 const styles = StyleSheet.create({
-  card: { minHeight: 122, borderRadius: 18, borderWidth: 1, paddingHorizontal: 20, paddingVertical: 18 },
-  dispatchCard: { minHeight: 190, borderRadius: radii.card, borderWidth: 2, paddingHorizontal: 24, paddingVertical: 22 },
+  card: { minHeight: 116, borderRadius: 14, borderWidth: 1, paddingHorizontal: 20, paddingVertical: 17 },
+  dispatchCard: { minHeight: 174, borderRadius: 16, borderWidth: 2, paddingHorizontal: 22, paddingVertical: 20 },
   dispatchShadow: { shadowOpacity: 0.12, shadowRadius: 22, shadowOffset: { width: 0, height: 10 } },
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.sm },
   eyebrow: { flex: 1, fontSize: 11, lineHeight: 15, letterSpacing: 0.8 },

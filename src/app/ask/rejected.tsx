@@ -35,7 +35,7 @@ export default function RejectedScreen() {
         </View>
       </Entrance>
       <Entrance index={1}>
-        <PrimaryButton label="Ask about a place" onPress={startOver} />
+        <PrimaryButton testID="rejected-home" label="Ask about a place" onPress={startOver} />
       </Entrance>
     </AppScreen>
   );

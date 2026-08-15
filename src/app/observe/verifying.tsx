@@ -6,8 +6,9 @@ import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 
 import { DeclineSheet } from '@/components/DeclineSheet';
 import { Glyph } from '@/components/Glyph';
-import { AppScreen, Entrance, SectionLabel } from '@/components/ui';
+import { AppScreen, Entrance, MissingDataState, SectionLabel } from '@/components/ui';
 import { YMark } from '@/components/YMark';
+import { registerAutopilotAbortHandler } from '@/lib/autopilot';
 import { useActiveTheme, useYonderStore } from '@/lib/store';
 import { radii, space, type } from '@/lib/theme';
 import { TIMING } from '@/lib/timing';
@@ -23,7 +24,7 @@ export default function VerifyingScreen() {
   const [declineVisible, setDeclineVisible] = useState(false);
   const completed = useRef(false);
   const sceneDetail = query?.placeId === 'pier2'
-    ? '5 court surfaces detected'
+    ? '4 court surfaces detected'
     : query?.placeId === 'nikesoho'
       ? 'Pegasus 41 display detected'
       : query?.placeId === 'unionsq'
@@ -53,12 +54,19 @@ export default function VerifyingScreen() {
       completeObservation();
       router.replace('/observe/earned');
     }, TIMING.verifyTotalMs);
+    const unregisterAbort = registerAutopilotAbortHandler(() => {
+      stepTimers.forEach(clearTimeout);
+      clearTimeout(completionTimer);
+    });
 
     return () => {
       stepTimers.forEach(clearTimeout);
       clearTimeout(completionTimer);
+      unregisterAbort();
     };
   }, [activeTaskId, completeObservation, router, updateQueryState]);
+
+  if (!activeTaskId || !query) return <MissingDataState title="No captured observation is ready to verify." />;
 
   return (
     <Animated.View

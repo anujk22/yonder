@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
 import { DeclineSheet } from '@/components/DeclineSheet';
-import { AppScreen, Entrance, PrimaryButton, ScreenHeader, SectionLabel } from '@/components/ui';
+import { AppScreen, Entrance, MissingDataState, PrimaryButton, ScreenHeader, SectionLabel } from '@/components/ui';
 import { Glyph } from '@/components/Glyph';
 import { useActiveTheme, useYonderStore } from '@/lib/store';
 import { money } from '@/lib/pricing';
@@ -24,7 +24,8 @@ export default function ObservationDetail() {
     if (query) setActiveTask(query.id);
   }, [query?.id, setActiveTask]);
 
-  if (!query || !place) return null;
+  if (!query) return <MissingDataState title="That observation is not available." />;
+  if (!place) return <MissingDataState title="This observation's place is not available." />;
 
   const indoor = place.status === 'indoor' || place.status === 'verified_vendor';
 
@@ -58,7 +59,7 @@ export default function ObservationDetail() {
         {place.status === 'verified_vendor' ? (
           <Entrance index={3} style={[styles.vendorBadge, { borderColor: theme.fresh }]}>
             <Glyph name="check" color={theme.fresh} size={17} />
-            <Text style={[type.micro, styles.vendorText, { color: theme.fresh }]}>PHOTOGRAPHY PERMITTED HERE · Verified by {place.name}</Text>
+            <Text style={[type.micro, styles.vendorText, { color: theme.fresh }]}>Store verified via Shopify</Text>
           </Entrance>
         ) : null}
 
@@ -79,6 +80,7 @@ export default function ObservationDetail() {
 
         <Entrance index={6} style={styles.actions}>
           <PrimaryButton
+            testID="task-accept"
             label="Accept"
             icon="arrow"
             onPress={() => {

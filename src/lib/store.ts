@@ -1,13 +1,44 @@
 import { create } from 'zustand';
 
+import { CONFIDENCE_THRESHOLD } from '@/lib/constants';
 import { Answer, DECOY_PLACES, inferQueryType, Mode, Place, PLACES, Query, QueryState, QueryType, resolvePlace } from '@/lib/places';
-import { priceQuery } from '@/lib/pricing';
+import { priceQuery, splitBounty } from '@/lib/pricing';
 import { compileSpec, resultFor } from '@/lib/results';
 import { ask, observe } from '@/lib/theme';
 
-const APP_STARTED_AT = Date.now();
-
-const SEEDED_ANSWERS: Answer[] = [
+const makeSeededAnswers = (startedAt: number): Answer[] => [
+  {
+    id: 'seed-pier2-last',
+    placeId: 'pier2',
+    queryType: 'availability',
+    question: 'Are any basketball courts free?',
+    headline: 'One court is available',
+    detail: '3 of 4 courts occupied. 18 players on site.',
+    structured: { availableCourts: 1, occupiedCourts: 3, playersDetected: 18 },
+    confidence: 0.9,
+    charged: true,
+    observedAt: startedAt - 3 * 60 * 60_000,
+    ttlSeconds: 300,
+    capturedByVendor: false,
+    proofFrameUri: null,
+    facesBlurred: 4,
+  },
+  {
+    id: 'seed-nike-stock',
+    placeId: 'nikesoho',
+    queryType: 'stock_check',
+    question: 'Is the black Pegasus 41 in a 10 at Nike SoHo?',
+    headline: 'Yes, 2 pairs on the shelf',
+    detail: 'Black Pegasus 41, size 10, wall display aisle 3.',
+    structured: { productPresent: true, unitsVisible: 2, location: 'wall display, aisle 3' },
+    confidence: 0.92,
+    charged: true,
+    observedAt: startedAt - 45_000,
+    ttlSeconds: 1800,
+    capturedByVendor: true,
+    proofFrameUri: null,
+    facesBlurred: 1,
+  },
   {
     id: 'seed-joes',
     placeId: 'joes',
@@ -17,7 +48,8 @@ const SEEDED_ANSWERS: Answer[] = [
     detail: '9 people in line, 2 registers open',
     structured: { peopleInQueue: 9, estimatedWaitMinutes: 12 },
     confidence: 0.94,
-    observedAt: APP_STARTED_AT - 95_000,
+    charged: true,
+    observedAt: startedAt - 95_000,
     ttlSeconds: 300,
     capturedByVendor: false,
     proofFrameUri: null,
@@ -32,7 +64,8 @@ const SEEDED_ANSWERS: Answer[] = [
     detail: 'Terrace side is emptiest, shade under the trees',
     structured: { openTables: 12, totalTables: 60 },
     confidence: 0.91,
-    observedAt: APP_STARTED_AT - 260_000,
+    charged: true,
+    observedAt: startedAt - 260_000,
     ttlSeconds: 300,
     capturedByVendor: false,
     proofFrameUri: null,
@@ -47,7 +80,8 @@ const SEEDED_ANSWERS: Answer[] = [
     detail: 'Line wrapped past the wine section',
     structured: { estimatedWaitMinutes: 15 },
     confidence: 0.89,
-    observedAt: APP_STARTED_AT - 3 * 86_400_000,
+    charged: true,
+    observedAt: startedAt - 3 * 86_400_000,
     ttlSeconds: 300,
     capturedByVendor: false,
     proofFrameUri: null,
@@ -63,6 +97,7 @@ const makeSeedQuery = (
   bountyCents: number,
   observerRewardCents: number,
   createdOffsetMs: number,
+  startedAt: number,
 ): Query => ({
   id,
   question,
@@ -74,7 +109,7 @@ const makeSeedQuery = (
   observerRewardCents,
   platformFeeCents: bountyCents - observerRewardCents,
   deadlineMinutes: 10,
-  createdAt: APP_STARTED_AT - createdOffsetMs,
+  createdAt: startedAt - createdOffsetMs,
   state: 'OPEN',
   statusLog: [],
   answerId: null,
@@ -82,12 +117,37 @@ const makeSeedQuery = (
   isNew: false,
 });
 
-const SEEDED_QUERIES: Query[] = [
-  makeSeedQuery('seed-pier2', 'Are any basketball courts free?', 'pier2', 'availability', 125, 100, 12_000),
-  makeSeedQuery('seed-joes-query', "How long is the line at Joe's Pizza?", 'joes', 'queue', 165, 140, 22_000),
-  makeSeedQuery('seed-unionsq', 'Is the Union Sq north elevator working?', 'unionsq', 'accessibility', 115, 90, 31_000),
-  makeSeedQuery('seed-nike', 'Is the black Pegasus 41 in a 10 at Nike SoHo?', 'nikesoho', 'stock_check', 210, 185, 44_000),
+const makeSeededQueries = (startedAt: number): Query[] => [
+  makeSeedQuery('seed-pier2', 'Are any basketball courts free?', 'pier2', 'availability', 150, 120, 12_000, startedAt),
+  makeSeedQuery('seed-joes-query', "How long is the line at Joe's Pizza?", 'joes', 'queue', 200, 160, 22_000, startedAt),
+  makeSeedQuery('seed-unionsq', 'Is the Union Sq north elevator working?', 'unionsq', 'accessibility', 150, 120, 31_000, startedAt),
+  makeSeedQuery('seed-nike', 'Is the black Pegasus 41 in a 10 at Nike SoHo?', 'nikesoho', 'stock_check', 250, 200, 44_000, startedAt),
 ];
+
+const makeInitialState = () => {
+  const startedAt = Date.now();
+  return {
+    mode: 'ask' as Mode,
+    places: [...PLACES, ...DECOY_PLACES],
+    answers: makeSeededAnswers(startedAt),
+    queries: makeSeededQueries(startedAt),
+    walletCents: 2000,
+    earnedCents: 0,
+    draftQuestion: '',
+    resolvedPlaceId: null,
+    pinnedCoordinate: null,
+    deadlineMinutes: 10,
+    draftBountyCents: null,
+    targetHint: '',
+    activeQueryId: null,
+    activeTaskId: null,
+    activeAnswerId: null,
+    capturedFrames: [],
+    wideShot: false,
+    modeReveal: null,
+    isModeSwitching: false,
+  };
+};
 
 type ModeRevealState = {
   id: number;
@@ -108,6 +168,7 @@ type YonderStore = {
   resolvedPlaceId: string | null;
   pinnedCoordinate: { lat: number; lng: number } | null;
   deadlineMinutes: number;
+  draftBountyCents: number | null;
   targetHint: string;
   activeQueryId: string | null;
   activeTaskId: string | null;
@@ -121,6 +182,7 @@ type YonderStore = {
   setPinnedCoordinate: (coordinate: { lat: number; lng: number }) => void;
   resolveDraftPlace: () => string | null;
   setDeadline: (minutes: number) => void;
+  setDraftBountyCents: (bountyCents: number | null) => void;
   setTargetHint: (hint: string) => void;
   createDraftQuery: () => string | null;
   postActiveQuery: () => void;
@@ -136,32 +198,16 @@ type YonderStore = {
   startModeReveal: (reveal: NonNullable<ModeRevealState>) => void;
   swapMode: (mode: Mode) => void;
   finishModeReveal: () => void;
+  resetDemo: () => void;
 };
 
 export const useYonderStore = create<YonderStore>((set, get) => ({
-  mode: 'ask',
-  places: [...PLACES, ...DECOY_PLACES],
-  answers: SEEDED_ANSWERS,
-  queries: SEEDED_QUERIES,
-  walletCents: 2000,
-  earnedCents: 0,
-  draftQuestion: '',
-  resolvedPlaceId: null,
-  pinnedCoordinate: null,
-  deadlineMinutes: 10,
-  targetHint: '',
-  activeQueryId: null,
-  activeTaskId: null,
-  activeAnswerId: null,
-  capturedFrames: [],
-  wideShot: false,
-  modeReveal: null,
-  isModeSwitching: false,
+  ...makeInitialState(),
 
   setDraftQuestion: (draftQuestion) => set({ draftQuestion }),
   setResolvedPlace: (resolvedPlaceId) => {
     const place = get().places.find((candidate) => candidate.id === resolvedPlaceId);
-    set({ resolvedPlaceId, pinnedCoordinate: place ? { lat: place.lat, lng: place.lng } : null });
+    set({ resolvedPlaceId, pinnedCoordinate: place ? { lat: place.lat, lng: place.lng } : null, draftBountyCents: null });
   },
   setPinnedCoordinate: (pinnedCoordinate) => set({ pinnedCoordinate }),
   resolveDraftPlace: () => {
@@ -169,16 +215,19 @@ export const useYonderStore = create<YonderStore>((set, get) => ({
     set({
       resolvedPlaceId: place?.id ?? null,
       pinnedCoordinate: place ? { lat: place.lat, lng: place.lng } : null,
+      draftBountyCents: null,
     });
     return place?.id ?? null;
   },
   setDeadline: (deadlineMinutes) => set({ deadlineMinutes }),
+  setDraftBountyCents: (draftBountyCents) => set({ draftBountyCents }),
   setTargetHint: (targetHint) => set({ targetHint }),
   createDraftQuery: () => {
     const state = get();
     if (!state.resolvedPlaceId || !state.draftQuestion.trim()) return null;
     const queryType = inferQueryType(state.draftQuestion);
-    const pricing = priceQuery(state.resolvedPlaceId, queryType, state.deadlineMinutes);
+    const calculatedPricing = priceQuery(state.resolvedPlaceId, queryType, state.deadlineMinutes);
+    const pricing = splitBounty(state.draftBountyCents ?? calculatedPricing.bountyCents);
     const id = `query-${Date.now()}`;
     const query: Query = {
       id,
@@ -259,6 +308,7 @@ export const useYonderStore = create<YonderStore>((set, get) => ({
     if (!query) return null;
     const place = state.places.find((item) => item.id === query.placeId);
     const result = resultFor(query.placeId, query.queryType);
+    const charged = result.confidence >= CONFIDENCE_THRESHOLD;
     const answerId = `answer-${query.id}-${Date.now()}`;
     const answer: Answer = {
       id: answerId,
@@ -266,6 +316,7 @@ export const useYonderStore = create<YonderStore>((set, get) => ({
       queryType: query.queryType,
       question: query.question,
       ...result,
+      charged,
       observedAt: Date.now(),
       capturedByVendor: place?.status === 'verified_vendor',
       proofFrameUri: state.capturedFrames[0] ?? null,
@@ -280,7 +331,7 @@ export const useYonderStore = create<YonderStore>((set, get) => ({
       activeQueryId: query.isNew ? query.id : current.activeQueryId,
       activeAnswerId: answerId,
       earnedCents: current.earnedCents + query.observerRewardCents,
-      walletCents: Math.max(0, current.walletCents - (query.isNew ? query.bountyCents : 0)) + query.observerRewardCents,
+      walletCents: Math.max(0, current.walletCents - (query.isNew && charged ? query.bountyCents : 0)) + query.observerRewardCents,
     }));
     return answerId;
   },
@@ -313,6 +364,7 @@ export const useYonderStore = create<YonderStore>((set, get) => ({
   startModeReveal: (modeReveal) => set({ modeReveal, isModeSwitching: true }),
   swapMode: (mode) => set({ mode }),
   finishModeReveal: () => set({ modeReveal: null, isModeSwitching: false }),
+  resetDemo: () => set(makeInitialState()),
 }));
 
 export const useActiveTheme = () => useYonderStore((state) => (state.mode === 'ask' ? ask : observe));

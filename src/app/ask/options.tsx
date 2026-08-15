@@ -75,6 +75,7 @@ export default function OptionsScreen() {
         {recentAnswer ? (
           <AnswerTierCard
             kind="recent"
+            testID="options-recent"
             headline={recentAnswer.headline}
             priceCents={15}
             observedAt={recentAnswer.observedAt}
@@ -85,6 +86,7 @@ export default function OptionsScreen() {
         ) : null}
         <AnswerTierCard
           kind="dispatch"
+          testID="options-dispatch"
           headline={'Verified answer in\nabout 2 minutes'}
           priceCents={query.bountyCents}
           observersNearby={OBSERVERS_NEARBY[query.placeId]}
@@ -96,9 +98,6 @@ export default function OptionsScreen() {
         />
       </View>
 
-      <Entrance index={4} style={[styles.promiseBand, { backgroundColor: theme.accent }]}>
-        <Text style={[type.mono, styles.promiseText, { color: theme.onAccent }]}>Fresh evidence costs more. Cached truth costs less.</Text>
-      </Entrance>
     </AppScreen>
   );
 }
@@ -111,6 +110,4 @@ const styles = StyleSheet.create({
   title: { fontSize: 32, lineHeight: 37 },
   question: { fontSize: 14, lineHeight: 21 },
   tiers: { gap: space.sm, marginTop: space.lg },
-  promiseBand: { marginHorizontal: -space.lg, marginTop: space.md, paddingHorizontal: space.lg, paddingVertical: 14 },
-  promiseText: { fontSize: 10, lineHeight: 15, textAlign: 'center' },
 });

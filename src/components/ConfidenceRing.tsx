@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import Animated, { Easing, useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { TickingNumber } from '@/components/TickingNumber';
 import { useActiveTheme } from '@/lib/store';
+import { type } from '@/lib/theme';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 const SIZE = 96;
@@ -25,14 +26,14 @@ export function ConfidenceRing({ value }: { value: number }) {
   return (
     <View style={styles.wrap} accessibilityLabel={`${Math.round(value * 100)} percent confidence`}>
       <Svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`}>
-        <Circle cx={CENTER} cy={CENTER} r={RADIUS} fill={theme.transparent} stroke={theme.border} strokeWidth={5.5} />
+        <Circle cx={CENTER} cy={CENTER} r={RADIUS} fill={theme.transparent} stroke={theme.border} strokeWidth={3.2} />
         <AnimatedCircle
           cx={CENTER}
           cy={CENTER}
           r={RADIUS}
           fill={theme.transparent}
           stroke={theme.fresh}
-          strokeWidth={5.5}
+          strokeWidth={3.2}
           strokeLinecap="round"
           strokeDasharray={`${CIRCUMFERENCE} ${CIRCUMFERENCE}`}
           transform={`rotate(-90 ${CENTER} ${CENTER})`}
@@ -46,11 +47,13 @@ export function ConfidenceRing({ value }: { value: number }) {
         formatter={(number) => `${Math.round(number)}%`}
         style={styles.number}
       />
+      <Text style={[type.micro, styles.label, { color: theme.ink }]}>CONFIDENCE</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   wrap: { width: SIZE, height: SIZE, alignItems: 'center', justifyContent: 'center' },
-  number: { position: 'absolute', width: 66, textAlign: 'center', fontSize: 22, lineHeight: 28 },
+  number: { position: 'absolute', top: 24, width: 72, textAlign: 'center', fontSize: 27, lineHeight: 32 },
+  label: { position: 'absolute', bottom: 22, width: 72, textAlign: 'center', fontSize: 7, lineHeight: 9 },
 });

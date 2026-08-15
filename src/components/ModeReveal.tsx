@@ -5,6 +5,7 @@ import * as Haptics from 'expo-haptics';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { YMark } from '@/components/YMark';
+import { registerAutopilotAbortHandler } from '@/lib/autopilot';
 import { useYonderStore } from '@/lib/store';
 import { ask, brand, observe } from '@/lib/theme';
 import { TIMING } from '@/lib/timing';
@@ -52,10 +53,17 @@ export function ModeReveal() {
     }, reveal.reduceMotion ? 90 : 380);
 
     const doneTimer = setTimeout(finishModeReveal, total);
+    const unregisterAbort = registerAutopilotAbortHandler(() => {
+      clearTimeout(swapTimer);
+      clearTimeout(fadeTimer);
+      clearTimeout(doneTimer);
+      finishModeReveal();
+    });
     return () => {
       clearTimeout(swapTimer);
       clearTimeout(fadeTimer);
       clearTimeout(doneTimer);
+      unregisterAbort();
     };
   }, [activeAnswerId, finishModeReveal, height, logoOpacity, logoScale, opacity, reveal, router, scale, swapMode, width]);
 

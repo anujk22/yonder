@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
@@ -6,9 +6,10 @@ import Animated, { FadeIn } from 'react-native-reanimated';
 
 import { Entrance, AppScreen } from '@/components/ui';
 import { YMark } from '@/components/YMark';
+import { useAutopilotPressTarget } from '@/lib/autopilot';
 import { useActiveTheme, useYonderStore } from '@/lib/store';
 import { money } from '@/lib/pricing';
-import { radii, space, type } from '@/lib/theme';
+import { font, radii, space, type } from '@/lib/theme';
 
 const PROXIMITY_ORDER = ['pier2', 'joes', 'nikesoho', 'unionsq', 'wsp', 'tjs', 'bryant', 'applesq'];
 
@@ -38,6 +39,7 @@ export default function ObserveHome() {
   const queries = useYonderStore((state) => state.queries);
   const places = useYonderStore((state) => state.places);
   const setActiveTask = useYonderStore((state) => state.setActiveTask);
+  const topTaskRef = useRef<View>(null);
 
   const observations = useMemo(
     () => {
@@ -52,19 +54,28 @@ export default function ObserveHome() {
     },
     [queries],
   );
+  const availableCents = observations.reduce((total, query) => total + query.observerRewardCents, 0);
+  const openTask = (queryId: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setActiveTask(queryId);
+    router.push(`/observe/task/${queryId}`);
+  };
+  useAutopilotPressTarget('observe-task-top', topTaskRef, () => {
+    if (observations[0]) openTask(observations[0].id);
+  });
 
   return (
     <Animated.View
       entering={FadeIn.duration(240).withInitialValues({ opacity: 0, transform: [{ scale: 0.98 }] } as never)}
       style={styles.flex}
     >
-      <AppScreen>
+      <AppScreen style={styles.screen}>
         <Entrance>
           <Text style={[type.serifDisplay, styles.title, { color: theme.ink }]}>Observe{`\n`}nearby</Text>
         </Entrance>
 
         <Entrance index={1} style={styles.availableWrap}>
-          <Text style={[type.mono, styles.available, { color: theme.ink }]}>$4.15 available within 5 minutes</Text>
+          <Text style={[type.mono, styles.available, { color: theme.ink }]}>{money(availableCents)} available within 5 minutes</Text>
         </Entrance>
 
         <View style={styles.list}>
@@ -72,16 +83,15 @@ export default function ObserveHome() {
             const place = places.find((item) => item.id === query.placeId);
             if (!place) return null;
             const hero = index === 0;
+            const taskCopy = query.isNew ? query.question : cameraCopy(query.placeId);
             return (
               <Entrance key={query.id} index={index + 2}>
                 <Pressable
+                  ref={index === 0 ? topTaskRef : undefined}
+                  testID={index === 0 ? 'observe-task-top' : undefined}
                   accessibilityRole="button"
-                  accessibilityLabel={`${money(query.observerRewardCents)}. ${cameraCopy(query.placeId)}. ${place?.name}`}
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    setActiveTask(query.id);
-                    router.push(`/observe/task/${query.id}`);
-                  }}
+                  accessibilityLabel={`${money(query.observerRewardCents)}. ${taskCopy}. ${place?.name}`}
+                  onPress={() => openTask(query.id)}
                   style={({ pressed }) => [
                     styles.card,
                     hero && styles.heroCard,
@@ -100,7 +110,7 @@ export default function ObserveHome() {
                       </View>
                       {hero ? (
                         <View style={[styles.hereBadge, { borderColor: theme.fresh }]}>
-                          <Text style={[type.micro, styles.hereText, { color: theme.ink }]}>YOU'RE{`\n`}HERE</Text>
+                          <Text style={[type.mono, styles.hereText, { color: theme.ink }]}>YOU'RE{`\n`}HERE</Text>
                         </View>
                       ) : null}
                       {query.isNew ? (
@@ -109,7 +119,7 @@ export default function ObserveHome() {
                         </View>
                       ) : null}
                     </View>
-                    <Text style={[hero ? type.monoBig : type.mono, styles.reward, { color: theme.ink }]}>{money(query.observerRewardCents)}</Text>
+                    <Text style={[hero ? type.monoBig : type.mono, styles.reward, !hero && styles.secondaryReward, { color: theme.ink }]}>{money(query.observerRewardCents)}</Text>
                   </View>
 
                   <View style={[styles.hairline, { backgroundColor: theme.border }]} />
@@ -122,7 +132,7 @@ export default function ObserveHome() {
                       { color: theme.ink },
                     ]}
                   >
-                    {cameraCopy(query.placeId)}
+                    {taskCopy}
                   </Text>
                   <View style={styles.placeRow}>
                     <Text style={[type.mono, styles.place, { color: theme.ink }]} numberOfLines={1}>{place?.name}</Text>
@@ -140,7 +150,8 @@ export default function ObserveHome() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  title: { fontSize: 52, lineHeight: 50, maxWidth: 330, marginTop: space.sm },
+  screen: { paddingHorizontal: 30 },
+  title: { fontSize: 52, lineHeight: 50, maxWidth: 330, marginTop: 18 },
   availableWrap: { marginTop: 18 },
   available: { fontSize: 14, lineHeight: 20 },
   list: { gap: 10, marginTop: 20 },
@@ -151,14 +162,15 @@ const styles = StyleSheet.create({
   heroMark: { width: 50, height: 50, borderWidth: 1, borderRadius: 25, alignItems: 'center', justifyContent: 'center' },
   mark: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
   hereBadge: { width: 52, height: 52, borderWidth: 1, borderRadius: 26, alignItems: 'center', justifyContent: 'center' },
-  hereText: { textAlign: 'center', lineHeight: 15 },
+  hereText: { fontFamily: font.mono500, fontSize: 11, lineHeight: 13, letterSpacing: 0.4, textAlign: 'center' },
   newBadge: { borderRadius: radii.pill, paddingHorizontal: 9, paddingVertical: 5 },
   reward: { textAlign: 'right', paddingTop: 4 },
+  secondaryReward: { fontSize: 16, lineHeight: 21 },
   hairline: { height: StyleSheet.hairlineWidth, width: '100%' },
   question: { maxWidth: 325 },
   heroQuestion: { fontSize: 34, lineHeight: 36 },
   secondaryQuestion: { fontSize: 24, lineHeight: 27 },
   placeRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.sm },
-  place: { flex: 1, fontSize: 10, lineHeight: 15 },
-  duration: { fontSize: 10, lineHeight: 15 },
+  place: { flex: 1, fontSize: 11, lineHeight: 16 },
+  duration: { fontSize: 11, lineHeight: 16 },
 });

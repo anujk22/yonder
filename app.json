@@ -6,12 +6,13 @@
     "orientation": "portrait",
     "icon": "./assets/brand/yonder-logo.png",
     "scheme": "yonder",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/brand/yonder-logo.png",
       "supportsTablet": false,
       "infoPlist": {
-        "NSCameraUsageDescription": "Yonder uses the camera to capture live evidence about a place."
+        "NSCameraUsageDescription": "Yonder captures live observations in the app.",
+        "NSLocationWhenInUseUsageDescription": "Yonder verifies you are at the location you are observing."
       }
     },
     "android": {
@@ -30,7 +31,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow Yonder to capture live evidence about a place",
+          "cameraPermission": "Yonder captures live observations in the app.",
           "recordAudioAndroid": false,
           "barcodeScannerEnabled": false
         }
