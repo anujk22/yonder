@@ -178,6 +178,17 @@ export default function CaptureScreen() {
 
       <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.flashOverlay, flashStyle]} />
 
+      <View pointerEvents="none" style={styles.targetArea}>
+        <Animated.View style={[styles.reticle, reticleStyle]}>
+          <Reticle color={targetFound ? theme.accent : 'rgba(255, 255, 255, 0.65)'} />
+        </Animated.View>
+        <View style={[styles.targetLabel, { backgroundColor: 'rgba(0, 0, 0, 0.82)', borderColor: targetFound ? theme.accent : 'rgba(255, 255, 255, 0.16)' }]}>
+          <Text style={[type.micro, { color: targetFound ? theme.accent : '#FFFFFF' }]}>
+            {targetFound ? 'TARGET FOUND' : 'Finding target...'}
+          </Text>
+        </View>
+      </View>
+
       <View style={[styles.overlay, { paddingTop: insets.top + space.sm, paddingBottom: insets.bottom + space.md }]}> 
         <View style={styles.topArea}>
           <View style={[styles.instructionBar, { backgroundColor: 'rgba(0, 0, 0, 0.82)', borderColor: 'rgba(255, 255, 255, 0.14)' }]}>
@@ -201,17 +212,6 @@ export default function CaptureScreen() {
               <Text style={[type.label, { color: theme.onAccent }]} numberOfLines={2}>{query.targetHint}</Text>
             </View>
           ) : null}
-        </View>
-
-        <View style={styles.targetArea}>
-          <Animated.View style={[styles.reticle, reticleStyle]}>
-            <Reticle color={targetFound ? theme.accent : 'rgba(255, 255, 255, 0.65)'} />
-          </Animated.View>
-          <View style={[styles.targetLabel, { backgroundColor: 'rgba(0, 0, 0, 0.82)', borderColor: targetFound ? theme.accent : 'rgba(255, 255, 255, 0.16)' }]}>
-            <Text style={[type.micro, { color: targetFound ? theme.accent : '#FFFFFF' }]}>
-              {targetFound ? 'TARGET FOUND' : 'Finding target...'}
-            </Text>
-          </View>
         </View>
 
         <View style={styles.captureArea}>
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
   instruction: { fontSize: 15, lineHeight: 21 },
   closeButton: { width: 40, height: 40, borderWidth: 1, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   hintChip: { alignSelf: 'flex-start', maxWidth: '90%', borderRadius: radii.small, paddingHorizontal: 13, paddingVertical: 9 },
-  targetArea: { width: '100%', alignItems: 'center', justifyContent: 'center' },
+  targetArea: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', zIndex: 5 },
   reticle: { width: 294, height: 294 },
   targetLabel: { marginTop: -12, borderWidth: 1, borderRadius: radii.pill, paddingHorizontal: 13, paddingVertical: 7 },
   captureArea: { alignItems: 'center', gap: space.sm },
