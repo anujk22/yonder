@@ -27,12 +27,12 @@ const TARGET_RECEIPTS: Record<QueryType, string> = {
 
 const BALANCED_HEADLINES: Record<string, string> = {
   'One court is available': 'Yes. One court is\navailable.',
-  'About a 12 minute wait': 'About a 12 minute\nwait',
-  'About a 15 minute wait': 'About a 15 minute\nwait',
+  'About a 12 minute wait': 'About a 12\nminute wait',
+  'About a 15 minute wait': 'About a 15\nminute wait',
   '12 open tables': '12 open tables',
   'The north elevator is working': 'The north elevator\nis working',
   'Yes, 2 pairs on the shelf': 'Yes, 2 pairs are\non the shelf',
-  'About a 7 minute wait': 'About a 7 minute\nwait',
+  'About a 7 minute wait': 'About a 7\nminute wait',
 };
 
 export default function AnswerScreen() {
@@ -161,7 +161,7 @@ export default function AnswerScreen() {
           }}
           style={({ pressed }) => [styles.primaryButton, { backgroundColor: theme.accent, opacity: pressed ? 0.86 : 1 }]}
         >
-          <Text style={[type.mono, styles.primaryLabel, { color: theme.onAccent }]}>Get a fresh answer  {formatMoney(freshPrice)}</Text>
+          <Text style={[type.mono, styles.primaryLabel, { color: theme.onAccent }]}>Get a fresh answer {formatMoney(freshPrice)}</Text>
         </Pressable>
         <Pressable accessibilityRole="button" onPress={shareResult} style={({ pressed }) => [styles.shareButton, { opacity: pressed ? 0.58 : 1 }]}>
           <Text style={[type.label, { color: theme.inkSoft }]}>Share result</Text>
@@ -176,8 +176,8 @@ const formatMoney = (value: number) => `$${(Math.round(value) / 100).toFixed(2)}
 const styles = StyleSheet.create({
   screen: { paddingTop: space.xl },
   hero: { gap: space.sm, paddingBottom: space.xl },
-  age: { fontSize: 36, lineHeight: 42 },
-  headline: { fontSize: 45, lineHeight: 47 },
+  age: { fontSize: 30, lineHeight: 36 },
+  headline: { fontSize: 38, lineHeight: 40 },
   vendorChip: { alignSelf: 'flex-start', borderRadius: radii.pill, borderWidth: 1, paddingHorizontal: 10, paddingVertical: 7, flexDirection: 'row', alignItems: 'center', gap: 7 },
   vendorDot: { width: 7, height: 7, borderRadius: 4 },
   detail: { marginTop: space.xs },

@@ -95,7 +95,7 @@ export default function AskSearchScreen() {
         <View style={[styles.searchField, { borderColor: theme.border, backgroundColor: theme.surface }]}>
           <SearchIcon color={theme.ink} />
           <TextInput
-            accessibilityLabel="Search for a place"
+                  accessibilityLabel="Search for a place"
             autoCapitalize="words"
             autoCorrect={false}
             onChangeText={setSearch}
@@ -158,7 +158,7 @@ export default function AskSearchScreen() {
 
 function SearchIcon({ color }: { color: string }) {
   return (
-    <Svg width={25} height={25} viewBox="0 0 24 24" accessibilityElementsHidden>
+    <Svg width={25} height={25} viewBox="0 0 24 24">
       <Circle cx={10.5} cy={10.5} r={6.5} fill="none" stroke={color} strokeWidth={1.8} />
       <Path d="m15.5 15.5 5 5" fill="none" stroke={color} strokeWidth={1.8} strokeLinecap="round" />
     </Svg>
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
   handle: { width: 34, height: 4, borderRadius: radii.pill, alignSelf: 'center', marginBottom: space.lg },
   observerBand: { marginHorizontal: -28, paddingHorizontal: 28, paddingVertical: 10 },
   observerCount: { fontSize: 11, lineHeight: 17, letterSpacing: 1.1 },
-  title: { marginTop: space.md, marginBottom: space.lg, fontSize: 35, lineHeight: 39 },
+  title: { marginTop: space.md, marginBottom: space.lg, fontSize: 27, lineHeight: 34, letterSpacing: -0.5 },
   searchField: {
     minHeight: 56,
     borderRadius: radii.small,

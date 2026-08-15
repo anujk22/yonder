@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
   price: { width: 74, textAlign: 'right', fontSize: 14, lineHeight: 20 },
   dispatchPrice: { width: 106, textAlign: 'right', fontSize: 29, lineHeight: 34 },
   headline: { marginTop: space.sm },
-  dispatchHeadline: { marginTop: space.md, fontSize: 34, lineHeight: 38 },
+  dispatchHeadline: { marginTop: space.md, fontSize: 31, lineHeight: 35 },
   meta: { marginTop: space.xs, fontSize: 11, lineHeight: 16 },
   reason: { marginTop: space.md, fontSize: 12, lineHeight: 17 },
 });

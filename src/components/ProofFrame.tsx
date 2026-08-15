@@ -36,7 +36,7 @@ export function ProofFrame({ uri, facesBlurred, observedAt }: ProofFrameProps) {
 
   return (
     <Animated.View entering={FadeIn.duration(260)} style={[styles.frame, { backgroundColor: theme.surfaceAlt }]}>
-      <Image source={uri ? { uri } : pierTwoProof} resizeMode="cover" style={StyleSheet.absoluteFill} accessibilityLabel="Captured proof frame" />
+      <Image source={uri ? { uri } : pierTwoProof} resizeMode="cover" style={styles.image} accessibilityLabel="Captured proof frame" />
 
       {visibleRegions.map((region, index) => (
         <View
@@ -68,6 +68,7 @@ export function ProofFrame({ uri, facesBlurred, observedAt }: ProofFrameProps) {
 
 const styles = StyleSheet.create({
   frame: { width: '100%', aspectRatio: 16 / 10, overflow: 'hidden' },
+  image: { width: '100%', height: '100%' },
   face: { position: 'absolute', overflow: 'hidden', borderRadius: radii.pill },
   caption: { position: 'absolute', left: space.sm, bottom: space.sm, overflow: 'hidden', borderRadius: 7, paddingHorizontal: 10, paddingVertical: 7, maxWidth: '92%' },
   captionScrim: { opacity: 0.55 },

@@ -23,7 +23,7 @@ import { radii, space, type } from '@/lib/theme';
 const DEADLINES = [5, 10, 15, 30] as const;
 
 const SUGGESTIONS = [
-  'Are any pickleball courts free?',
+  'Are any basketball courts free?',
   'How long is the line?',
   'Is the elevator working?',
   'Is this item in stock?',
@@ -128,7 +128,7 @@ export default function PinQuestionScreen() {
               setDraftQuestion(value);
               if (value.trim()) setShowError(false);
             }}
-            placeholder="Are any pickleball courts free?"
+            placeholder="Are any basketball courts free?"
             placeholderTextColor={theme.inkFaint}
             selectionColor={theme.accent}
             style={[
@@ -142,7 +142,13 @@ export default function PinQuestionScreen() {
         {showError ? <Text style={[type.label, styles.error, { color: theme.danger }]}>Ask something about this place</Text> : null}
 
         {!draftQuestion.trim() ? (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.suggestions} keyboardShouldPersistTaps="handled">
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.suggestionRail}
+            contentContainerStyle={styles.suggestions}
+            keyboardShouldPersistTaps="handled"
+          >
             {SUGGESTIONS.map((suggestion) => (
               <Pressable
                 key={suggestion}
@@ -249,18 +255,19 @@ const styles = StyleSheet.create({
   },
   handle: { width: 34, height: 4, borderRadius: radii.pill, alignSelf: 'center', marginBottom: 9 },
   instruction: { fontSize: 10, lineHeight: 15, letterSpacing: 1.1 },
-  question: { minHeight: 52, maxHeight: 70, padding: 0, marginTop: 4, fontSize: 32, lineHeight: 35, borderBottomWidth: 1 },
+  question: { minHeight: 48, maxHeight: 64, padding: 0, marginTop: 3, fontSize: 30, lineHeight: 32, borderBottomWidth: 1 },
   error: { fontSize: 11, lineHeight: 15, marginTop: 2 },
-  suggestions: { gap: space.xs, paddingTop: 7, paddingBottom: 2 },
-  chip: { height: 34, borderRadius: radii.pill, borderWidth: 1, justifyContent: 'center', paddingHorizontal: space.sm },
-  chipText: { fontSize: 11, lineHeight: 15 },
-  deadlineLabel: { marginTop: 6, marginBottom: 4 },
-  segmented: { height: 40, borderRadius: radii.pill, borderWidth: 1, overflow: 'hidden', flexDirection: 'row' },
+  suggestionRail: { height: 30, flexGrow: 0, marginTop: 3 },
+  suggestions: { gap: 6 },
+  chip: { height: 28, borderRadius: radii.pill, borderWidth: 1, justifyContent: 'center', paddingHorizontal: 10 },
+  chipText: { fontSize: 9, lineHeight: 13 },
+  deadlineLabel: { marginTop: 3, marginBottom: 3 },
+  segmented: { height: 36, borderRadius: radii.pill, borderWidth: 1, overflow: 'hidden', flexDirection: 'row' },
   segment: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   segmentText: { fontSize: 11, lineHeight: 16 },
-  priceBlock: { marginHorizontal: -space.lg, marginTop: 6, paddingHorizontal: space.lg, paddingVertical: 6 },
-  price: { width: '100%', fontSize: 34, lineHeight: 36 },
-  priceReason: { fontSize: 10, lineHeight: 14, letterSpacing: 0.2, opacity: 0.82 },
-  askButton: { minHeight: 46, borderRadius: radii.small, alignItems: 'center', justifyContent: 'center', marginTop: 7 },
+  priceBlock: { marginHorizontal: -space.lg, marginTop: 5, paddingHorizontal: space.lg, paddingVertical: 4 },
+  price: { width: '100%', fontSize: 31, lineHeight: 32 },
+  priceReason: { fontSize: 9, lineHeight: 12, letterSpacing: 0.2, opacity: 0.82 },
+  askButton: { minHeight: 42, borderRadius: radii.small, alignItems: 'center', justifyContent: 'center', marginTop: 5 },
   askButtonText: { fontSize: 15, letterSpacing: 0.4 },
 });

@@ -47,7 +47,8 @@ export default function ObserveHome() {
         .sort((left, right) => {
           if (left.isNew !== right.isNew) return left.isNew ? -1 : 1;
           return PROXIMITY_ORDER.indexOf(left.placeId) - PROXIMITY_ORDER.indexOf(right.placeId);
-        });
+        })
+        .slice(0, 3);
     },
     [queries],
   );
@@ -95,7 +96,7 @@ export default function ObserveHome() {
                   <View style={styles.cardTopline}>
                     <View style={styles.cardBadges}>
                       <View style={[hero ? styles.heroMark : styles.mark, hero && { borderColor: theme.border }]}>
-                        <YMark size={hero ? 34 : 38} bodyColor={theme.accent} />
+                        <YMark size={hero ? 34 : 28} bodyColor={theme.accent} />
                       </View>
                       {hero ? (
                         <View style={[styles.hereBadge, { borderColor: theme.fresh }]}>
@@ -113,7 +114,16 @@ export default function ObserveHome() {
 
                   <View style={[styles.hairline, { backgroundColor: theme.border }]} />
 
-                  <Text style={[hero ? type.serifTitle : type.serifHeading, styles.question, { color: theme.ink }]}>{cameraCopy(query.placeId)}</Text>
+                  <Text
+                    style={[
+                      hero ? type.serifTitle : type.serifHeading,
+                      styles.question,
+                      hero ? styles.heroQuestion : styles.secondaryQuestion,
+                      { color: theme.ink },
+                    ]}
+                  >
+                    {cameraCopy(query.placeId)}
+                  </Text>
                   <View style={styles.placeRow}>
                     <Text style={[type.mono, styles.place, { color: theme.ink }]} numberOfLines={1}>{place?.name}</Text>
                     <Text style={[type.mono, styles.duration, { color: theme.ink }]}>{durationLabel(query.placeId)}</Text>
@@ -130,23 +140,25 @@ export default function ObserveHome() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  title: { fontSize: 56, lineHeight: 55, maxWidth: 330, marginTop: space.md },
-  availableWrap: { marginTop: space.lg },
+  title: { fontSize: 52, lineHeight: 50, maxWidth: 330, marginTop: space.sm },
+  availableWrap: { marginTop: 18 },
   available: { fontSize: 14, lineHeight: 20 },
-  list: { gap: space.sm, marginTop: 26 },
-  card: { borderWidth: 1, borderRadius: radii.card, padding: 18, gap: space.md },
-  heroCard: { borderWidth: 2, padding: 22, gap: 18 },
+  list: { gap: 10, marginTop: 20 },
+  card: { borderWidth: 1, borderRadius: radii.card, padding: 14, gap: 9 },
+  heroCard: { borderWidth: 2, padding: 18, gap: 13 },
   cardTopline: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: space.sm },
   cardBadges: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: space.xs },
-  heroMark: { width: 56, height: 56, borderWidth: 1, borderRadius: 28, alignItems: 'center', justifyContent: 'center' },
-  mark: { width: 42, height: 42, alignItems: 'center', justifyContent: 'center' },
-  hereBadge: { width: 62, height: 62, borderWidth: 1, borderRadius: 31, alignItems: 'center', justifyContent: 'center' },
+  heroMark: { width: 50, height: 50, borderWidth: 1, borderRadius: 25, alignItems: 'center', justifyContent: 'center' },
+  mark: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
+  hereBadge: { width: 52, height: 52, borderWidth: 1, borderRadius: 26, alignItems: 'center', justifyContent: 'center' },
   hereText: { textAlign: 'center', lineHeight: 15 },
   newBadge: { borderRadius: radii.pill, paddingHorizontal: 9, paddingVertical: 5 },
   reward: { textAlign: 'right', paddingTop: 4 },
   hairline: { height: StyleSheet.hairlineWidth, width: '100%' },
   question: { maxWidth: 325 },
+  heroQuestion: { fontSize: 34, lineHeight: 36 },
+  secondaryQuestion: { fontSize: 24, lineHeight: 27 },
   placeRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.sm },
-  place: { flex: 1, fontSize: 12, lineHeight: 18 },
-  duration: { fontSize: 12, lineHeight: 18 },
+  place: { flex: 1, fontSize: 10, lineHeight: 15 },
+  duration: { fontSize: 10, lineHeight: 15 },
 });

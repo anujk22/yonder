@@ -18,14 +18,6 @@ const STATUS_ITEMS = [
   { label: 'Observer at the location', detail: '21m from target' },
 ] as const;
 
-const ACTIVE_HEADLINES = [
-  'Finding eyes\nnearby',
-  'Observers are\nwithin range',
-  'Notifying nearby\nobservers',
-  'Observer\naccepted',
-  'Observer at\nthe location',
-] as const;
-
 export default function StatusScreen() {
   const router = useRouter();
   const theme = useActiveTheme();
@@ -52,11 +44,10 @@ export default function StatusScreen() {
       <View style={styles.hero}>
         <YMark size={72} bodyColor={theme.accent} headColor={theme.accent} headPulse />
         <Animated.Text
-          key={activeIndex}
           entering={FadeInDown.springify().damping(18).stiffness(140)}
           style={[type.serifTitle, styles.activeHeadline, { color: theme.ink }]}
         >
-          {ACTIVE_HEADLINES[activeIndex]}
+          Finding eyes{`\n`}nearby
         </Animated.Text>
       </View>
 

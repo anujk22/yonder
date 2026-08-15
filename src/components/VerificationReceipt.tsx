@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
 import Animated, { Easing, useAnimatedProps, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
@@ -15,7 +15,9 @@ export function VerificationReceipt({ label, detail, delay = 0 }: { label: strin
 
   useEffect(() => {
     offset.value = withDelay(delay, withTiming(0, { duration: 220, easing: Easing.out(Easing.cubic) }));
-    const timer = setTimeout(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light), delay + 90);
+    const timer = setTimeout(() => {
+      if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }, delay + 90);
     return () => clearTimeout(timer);
   }, [delay, offset]);
 
@@ -43,6 +45,6 @@ export function VerificationReceipt({ label, detail, delay = 0 }: { label: strin
 
 const styles = StyleSheet.create({
   row: { minHeight: 50, flexDirection: 'row', gap: space.xs, alignItems: 'center' },
-  label: { width: 114, fontSize: 10, lineHeight: 15, letterSpacing: 0.25 },
-  detail: { flex: 1, fontSize: 10, lineHeight: 15, textAlign: 'right' },
+  label: { width: 100, fontSize: 8, lineHeight: 13, letterSpacing: 0.15 },
+  detail: { flex: 1, fontSize: 7.5, lineHeight: 12, textAlign: 'right' },
 });

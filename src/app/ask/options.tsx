@@ -85,7 +85,7 @@ export default function OptionsScreen() {
         ) : null}
         <AnswerTierCard
           kind="dispatch"
-          headline="Verified answer in\nabout 2 minutes"
+          headline={'Verified answer in\nabout 2 minutes'}
           priceCents={query.bountyCents}
           observersNearby={OBSERVERS_NEARBY[query.placeId]}
           onPress={() => {
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   brandMark: { alignItems: 'center' },
   brandDisc: { width: 62, height: 62, borderRadius: 31, alignItems: 'center', justifyContent: 'center' },
   intro: { marginTop: space.lg, gap: space.sm },
-  title: { fontSize: 43, lineHeight: 47 },
+  title: { fontSize: 32, lineHeight: 37 },
   question: { fontSize: 14, lineHeight: 21 },
   tiers: { gap: space.sm, marginTop: space.lg },
   promiseBand: { marginHorizontal: -space.lg, marginTop: space.md, paddingHorizontal: space.lg, paddingVertical: 14 },
