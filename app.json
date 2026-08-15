@@ -1,0 +1,53 @@
+{
+  "expo": {
+    "name": "Yonder",
+    "slug": "yonder",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/brand/yonder-logo.png",
+    "scheme": "yonder",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "icon": "./assets/brand/yonder-logo.png",
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Yonder uses the camera to capture live evidence about a place."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#3A2F20",
+        "foregroundImage": "./assets/brand/yonder-logo.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/brand/yonder-logo.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Yonder to capture live evidence about a place",
+          "recordAudioAndroid": false,
+          "barcodeScannerEnabled": false
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#1E1810",
+          "image": "./assets/brand/yonder-logo.png",
+          "imageWidth": 148,
+          "resizeMode": "contain"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}

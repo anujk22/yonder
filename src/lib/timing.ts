@@ -1,0 +1,15 @@
+export const TIMING = {
+  splashMarkInMs: 380,
+  splashPulseMs: 520,
+  compileMs: 900,
+  statusSteps: [0, 1400, 2600, 4000, 5400],
+  approachMs: 2500,
+  reticleLockMs: 1200,
+  frameIntervalMs: 700,
+  verifySteps: [0, 800, 1600, 2600, 3400],
+  verifyTotalMs: 4000,
+  modeRevealMs: 520,
+  modeSwapAtMs: 300,
+  modeFadeOutMs: 240,
+  rawDeleteSeconds: 60,
+} as const;
