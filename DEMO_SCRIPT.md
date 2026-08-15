@@ -1,9 +1,10 @@
 # Yonder demo script
 
-Basketball-only voiceover for the autoplay recording. Target: about 54 seconds at 150 words per minute.
+Two-part complete product walkthrough: Public Space Availability (Pier 2) and Verified Retail Stock Check (Nike SoHo / Shopify Merchant).
 
 ## Voiceover
 
+### Act 1: Public Space Availability (Pier 2)
 It’s six o’clock. You want to play basketball across town, but you can’t tell if the courts are free.
 
 Meet Yonder. Ask about a place, pick the exact spot, set a bounty, and send it.
@@ -16,15 +17,24 @@ One court is open. Faces are blurred in the image, the source footage is deleted
 
 The observer keeps 80 percent of the verified bounty. Here, that’s $1.20. While the answer is fresh, the next person can reuse it for 15 cents.
 
-One trip. More than one answer.
+### Act 2: Retail Stock Check (Nike SoHo / Shopify Verified Merchant)
+Now imagine you need a specific shoe in your size across town.
+
+Ask Nike SoHo: "Is the black Pegasus 41 in a size 10 in stock?"
+
+A verified observer on Broadway snaps the shelf. Yonder matches the scene against Shopify product inventory and location geofence.
+
+The answer is confirmed: 2 pairs left on the wall display. The observer earns $2.00, escrow is released via Shopify, and you know before you go.
 
 Yonder. Know before you go.
 
 ## Screen alignment
 
-1. Ask home and Pier 2 search: opening problem and “Meet Yonder.”
-2. Place and bounty: exact spot, bounty, and send.
-3. Observe task and capture: nearby observer, no uploads, three frames.
-4. Verification and earned screens: location, liveness, confidence, and $1.20 payout.
-5. Pier 2 answer: one open court, blurred image, and source deletion.
-6. Fresh-answer option: reuse the same answer for 15 cents.
+1. **Ask home & Pier 2 search**: opening problem and “Meet Yonder.”
+2. **Place & bounty**: exact spot, $1.50 bounty, and send to escrow.
+3. **Observe task & capture**: nearby observer, 3-frame live capture with shutter flash.
+4. **Verification & payout**: location, parallax liveness, and $1.20 observer payout.
+5. **Pier 2 answer & fresh reuse**: verified open court, source deleted, 15¢ reuse.
+6. **Nike SoHo search & question**: retail stock inquiry on Pegasus 41.
+7. **Shopify verified merchant flow**: observer captures shelf display, verifies scene.
+8. **Final shoe answer & Shopify payout**: 2 pairs on shelf, $2.00 observer payout.

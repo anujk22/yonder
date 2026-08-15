@@ -44,6 +44,7 @@ type Step =
   | { type: 'setMode'; mode: Mode };
 
 export const STEPS: readonly Step[] = [
+  // --- Act 1: Basketball Court Availability Demo (Pier 2) ---
   { type: 'wait', durationMs: DURATION.landingDwellMs },
   { type: 'tap', target: 'landing-ask' },
   { type: 'wait', durationMs: DURATION.askIntroMs },
@@ -78,6 +79,37 @@ export const STEPS: readonly Step[] = [
   { type: 'wait', durationMs: DURATION.tierOptionsMs },
   { type: 'tap', target: 'options-recent' },
   { type: 'wait', durationMs: DURATION.cachedAnswerMs },
+
+  // --- Act 2: Retail Shoe Stock Check Demo (Nike SoHo / Shopify Verified Merchant) ---
+  { type: 'tap', target: 'answer-home' },
+  { type: 'wait', durationMs: DURATION.askIntroMs },
+  { type: 'type', target: 'ask-search', value: 'Nike' },
+  { type: 'wait', durationMs: DURATION.searchTypedMs },
+  { type: 'wait', durationMs: DURATION.resultsMs },
+  { type: 'tap', target: 'ask-result-nikesoho' },
+  { type: 'wait', durationMs: DURATION.pinMs },
+  { type: 'type', target: 'ask-question', value: 'Is the black Pegasus 41 in a 10 at Nike SoHo?' },
+  { type: 'wait', durationMs: DURATION.questionPauseMs },
+  { type: 'wait', durationMs: DURATION.bountyMs },
+  { type: 'tap', target: 'ask-submit' },
+  { type: 'wait', durationMs: DURATION.compileMs },
+  { type: 'tap', target: 'compile-continue' },
+  { type: 'wait', durationMs: DURATION.optionsMs },
+  { type: 'tap', target: 'options-dispatch' },
+  { type: 'wait', durationMs: DURATION.statusMs },
+  { type: 'setMode', mode: 'observe' },
+  { type: 'wait', durationMs: DURATION.taskListMs },
+  { type: 'tap', target: 'observe-task-top' },
+  { type: 'wait', durationMs: DURATION.taskDetailMs },
+  { type: 'tap', target: 'task-accept' },
+  { type: 'wait', durationMs: DURATION.approachMs },
+  { type: 'tap', target: 'approach-capture' },
+  { type: 'wait', durationMs: DURATION.reticleMs },
+  { type: 'tap', target: 'capture-shutter' },
+  { type: 'wait', durationMs: DURATION.verifyingAndEarnedMs },
+  { type: 'wait', durationMs: DURATION.earnedMs },
+  { type: 'setMode', mode: 'ask' },
+  { type: 'wait', durationMs: DURATION.answerMs },
 ] as const;
 
 type Frame = { x: number; y: number; width: number; height: number };
