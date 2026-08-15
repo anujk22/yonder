@@ -25,6 +25,19 @@ export function AppScreen({ children, scroll = true, style, bottomInset = true }
   return <SafeAreaView style={[styles.screen, { backgroundColor: theme.bg }]} edges={['top', 'left', 'right']}>{body}</SafeAreaView>;
 }
 
+export function MissingDataState({ title = 'This step is not available yet.' }: { title?: string }) {
+  const theme = useActiveTheme();
+  return (
+    <AppScreen scroll={false}>
+      <ScreenHeader eyebrow="DEMO STATE UNAVAILABLE" />
+      <View style={styles.missingData}>
+        <Text style={[type.heading, { color: theme.ink }]}>{title}</Text>
+        <Text style={[type.body, { color: theme.inkSoft }]}>Return to the previous step and try again.</Text>
+      </View>
+    </AppScreen>
+  );
+}
+
 export function Entrance({ children, index = 0, style }: PropsWithChildren<{ index?: number; style?: StyleProp<ViewStyle> }>) {
   return (
     <Animated.View entering={FadeInDown.delay(index * 45).springify().damping(18).stiffness(140)} style={style}>
@@ -107,4 +120,5 @@ const styles = StyleSheet.create({
   primaryButton: { minHeight: 58, borderRadius: radii.small, borderWidth: 1, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   buttonLabel: { fontSize: 15, textTransform: 'none', letterSpacing: 0.1 },
   hairline: { height: StyleSheet.hairlineWidth, width: '100%' },
+  missingData: { flex: 1, justifyContent: 'center', gap: space.sm, paddingBottom: space.xl },
 });
