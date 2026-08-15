@@ -146,10 +146,10 @@ export default function AnswerScreen() {
         <Entrance index={3} style={[styles.paymentCard, { borderColor: theme.border }]}>
           <View style={styles.paymentHeading}>
             <Text style={[type.micro, { color: theme.inkSoft }]}>PAYMENT RECEIPT</Text>
-            <Text style={[type.mono, styles.paymentTotal, { color: theme.ink }]}>{formatMoney(bountyCents)} paid</Text>
+            <Text style={[type.mono, styles.paymentTotal, { color: theme.ink }]}>{formatMoney(observerRewardCents)} paid to you</Text>
           </View>
           <Text style={[type.label, styles.paymentBreakdown, { color: theme.inkSoft }]}>
-            {formatMoney(observerRewardCents)} to you  ·  {formatMoney(platformFeeCents)} fees
+            {formatMoney(bountyCents)} paid  ·  {formatMoney(platformFeeCents)} fees
           </Text>
         </Entrance>
       ) : null}
