@@ -77,6 +77,35 @@ export const PLACES: Place[] = [
   { id: 'applesq', name: 'Apple Union Square', area: '14th St & Broadway', lat: 40.737, lng: -73.9903, status: 'blocked', geofenceM: 40, categories: ['stock_check'] },
 ];
 
+export const DECOY_PLACES: Place[] = [
+  { id: 'pier6', name: 'Pier 6', area: 'Brooklyn Bridge Park', lat: 40.6937, lng: -74.0016, status: 'public', geofenceM: 70, categories: ['availability', 'crowd'] },
+  { id: 'pier17', name: 'Pier 17', area: 'South Street Seaport', lat: 40.7061, lng: -74.0033, status: 'public', geofenceM: 65, categories: ['availability', 'crowd'] },
+  { id: 'target-atlantic', name: 'Target Atlantic Terminal', area: 'Fort Greene', lat: 40.6842, lng: -73.9774, status: 'indoor', geofenceM: 55, categories: ['stock_check', 'queue'] },
+  { id: 'target-herald', name: 'Target Herald Square', area: 'Midtown South', lat: 40.7501, lng: -73.9877, status: 'indoor', geofenceM: 55, categories: ['stock_check', 'queue'] },
+  { id: 'target-les', name: 'Target Lower East Side', area: 'Lower East Side', lat: 40.7186, lng: -73.9881, status: 'indoor', geofenceM: 55, categories: ['stock_check', 'queue'] },
+];
+
+export const SEARCH_DISTANCE_MI: Record<string, string> = {
+  pier2: '0.8 mi',
+  pier6: '1.1 mi',
+  pier17: '2.4 mi',
+  'target-atlantic': '2.2 mi',
+  'target-herald': '3.1 mi',
+  'target-les': '1.8 mi',
+  bryant: '3.2 mi',
+  wsp: '1.6 mi',
+};
+
+export const SEARCH_PLACE_NAME: Record<string, string> = {
+  pier2: 'Pier 2',
+};
+
+export const searchPlaces = (input: string) => {
+  const query = input.trim().toLowerCase();
+  if (!query) return [];
+  return [...PLACES, ...DECOY_PLACES].filter((place) => `${place.name} ${place.area}`.toLowerCase().includes(query));
+};
+
 export const OBSERVERS_NEARBY: Record<string, number> = {
   pier2: 7,
   bryant: 14,

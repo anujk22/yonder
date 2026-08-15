@@ -7,6 +7,7 @@ import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-c
 import { useFonts as useSpaceGrotesk, SpaceGrotesk_600SemiBold, SpaceGrotesk_700Bold } from '@expo-google-fonts/space-grotesk';
 import { useFonts as useInter, Inter_400Regular, Inter_500Medium, Inter_600SemiBold } from '@expo-google-fonts/inter';
 import { useFonts as useJetBrainsMono, JetBrainsMono_400Regular, JetBrainsMono_500Medium } from '@expo-google-fonts/jetbrains-mono';
+import { useFonts as useDMSerifDisplay, DMSerifDisplay_400Regular } from '@expo-google-fonts/dm-serif-display';
 
 import { LaunchOverlay } from '@/components/LaunchOverlay';
 import { ModeReveal } from '@/components/ModeReveal';
@@ -23,8 +24,9 @@ export default function RootLayout() {
   const [spaceLoaded, spaceError] = useSpaceGrotesk({ SpaceGrotesk_600SemiBold, SpaceGrotesk_700Bold });
   const [interLoaded, interError] = useInter({ Inter_400Regular, Inter_500Medium, Inter_600SemiBold });
   const [monoLoaded, monoError] = useJetBrainsMono({ JetBrainsMono_400Regular, JetBrainsMono_500Medium });
-  const fontsLoaded = spaceLoaded && interLoaded && monoLoaded;
-  const fontError = spaceError ?? interError ?? monoError;
+  const [serifLoaded, serifError] = useDMSerifDisplay({ DMSerifDisplay_400Regular });
+  const fontsLoaded = spaceLoaded && interLoaded && monoLoaded && serifLoaded;
+  const fontError = spaceError ?? interError ?? monoError ?? serifError;
 
   useEffect(() => {
     if (fontsLoaded || fontError) SplashScreen.hideAsync();

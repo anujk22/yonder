@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-import { Answer, inferQueryType, Mode, Place, PLACES, Query, QueryState, QueryType, resolvePlace } from '@/lib/places';
+import { Answer, DECOY_PLACES, inferQueryType, Mode, Place, PLACES, Query, QueryState, QueryType, resolvePlace } from '@/lib/places';
 import { priceQuery } from '@/lib/pricing';
 import { compileSpec, resultFor } from '@/lib/results';
 import { ask, observe } from '@/lib/theme';
@@ -106,6 +106,7 @@ type YonderStore = {
   earnedCents: number;
   draftQuestion: string;
   resolvedPlaceId: string | null;
+  pinnedCoordinate: { lat: number; lng: number } | null;
   deadlineMinutes: number;
   targetHint: string;
   activeQueryId: string | null;
@@ -117,6 +118,7 @@ type YonderStore = {
   isModeSwitching: boolean;
   setDraftQuestion: (question: string) => void;
   setResolvedPlace: (placeId: string | null) => void;
+  setPinnedCoordinate: (coordinate: { lat: number; lng: number }) => void;
   resolveDraftPlace: () => string | null;
   setDeadline: (minutes: number) => void;
   setTargetHint: (hint: string) => void;
@@ -138,13 +140,14 @@ type YonderStore = {
 
 export const useYonderStore = create<YonderStore>((set, get) => ({
   mode: 'ask',
-  places: PLACES,
+  places: [...PLACES, ...DECOY_PLACES],
   answers: SEEDED_ANSWERS,
   queries: SEEDED_QUERIES,
   walletCents: 2000,
   earnedCents: 0,
   draftQuestion: '',
   resolvedPlaceId: null,
+  pinnedCoordinate: null,
   deadlineMinutes: 10,
   targetHint: '',
   activeQueryId: null,
@@ -155,11 +158,18 @@ export const useYonderStore = create<YonderStore>((set, get) => ({
   modeReveal: null,
   isModeSwitching: false,
 
-  setDraftQuestion: (draftQuestion) => set({ draftQuestion, resolvedPlaceId: null }),
-  setResolvedPlace: (resolvedPlaceId) => set({ resolvedPlaceId }),
+  setDraftQuestion: (draftQuestion) => set({ draftQuestion }),
+  setResolvedPlace: (resolvedPlaceId) => {
+    const place = get().places.find((candidate) => candidate.id === resolvedPlaceId);
+    set({ resolvedPlaceId, pinnedCoordinate: place ? { lat: place.lat, lng: place.lng } : null });
+  },
+  setPinnedCoordinate: (pinnedCoordinate) => set({ pinnedCoordinate }),
   resolveDraftPlace: () => {
     const place = resolvePlace(get().draftQuestion, get().places);
-    set({ resolvedPlaceId: place?.id ?? null });
+    set({
+      resolvedPlaceId: place?.id ?? null,
+      pinnedCoordinate: place ? { lat: place.lat, lng: place.lng } : null,
+    });
     return place?.id ?? null;
   },
   setDeadline: (deadlineMinutes) => set({ deadlineMinutes }),

@@ -52,6 +52,7 @@ export const radii = { small: 14, card: 22, sheet: 30, pill: 999 } as const;
 export const space = { xxs: 4, xs: 8, sm: 12, md: 16, lg: 24, xl: 32, xxl: 48 } as const;
 
 export const font = {
+  serif: 'DMSerifDisplay_400Regular',
   display600: 'SpaceGrotesk_600SemiBold',
   display700: 'SpaceGrotesk_700Bold',
   ui400: 'Inter_400Regular',
@@ -62,6 +63,9 @@ export const font = {
 } as const;
 
 export const type = {
+  serifDisplay: { fontFamily: font.serif, fontSize: 48, lineHeight: 50, letterSpacing: -0.8 },
+  serifTitle: { fontFamily: font.serif, fontSize: 36, lineHeight: 39, letterSpacing: -0.5 },
+  serifHeading: { fontFamily: font.serif, fontSize: 26, lineHeight: 30, letterSpacing: -0.25 },
   display: { fontFamily: font.display700, fontSize: 40, lineHeight: 44, letterSpacing: -1.2 },
   title: { fontFamily: font.display700, fontSize: 28, lineHeight: 32, letterSpacing: -0.6 },
   heading: { fontFamily: font.display600, fontSize: 20, lineHeight: 26, letterSpacing: -0.3 },

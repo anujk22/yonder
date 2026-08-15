@@ -25,11 +25,23 @@ type CityMapProps = {
   height?: number;
   compact?: boolean;
   showOpenBounties?: boolean;
+  showAnswers?: boolean;
+  fullBleed?: boolean;
+  interactive?: boolean;
   onAnswerPress?: (answerId: string) => void;
   onQueryPress?: (queryId: string) => void;
 };
 
-export function CityMap({ height = 292, compact = false, showOpenBounties = true, onAnswerPress, onQueryPress }: CityMapProps) {
+export function CityMap({
+  height = 292,
+  compact = false,
+  showOpenBounties = true,
+  showAnswers = true,
+  fullBleed = false,
+  interactive = true,
+  onAnswerPress,
+  onQueryPress,
+}: CityMapProps) {
   const theme = useActiveTheme();
   const router = useRouter();
   const places = useYonderStore((state) => state.places);
@@ -78,7 +90,7 @@ export function CityMap({ height = 292, compact = false, showOpenBounties = true
   };
 
   return (
-    <View style={[styles.shell, { height, backgroundColor: theme.surfaceAlt, borderColor: theme.border }]}>
+    <View style={[styles.shell, fullBleed && styles.fullBleed, { height, backgroundColor: theme.surfaceAlt, borderColor: theme.border }]}> 
       <Svg width="100%" height="100%" viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}>
         <Path d={`M0 0 H${VIEW_WIDTH} V${VIEW_HEIGHT} H0 Z`} fill={theme.surfaceAlt} />
 
@@ -120,7 +132,7 @@ export function CityMap({ height = 292, compact = false, showOpenBounties = true
           );
         })}
 
-        {newestAnswers.map((answer, index) => {
+        {showAnswers && newestAnswers.map((answer, index) => {
           const place = places.find((candidate) => candidate.id === answer.placeId);
           if (!place) return null;
           const point = project(place.lat, place.lng);
@@ -146,7 +158,7 @@ export function CityMap({ height = 292, compact = false, showOpenBounties = true
           );
         })}
       </Svg>
-      {showOpenBounties
+      {interactive && showOpenBounties
         ? openQueries.map((query, index) => {
             const place = places.find((candidate) => candidate.id === query.placeId);
             if (!place) return null;
@@ -163,7 +175,7 @@ export function CityMap({ height = 292, compact = false, showOpenBounties = true
             );
           })
         : null}
-      {newestAnswers.map((answer, index) => {
+      {interactive && showAnswers && newestAnswers.map((answer, index) => {
         const place = places.find((candidate) => candidate.id === answer.placeId);
         if (!place) return null;
         const point = project(place.lat, place.lng);
@@ -190,6 +202,7 @@ export function CityMap({ height = 292, compact = false, showOpenBounties = true
 
 const styles = StyleSheet.create({
   shell: { width: '100%', overflow: 'hidden', borderRadius: radii.card, borderWidth: 1 },
+  fullBleed: { borderRadius: 0, borderWidth: 0 },
   legend: { position: 'absolute', top: 10, right: 10, height: 27, borderRadius: radii.pill, borderWidth: 1, paddingHorizontal: 9, flexDirection: 'row', alignItems: 'center', gap: 6, pointerEvents: 'none' },
   legendDot: { width: 6, height: 6, borderRadius: 3 },
   legendText: { fontSize: 9, lineHeight: 12 },
