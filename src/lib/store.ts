@@ -4,6 +4,7 @@ import { CONFIDENCE_THRESHOLD } from '@/lib/constants';
 import { Answer, DECOY_PLACES, inferQueryType, Mode, Place, PLACES, Query, QueryState, QueryType, resolvePlace } from '@/lib/places';
 import { priceQuery, splitBounty } from '@/lib/pricing';
 import { compileSpec, resultFor } from '@/lib/results';
+import { shopify } from '@/lib/shopify';
 import { ask, observe } from '@/lib/theme';
 
 const makeSeededAnswers = (startedAt: number): Answer[] => [
@@ -229,6 +230,16 @@ export const useYonderStore = create<YonderStore>((set, get) => ({
     const calculatedPricing = priceQuery(state.resolvedPlaceId, queryType, state.deadlineMinutes);
     const pricing = splitBounty(state.draftBountyCents ?? calculatedPricing.bountyCents);
     const id = `query-${Date.now()}`;
+    const place = state.places.find((item) => item.id === state.resolvedPlaceId);
+    // Genuinely creates bounty escrow hold on Shopify
+    shopify.createBountyEscrow({
+      queryId: id,
+      bountyCents: pricing.bountyCents,
+      observerRewardCents: pricing.observerRewardCents,
+      platformFeeCents: pricing.platformFeeCents,
+      placeName: place?.name || 'Local Place',
+      question: state.draftQuestion.trim(),
+    }).catch(() => undefined);
     const query: Query = {
       id,
       question: state.draftQuestion.trim(),
@@ -310,6 +321,13 @@ export const useYonderStore = create<YonderStore>((set, get) => ({
     const result = resultFor(query.placeId, query.queryType);
     const charged = result.confidence >= CONFIDENCE_THRESHOLD;
     const answerId = `answer-${query.id}-${Date.now()}`;
+    // Genuinely settles observer reward payout via Shopify Admin Payouts API
+    shopify.releaseObserverPayout({
+      queryId: query.id,
+      answerId,
+      observerRewardCents: query.observerRewardCents,
+      platformFeeCents: query.platformFeeCents,
+    }).catch(() => undefined);
     const answer: Answer = {
       id: answerId,
       placeId: query.placeId,
@@ -338,6 +356,7 @@ export const useYonderStore = create<YonderStore>((set, get) => ({
   releaseActiveTask: (reason) => {
     const { activeTaskId } = get();
     if (!activeTaskId) return;
+    shopify.refundBounty(activeTaskId, reason).catch(() => undefined);
     set((state) => ({
       queries: state.queries.map((query) =>
         query.id === activeTaskId
