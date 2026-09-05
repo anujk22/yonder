@@ -66,7 +66,8 @@ export function ScreenHeader({ title, eyebrow, right }: { title?: string; eyebro
         accessibilityLabel="Go back"
         onPress={() => {
           Haptics.selectionAsync();
-          router.back();
+          if (router.canGoBack()) router.back();
+          else router.replace('/');
         }}
         style={[styles.backButton, { backgroundColor: theme.surface, borderColor: theme.border }]}
       >
@@ -127,7 +128,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   flex: { flex: 1 },
   content: { paddingHorizontal: space.lg, paddingTop: space.sm },
-  bottomInset: { paddingBottom: 126 },
+  bottomInset: { paddingBottom: 48 },
   headerRow: { minHeight: 54, flexDirection: 'row', alignItems: 'center', marginBottom: space.lg },
   backButton: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
   headerTitle: { flex: 1, paddingHorizontal: space.sm, gap: 1 },

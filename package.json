@@ -7,6 +7,7 @@
     "@expo-google-fonts/inter": "^0.4.2",
     "@expo-google-fonts/jetbrains-mono": "^0.4.1",
     "@expo/ui": "~57.0.11",
+    "@react-native-async-storage/async-storage": "2.2.0",
     "expo": "~57.0.13",
     "expo-blur": "~57.0.2",
     "expo-camera": "~57.0.3",
@@ -18,12 +19,14 @@
     "expo-image": "~57.0.3",
     "expo-linear-gradient": "~57.0.1",
     "expo-linking": "~57.0.6",
+    "expo-location": "~57.0.16",
     "expo-router": "~57.0.13",
     "expo-splash-screen": "~57.0.6",
     "expo-status-bar": "~57.0.1",
     "expo-symbols": "~57.0.2",
     "expo-system-ui": "~57.0.2",
     "expo-web-browser": "~57.0.2",
+    "leaflet": "^1.9.4",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-native": "0.86.2",
@@ -38,7 +41,13 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@types/leaflet": "^1.9.22",
+    "@types/node": "^26.4.1",
     "@types/react": "~19.2.2",
+    "eslint": "^9.39.5",
+    "eslint-config-expo": "~57.0.2",
+    "sharp": "^0.35.4",
+    "tsx": "^4.23.13",
     "typescript": "~6.0.3"
   },
   "scripts": {

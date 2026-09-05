@@ -14,6 +14,8 @@ export type MapSurfaceProps = {
   mode?: Mode;
   initialRegion?: MapRegion;
   markers?: MapMarkerData[];
+  userLocation?: (MapCoordinate & { accuracy: number }) | null;
+  geofence?: { center: MapCoordinate; radius: number };
   onRegionChange?: (region: MapRegion) => void;
   onRegionChangeComplete?: (region: MapRegion) => void;
   style?: StyleProp<ViewStyle>;

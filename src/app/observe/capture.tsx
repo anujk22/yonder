@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useIsFocused, useRouter } from 'expo-router';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import * as Location from 'expo-location';
+import { validateLocation } from '@/lib/geo';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
@@ -57,6 +59,8 @@ export default function CaptureScreen() {
   const setCapturedFrames = useYonderStore((state) => state.setCapturedFrames);
   const updateQueryState = useYonderStore((state) => state.updateQueryState);
   const wideShot = useYonderStore((state) => state.wideShot);
+  const captureMode = useYonderStore((state) => state.captureMode);
+  const locationEvidence = useYonderStore((state) => state.locationEvidence);
 
   const [permission, requestPermission] = useCameraPermissions();
   const [cameraReady, setCameraReady] = useState(false);
@@ -71,7 +75,7 @@ export default function CaptureScreen() {
   const captureScale = useSharedValue(1);
   const flashOpacity = useSharedValue(0);
   // DEMO: deterministic path for recording. Real implementation below.
-  const demoCapture = DEMO_FLAGS.simulateCameraFeed || (DEMO_FLAGS.usePresetCapture && query?.placeId === 'pier2');
+  const demoCapture = captureMode === 'demo';
   const captureReady = demoCapture || cameraReady;
 
   useEffect(() => {
@@ -97,12 +101,20 @@ export default function CaptureScreen() {
   const captureFrames = async () => {
     const camera = cameraRef.current;
     if (capturing || (!demoCapture && (!cameraReady || !camera))) return;
+    if (!query || !place || ['ANSWERED','REFUNDED','BLOCKED'].includes(query.state)) return;
     setCapturing(true);
     setCaptureError(false);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     if (query) updateQueryState(query.id, 'CAPTURING', 'Capturing live evidence', '3 frames, in-app only');
 
     try {
+      const checkLocation = async () => {
+        const position = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+        const fix = { latitude: position.coords.latitude, longitude: position.coords.longitude, accuracy: position.coords.accuracy ?? Infinity, timestamp: position.timestamp, mocked: position.mocked };
+        if (!validateLocation(fix, { latitude: place.lat, longitude: place.lng }, place.geofenceM).valid) throw new Error('Location check failed');
+        useYonderStore.getState().setLocationEvidence(fix);
+      };
+      if (!demoCapture) await checkLocation();
       const captured: string[] = [];
       for (let index = 0; index < 3; index += 1) {
         flashOpacity.value = 1;
@@ -118,6 +130,7 @@ export default function CaptureScreen() {
           return;
         }
       }
+      if (!demoCapture) await checkLocation();
       setCapturedFrames(demoCapture ? [] : captured);
       // DEMO: deterministic path for recording. Real implementation below.
       if (DEMO_FLAGS.autopilotEnabled && isAutopilotRunning()) {
@@ -126,7 +139,7 @@ export default function CaptureScreen() {
           return;
         }
       }
-      router.replace('/observe/verifying');
+      router.replace(demoCapture ? '/observe/verifying' : '/observe/evidence');
     } catch {
       setCaptureError(true);
       setCapturing(false);
@@ -136,6 +149,7 @@ export default function CaptureScreen() {
 
   if (!query) return <MissingDataState title="No observation is ready to capture." />;
   if (!place) return <MissingDataState title="The observation's place is not available." />;
+  if (!demoCapture && !locationEvidence) return <MissingDataState title="Check your location before opening the camera." />;
 
   if (!demoCapture && !permission) {
     return (
@@ -184,7 +198,7 @@ export default function CaptureScreen() {
         </Animated.View>
         <View style={[styles.targetLabel, { backgroundColor: 'rgba(0, 0, 0, 0.82)', borderColor: targetFound ? theme.accent : 'rgba(255, 255, 255, 0.16)' }]}>
           <Text style={[type.micro, { color: targetFound ? theme.accent : '#FFFFFF' }]}>
-            {targetFound ? 'TARGET FOUND' : 'Finding target...'}
+            {targetFound ? (demoCapture ? 'DEMO SCENE · NO LIVE ANALYSIS' : 'CAMERA READY · FRAME THE AREA') : 'Getting the camera ready…'}
           </Text>
         </View>
       </View>
@@ -218,7 +232,7 @@ export default function CaptureScreen() {
           {capturing ? (
             <Animated.View entering={FadeInDown.springify().damping(18).stiffness(140)} style={[styles.capturingBanner, { backgroundColor: 'rgba(0, 0, 0, 0.88)', borderColor: 'rgba(255, 255, 255, 0.14)', borderWidth: 1 }]}>
               <YMark size={24} bodyColor={theme.accent} headPulse />
-              <Text style={[type.mono, styles.capturingText, { color: '#FFFFFF' }]}>Capturing 3 frames for liveness</Text>
+              <Text style={[type.mono, styles.capturingText, { color: '#FFFFFF' }]}>Capturing 3 frames · keep the camera steady</Text>
             </Animated.View>
           ) : null}
 

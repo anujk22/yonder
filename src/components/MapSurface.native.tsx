@@ -1,6 +1,6 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import MapView, { Marker, Region } from 'react-native-maps';
+import MapView, { Circle, Marker, Region } from 'react-native-maps';
 
 import { CityMap } from '@/components/CityMap';
 import { StaticMapMarker } from '@/components/StaticMapMarker';
@@ -22,7 +22,7 @@ const project = ({ latitude, longitude }: MapCoordinate) => ({
 });
 
 export const MapSurface = forwardRef<MapSurfaceHandle, MapSurfaceProps>(function MapSurface(
-  { mode = 'ask', initialRegion = LOWER_MANHATTAN_REGION, markers = [], onRegionChange, onRegionChangeComplete, style },
+  { mode = 'ask', initialRegion = LOWER_MANHATTAN_REGION, markers = [], onRegionChange, onRegionChangeComplete, style, userLocation, geofence },
   ref,
 ) {
   const mapRef = useRef<MapView>(null);
@@ -60,6 +60,8 @@ export const MapSurface = forwardRef<MapSurfaceHandle, MapSurfaceProps>(function
         onRegionChange={onRegionChange}
         onRegionChangeComplete={onRegionChangeComplete}
       >
+        {geofence && <Circle center={geofence.center} radius={geofence.radius} strokeColor="#52745C" fillColor="#52745C22" />}
+        {userLocation && <><Circle center={userLocation} radius={userLocation.accuracy} strokeColor="#416CA0" fillColor="#416CA022"/><Marker coordinate={userLocation} title="Your location" pinColor="#416CA0"/></>}
         {markers.map((marker) => (
           <Marker key={marker.id} coordinate={marker.coordinate} title={marker.label} testID={marker.testID} onPress={marker.onPress} tracksViewChanges={false}>
             <YMark size={30} bodyColor={mode === 'ask' ? brand.espresso : brand.oat} />

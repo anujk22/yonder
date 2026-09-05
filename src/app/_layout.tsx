@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { GestureResponderEvent, Platform, StyleSheet, View } from 'react-native';
+import { GestureResponderEvent, Platform, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { Stack, usePathname, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
-import { useFonts as useInter, Inter_400Regular, Inter_500Medium, Inter_600SemiBold } from '@expo-google-fonts/inter';
+import { useFonts as useInter, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_900Black } from '@expo-google-fonts/inter';
 import { useFonts as useJetBrainsMono, JetBrainsMono_400Regular, JetBrainsMono_500Medium } from '@expo-google-fonts/jetbrains-mono';
 import {
   useFonts as useCormorantGaramond,
@@ -18,6 +18,7 @@ import { ModeToggle } from '@/components/ModeToggle';
 import { useActiveTheme, useYonderStore } from '@/lib/store';
 import { DEMO_FLAGS } from '@/lib/demoFlags';
 import { abortAutopilot } from '@/lib/autopilot';
+import { AppHeader } from '@/components/Brand';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -26,8 +27,11 @@ export default function RootLayout() {
   const router = useRouter();
   const reloadHandled = useRef(false);
   const theme = useActiveTheme();
+  const { width } = useWindowDimensions();
+  const isExplore = pathname === '/' || pathname === '/ask';
+  const isImmersive = pathname === '/observe/capture';
   const mode = useYonderStore((state) => state.mode);
-  const [interLoaded, interError] = useInter({ Inter_400Regular, Inter_500Medium, Inter_600SemiBold });
+  const [interLoaded, interError] = useInter({ Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_900Black });
   const [monoLoaded, monoError] = useJetBrainsMono({ JetBrainsMono_400Regular, JetBrainsMono_500Medium });
   const [serifLoaded, serifError] = useCormorantGaramond({
     CormorantGaramond_500Medium,
@@ -35,7 +39,11 @@ export default function RootLayout() {
   });
   const fontsLoaded = interLoaded && monoLoaded && serifLoaded;
   const fontError = interError ?? monoError ?? serifError;
-  const hideModeToggle = pathname === '/observe/capture' || pathname === '/observe/earned' || pathname.startsWith('/ask/answer/');
+  const hideModeToggle = !DEMO_FLAGS.autopilotEnabled;
+
+  useEffect(() => {
+    useYonderStore.getState().swapMode(pathname.startsWith('/observe') ? 'observe' : 'ask');
+  }, [pathname]);
 
   useEffect(() => {
     if (fontsLoaded || fontError) SplashScreen.hideAsync();
@@ -60,6 +68,8 @@ export default function RootLayout() {
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <View onTouchStart={DEMO_FLAGS.autopilotEnabled ? handleTouchStart : undefined} style={[styles.root, { backgroundColor: theme.bg }]}>
         <StatusBar style={mode === 'ask' ? 'dark' : 'light'} animated />
+        {!isImmersive && <AppHeader />}
+        <View style={[styles.root, !isExplore && width > 800 && { width: '100%', maxWidth: pathname === '/about' ? 1040 : 780, alignSelf: 'center', paddingTop: 24 }]}>
         <Stack
           screenOptions={{
             headerShown: false,
@@ -68,6 +78,7 @@ export default function RootLayout() {
             gestureEnabled: true,
           }}
         />
+        </View>
         {!hideModeToggle ? <ModeToggle /> : null}
         <ModeReveal />
         {DEMO_FLAGS.autopilotEnabled ? <AutopilotLayer /> : null}

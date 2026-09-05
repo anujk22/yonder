@@ -1,137 +1,23 @@
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import * as Haptics from 'expo-haptics';
-import Svg, { Circle } from 'react-native-svg';
-import Animated, { Easing, FadeIn, useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
-
-import { DeclineSheet } from '@/components/DeclineSheet';
-import { Glyph } from '@/components/Glyph';
-import { AppScreen, Entrance, MissingDataState, PrimaryButton, ScreenHeader, SectionLabel } from '@/components/ui';
-import { TickingNumber } from '@/components/TickingNumber';
-import { registerAutopilotAbortHandler } from '@/lib/autopilot';
-import { useActiveTheme, useYonderStore } from '@/lib/store';
-import { radii, space, type } from '@/lib/theme';
-import { TIMING } from '@/lib/timing';
-
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
-const RADIUS = 75;
-const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
-
+import { AppScreen, MissingDataState, PrimaryButton, ScreenHeader } from '@/components/ui';
+import { MapSurface, detailRegion } from '@/components/MapSurface';
+import { Scout } from '@/components/Brand';
+import { useYonderStore } from '@/lib/store';
+import { useLiveLocation } from '@/lib/location';
+import { validateLocation } from '@/lib/geo';
+import { observe, font, type } from '@/lib/theme';
 export default function ApproachScreen() {
-  const router = useRouter();
-  const theme = useActiveTheme();
-  const query = useYonderStore((state) => state.queries.find((item) => item.id === state.activeTaskId));
-  const place = useYonderStore((state) => state.places.find((item) => item.id === query?.placeId));
-  const updateQueryState = useYonderStore((state) => state.updateQueryState);
-  const progress = useSharedValue(0);
-  const [verified, setVerified] = useState(false);
-  const [declineVisible, setDeclineVisible] = useState(false);
-
-  useEffect(() => {
-    if (!query) return;
-    updateQueryState(query.id, 'APPROACHING', 'Observer approaching', '64m from target');
-    progress.value = withTiming(1, { duration: TIMING.approachMs, easing: Easing.inOut(Easing.cubic) });
-    const timer = setTimeout(() => {
-      setVerified(true);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      updateQueryState(query.id, 'APPROACHING', 'Location verified', `21m from target, geofence ${place?.geofenceM ?? 75}m`);
-    }, TIMING.approachMs);
-    const unregisterAbort = registerAutopilotAbortHandler(() => clearTimeout(timer));
-    return () => {
-      clearTimeout(timer);
-      unregisterAbort();
-    };
-  }, [place?.geofenceM, progress, query?.id, updateQueryState]);
-
-  const ringProps = useAnimatedProps(() => ({
-    strokeDashoffset: CIRCUMFERENCE * (1 - (0.16 + progress.value * 0.84)),
-  }));
-
-  if (!query) return <MissingDataState title="No observation is ready to approach." />;
-  if (!place) return <MissingDataState title="The observation's place is not available." />;
-
-  return (
-    <Animated.View
-      entering={FadeIn.duration(240).withInitialValues({ opacity: 0, transform: [{ scale: 0.98 }] } as never)}
-      style={styles.flex}
-    >
-      <AppScreen scroll={false}>
-        <ScreenHeader eyebrow="APPROACH" title={place.name} />
-
-        <View style={styles.center}>
-          <Entrance style={styles.ringWrap}>
-            <Svg width={188} height={188} viewBox="0 0 188 188">
-              <Circle cx={94} cy={94} r={RADIUS} fill="none" stroke={theme.border} strokeWidth={8} />
-              <AnimatedCircle
-                cx={94}
-                cy={94}
-                r={RADIUS}
-                fill="none"
-                stroke={verified ? theme.fresh : theme.accent}
-                strokeWidth={8}
-                strokeLinecap="round"
-                strokeDasharray={`${CIRCUMFERENCE} ${CIRCUMFERENCE}`}
-                transform="rotate(-90 94 94)"
-                animatedProps={ringProps}
-              />
-            </Svg>
-            <View style={styles.distanceWrap}>
-              <TickingNumber
-                initialValue={64}
-                value={21}
-                duration={TIMING.approachMs}
-                color={verified ? theme.fresh : theme.ink}
-                formatter={(value) => `${Math.round(value)}m`}
-                style={styles.distance}
-              />
-              <Text style={[type.mono, styles.geofence, { color: theme.inkSoft }]}>Geofence {place.geofenceM}m</Text>
-            </View>
-          </Entrance>
-
-          <Entrance index={1} style={styles.statusBlock}>
-            <View style={[styles.statusIcon, { backgroundColor: verified ? theme.fresh : theme.surfaceAlt }]}>
-              <Glyph name={verified ? 'check' : 'lock'} color={verified ? theme.onAccent : theme.inkSoft} size={22} />
-            </View>
-            <SectionLabel color={verified ? theme.fresh : theme.inkSoft}>{verified ? 'LOCATION VERIFIED' : 'CAMERA LOCKED'}</SectionLabel>
-            <Text style={[type.body, styles.statusCopy, { color: theme.inkSoft }]}>
-              {verified ? 'You are 21m from the target. Live capture is unlocked.' : 'Move inside the geofence to prove where this observation was made.'}
-            </Text>
-          </Entrance>
-        </View>
-
-        <Entrance index={2} style={styles.actions}>
-          <PrimaryButton
-            testID="approach-capture"
-            label={verified ? 'Open camera' : 'Move within geofence'}
-            icon={verified ? 'camera' : 'lock'}
-            disabled={!verified}
-            onPress={() => router.push('/observe/capture')}
-          />
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => setDeclineVisible(true)}
-            style={({ pressed }) => [styles.declineButton, { borderColor: theme.border, opacity: pressed ? 0.72 : 1 }]}
-          >
-            <Text style={[type.label, { color: theme.inkSoft }]}>Decline</Text>
-          </Pressable>
-        </Entrance>
-      </AppScreen>
-      <DeclineSheet visible={declineVisible} onClose={() => setDeclineVisible(false)} />
-    </Animated.View>
-  );
+  const router=useRouter();const query=useYonderStore(s=>s.queries.find(q=>q.id===s.activeTaskId));const place=useYonderStore(s=>s.places.find(p=>p.id===query?.placeId));const mode=useYonderStore(s=>s.captureMode);const location=useLiveLocation();const [now,setNow]=useState(Date.now());
+  useEffect(()=>{const timer=setInterval(()=>setNow(Date.now()),1000);return()=>clearInterval(timer);},[]);
+  if(!query||!place||['ANSWERED','REFUNDED','BLOCKED'].includes(query.state))return <MissingDataState title="No check is ready here."/>;
+  const target={latitude:place.lat,longitude:place.lng};const validation=validateLocation(location.fix,target,place.geofenceM,now);const demo=mode==='demo';
+  const open=()=>{if(!demo&&!validateLocation(location.fix,target,place.geofenceM).valid)return;const state=useYonderStore.getState();state.setLocationEvidence(demo?null:location.fix);state.updateQueryState(query.id,'APPROACHING',demo?'Demo location step':'Device location checked',demo?'Simulation selected':validation.reason);router.push('/observe/capture');};
+  return <AppScreen><ScreenHeader eyebrow={demo?'DEMO / LOCATION STEP':'DEVICE / LOCATION CHECK'} title={place.name}/><View style={styles.map}><MapSurface mode="observe" style={StyleSheet.absoluteFill} initialRegion={detailRegion(target)} geofence={{center:target,radius:place.geofenceM}} userLocation={location.fix} markers={[{id:place.id,coordinate:target,label:'Check area'}]}/></View><View style={styles.center}><Scout size={64}/><Text style={styles.distance}>{demo?'Let’s take a look.':validation.distance===null?'Are you there?':`${Math.round(validation.distance)} m away`}</Text><Text style={styles.body}>{demo?'This is a practice run. No GPS is used and the camera shows a sample scene.':validation.reason}</Text></View>
+    {!demo&&<View style={styles.card}><Text style={styles.label}>THREE CHECKS BEFORE CAPTURE</Text><Text style={styles.body}>Inside the {place.geofenceM} m area, including your accuracy radius.{`\n`}A reading less than 30 seconds old.{`\n`}Accuracy within ±{Math.min(place.geofenceM/2,50)} m.</Text><Text style={styles.note}>Device GPS can be spoofed. This is a proximity check, not independent proof.</Text></View>}
+    {Boolean(location.error)&&<Text accessibilityRole="alert" style={[styles.body,{color:observe.danger,marginBottom:14}]}>{location.error}</Text>}
+    <View style={styles.actions}>{!demo&&!location.active&&<PrimaryButton label={location.loading?'Finding your location…':'Share location for this check'} onPress={location.start} disabled={location.loading}/>}<PrimaryButton testID="approach-capture" label={demo?'Open demo camera':validation.valid?'Open camera':'Camera locked until you’re there'} icon={demo||validation.valid?'camera':'lock'} disabled={!demo&&!validation.valid} onPress={open}/><PrimaryButton label="Back to requests" variant="secondary" onPress={()=>{useYonderStore.getState().releaseActiveTask('Returned to requests');router.replace('/observe');}}/></View>
+  </AppScreen>;
 }
-
-const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingBottom: space.md },
-  ringWrap: { width: 188, height: 188, alignItems: 'center', justifyContent: 'center' },
-  distanceWrap: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, alignItems: 'center', justifyContent: 'center' },
-  distance: { width: 128, textAlign: 'center', fontSize: 42, lineHeight: 48 },
-  geofence: { marginTop: 3, fontSize: 12, lineHeight: 17 },
-  statusBlock: { marginTop: space.xl, alignItems: 'center', maxWidth: 320 },
-  statusIcon: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center', marginBottom: space.md },
-  statusCopy: { marginTop: space.xs, textAlign: 'center' },
-  actions: { gap: space.sm, paddingBottom: space.sm },
-  declineButton: { minHeight: 48, borderWidth: 1, borderRadius: radii.small, alignItems: 'center', justifyContent: 'center' },
-});
+const styles=StyleSheet.create({map:{height:220,borderRadius:16,overflow:'hidden'},center:{alignItems:'center',paddingVertical:24,gap:15},distance:{fontFamily:font.ui600,fontSize:32,lineHeight:38,color:observe.ink,letterSpacing:-1},body:{...type.body,fontSize:14,lineHeight:23,color:observe.inkSoft},card:{borderRadius:16,backgroundColor:observe.surface,padding:20,gap:12,marginBottom:22},label:{...type.micro,color:observe.accent,fontSize:10},note:{...type.label,color:observe.inkSoft,fontSize:11,lineHeight:18},actions:{gap:12}});

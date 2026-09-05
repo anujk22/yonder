@@ -1,9 +1,9 @@
 export const DEMO_FLAGS = {
-  useStaticMap: true,
+  useStaticMap: false,
   simulateCameraFeed: true,
   usePresetCapture: false,
-  enableDemoReset: true,
-  autopilotEnabled: true,
+  enableDemoReset: false,
+  autopilotEnabled: false,
   skipOnboarding: false,
   fastTiming: false,
 } as const;

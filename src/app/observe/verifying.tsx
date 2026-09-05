@@ -23,6 +23,7 @@ export default function VerifyingScreen() {
   const [visibleCount, setVisibleCount] = useState(0);
   const [declineVisible, setDeclineVisible] = useState(false);
   const completed = useRef(false);
+  const captureMode = useYonderStore(s => s.captureMode);
   const sceneDetail = query?.placeId === 'pier2'
     ? '4 court surfaces detected'
     : query?.placeId === 'nikesoho'
@@ -31,15 +32,15 @@ export default function VerifyingScreen() {
         ? 'elevator entrance detected'
         : 'requested place feature detected';
   const steps = [
-    { label: 'Uploading 3 frames' },
-    { label: 'Checking location', detail: '21m from target' },
-    { label: 'Checking liveness', detail: 'parallax detected across frames' },
-    { label: 'Matching scene', detail: sceneDetail },
-    { label: 'Reading the scene' },
+    { label: 'Preparing sample frames' },
+    { label: 'Simulating location check', detail: 'No device GPS used' },
+    { label: 'Simulating capture review', detail: 'No live image analysis' },
+    { label: 'Loading sample result', detail: sceneDetail },
+    { label: 'Preparing your demo answer' },
   ];
 
   useEffect(() => {
-    if (!activeTaskId) return;
+    if (!activeTaskId || captureMode !== 'demo') return;
     updateQueryState(activeTaskId, 'VERIFYING', 'Verifying observation', 'location, liveness, scene');
 
     const stepTimers = TIMING.verifySteps.map((delay, index) =>
@@ -51,8 +52,8 @@ export default function VerifyingScreen() {
     const completionTimer = setTimeout(() => {
       if (completed.current) return;
       completed.current = true;
-      completeObservation();
-      router.replace('/observe/earned');
+      const answerId = completeObservation();
+      router.replace(answerId ? '/observe/earned' : '/observe');
     }, TIMING.verifyTotalMs);
     const unregisterAbort = registerAutopilotAbortHandler(() => {
       stepTimers.forEach(clearTimeout);
@@ -64,9 +65,9 @@ export default function VerifyingScreen() {
       clearTimeout(completionTimer);
       unregisterAbort();
     };
-  }, [activeTaskId, completeObservation, router, updateQueryState]);
+  }, [activeTaskId, captureMode, completeObservation, router, updateQueryState]);
 
-  if (!activeTaskId || !query) return <MissingDataState title="No captured observation is ready to verify." />;
+  if (!activeTaskId || !query || captureMode !== 'demo') return <MissingDataState title="No demo observation is ready." />;
 
   return (
     <Animated.View
@@ -76,8 +77,8 @@ export default function VerifyingScreen() {
       <AppScreen scroll={false}>
         <View style={styles.headerRow}>
           <View>
-            <SectionLabel>VERIFICATION PIPELINE</SectionLabel>
-            <Text style={[type.title, styles.title, { color: theme.ink }]}>Turning photons into information.</Text>
+            <SectionLabel>DEMO / ANSWER PREVIEW</SectionLabel>
+            <Text style={[type.title, styles.title, { color: theme.ink }]}>A little look becomes an answer.</Text>
           </View>
           <Pressable
             accessibilityRole="button"

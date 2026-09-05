@@ -1,0 +1,12 @@
+import { Image, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { AppScreen, MissingDataState, PrimaryButton, ScreenHeader } from '@/components/ui';
+import { useYonderStore } from '@/lib/store';
+import { observe, font, type } from '@/lib/theme';
+export default function EvidenceScreen() {
+  const router=useRouter();const frames=useYonderStore(s=>s.capturedFrames);const fix=useYonderStore(s=>s.locationEvidence);const query=useYonderStore(s=>s.queries.find(q=>q.id===s.activeTaskId));
+  if(!frames.length||!query||!fix)return <MissingDataState title="No device evidence is available."/>;
+  const discard=()=>{const state=useYonderStore.getState();state.setCapturedFrames([]);state.setLocationEvidence(null);state.releaseActiveTask('Local capture cleared');router.replace('/observe');};
+  return <AppScreen><ScreenHeader eyebrow="DEVICE CHECK / LOCAL EVIDENCE"/><Text style={styles.title}>A real look.{`\n`}Ready for review.</Text><Text style={styles.body}>These photos came from your camera. They have not been uploaded or independently verified.</Text><View style={styles.frames}>{frames.map((uri,i)=><Image key={uri} source={{uri}} accessibilityLabel={`Captured frame ${i+1}`} style={styles.frame}/>)}</View><View style={styles.card}><Text style={styles.label}>CAPTURE DETAILS</Text><Text style={styles.body}>3 in-app frames · device location checked before and after capture</Text><Text style={styles.body}>Location accuracy: ±{Math.round(fix.accuracy)} m</Text><Text style={styles.body}>Last location check: {new Date(fix.timestamp).toLocaleTimeString()}</Text><Text style={styles.body}>Scene matching, face redaction, independent verification and payouts are not available. No answer or reward has been created.</Text></View><PrimaryButton label="Clear local capture & return" onPress={discard}/><Text style={styles.note}>Clears the photos from this app session. Device camera caches are managed by the operating system.</Text></AppScreen>;
+}
+const styles=StyleSheet.create({title:{fontFamily:font.black,fontSize:42,lineHeight:45,letterSpacing:-2,color:observe.ink},body:{...type.body,color:observe.inkSoft,fontSize:14,lineHeight:23,marginTop:12},frames:{flexDirection:'row',gap:8,marginVertical:20},frame:{flex:1,height:190,borderRadius:12},card:{padding:22,borderRadius:16,backgroundColor:observe.surface,marginBottom:22},label:{...type.micro,color:observe.accent},note:{...type.label,color:observe.inkSoft,fontSize:11,lineHeight:18,marginTop:15}});

@@ -1,21 +1,21 @@
 export const brand = {
-  oat: '#EFD5AA',
-  espresso: '#342617',
-  fern: '#6B8E46',
+  oat: '#F5D547',
+  espresso: '#242A22',
+  fern: '#52745C',
 } as const;
 
 export const ask = {
-  bg: '#F8F0E4',
-  surface: '#FBF5EB',
-  surfaceAlt: '#E8DDC9',
-  ink: '#2B2116',
-  inkSoft: '#655746',
-  inkFaint: '#9A8A73',
-  border: '#DCC9AB',
-  accent: '#342617',
-  accentSoft: '#EEE2CF',
-  onAccent: '#F8ECD8',
-  fresh: '#648A43',
+  bg: '#F7F7F0',
+  surface: '#FFFFFF',
+  surfaceAlt: '#E9EDE2',
+  ink: '#242A22',
+  inkSoft: '#60665B',
+  inkFaint: '#73796E',
+  border: '#DDDFD4',
+  accent: '#F5D547',
+  accentSoft: '#F8ECA9',
+  onAccent: '#242A22',
+  fresh: '#386448',
   aging: '#B07A2E',
   stale: '#A2937D',
   danger: '#B4453C',
@@ -26,16 +26,16 @@ export const ask = {
 } as const;
 
 export const observe = {
-  bg: '#1B160F',
-  surface: '#241C12',
-  surfaceAlt: '#342617',
-  ink: '#F3DFC0',
-  inkSoft: '#C5B08F',
-  inkFaint: '#75644D',
-  border: '#55442F',
-  accent: '#EFD5AA',
-  accentSoft: '#342617',
-  onAccent: '#241C12',
+  bg: '#242A22',
+  surface: '#30382D',
+  surfaceAlt: '#3B4435',
+  ink: '#F7F7F0',
+  inkSoft: '#C5CEBC',
+  inkFaint: '#A1AC97',
+  border: '#515B48',
+  accent: '#F5D547',
+  accentSoft: '#48472C',
+  onAccent: '#242A22',
   fresh: '#6FCB7F',
   aging: '#E0A24E',
   stale: '#7A6B55',
@@ -48,14 +48,15 @@ export const observe = {
 
 export type AppTheme = typeof ask | typeof observe;
 
-export const radii = { small: 14, card: 22, sheet: 36, pill: 999 } as const;
+export const radii = { small: 12, card: 18, sheet: 28, pill: 999 } as const;
 export const space = { xxs: 4, xs: 8, sm: 12, md: 16, lg: 24, xl: 32, xxl: 48 } as const;
 
 export const font = {
-  serif: 'CormorantGaramond_600SemiBold',
+  serif: 'Inter_600SemiBold',
   serifMedium: 'CormorantGaramond_500Medium',
-  display600: 'CormorantGaramond_600SemiBold',
-  display700: 'CormorantGaramond_600SemiBold',
+  display600: 'Inter_600SemiBold',
+  display700: 'Inter_900Black',
+  black: 'Inter_900Black',
   ui400: 'Inter_400Regular',
   ui500: 'Inter_500Medium',
   ui600: 'Inter_600SemiBold',

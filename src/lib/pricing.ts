@@ -23,7 +23,7 @@ const DEMO_BOUNTIES: Record<string, number> = {
 const roundToFiveCents = (cents: number) => Math.round(cents / 5) * 5;
 
 export const splitBounty = (rawBountyCents: number) => {
-  const bountyCents = Math.max(MIN_BOUNTY_CENTS, roundToFiveCents(rawBountyCents));
+  const bountyCents = Math.max(MIN_BOUNTY_CENTS, roundToFiveCents(Number.isFinite(rawBountyCents) ? rawBountyCents : MIN_BOUNTY_CENTS));
   const platformFeeCents = roundToFiveCents(bountyCents * PLATFORM_FEE_RATE);
   return {
     bountyCents,

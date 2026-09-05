@@ -20,10 +20,10 @@ export const RESULTS: Record<string, MockResult> = {
 
 export const resultFor = (placeId: string, queryType: QueryType) =>
   RESULTS[`${placeId}:${queryType}`] ?? {
-    headline: 'Conditions verified',
-    detail: 'The requested place condition was visible in the live capture.',
-    structured: { verified: true },
-    confidence: 0.88,
+    headline: 'We don’t have an answer yet',
+    detail: 'This place and question need a real observation. No sample answer is available.',
+    structured: { verified: false },
+    confidence: 0,
     ttlSeconds: 300,
     facesBlurred: 0,
   };
