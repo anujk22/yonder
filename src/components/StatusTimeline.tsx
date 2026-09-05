@@ -4,8 +4,6 @@ import * as Haptics from 'expo-haptics';
 import Svg, { Circle, Path } from 'react-native-svg';
 import Animated, {
   Easing,
-  FadeInDown,
-  LinearTransition,
   useAnimatedProps,
   useAnimatedStyle,
   useSharedValue,
@@ -13,6 +11,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { Entrance } from './ui';
 import { useActiveTheme } from '@/lib/store';
 import { space, type } from '@/lib/theme';
 
@@ -50,9 +49,7 @@ function TimelineStep({ item, active, completed }: { item: TimelineItem; active:
   }));
 
   return (
-    <Animated.View
-      entering={FadeInDown.springify().damping(18).stiffness(140)}
-      layout={LinearTransition.springify().damping(18).stiffness(140)}
+    <Entrance
       style={[styles.step, { borderBottomColor: theme.border }]}
     >
       <View style={styles.stateGlyph}>
@@ -67,7 +64,7 @@ function TimelineStep({ item, active, completed }: { item: TimelineItem; active:
         <Text style={[type.mono, styles.label, { color: active ? theme.ink : theme.inkSoft }]}>{item.label}</Text>
         {item.detail ? <Text style={[type.mono, styles.detail, { color: theme.inkSoft }]}>{item.detail}</Text> : null}
       </View>
-    </Animated.View>
+    </Entrance>
   );
 }
 

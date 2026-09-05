@@ -1,17 +1,15 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { GestureResponderEvent, Platform, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { GestureResponderEvent, KeyboardAvoidingView, Platform, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { Stack, usePathname, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
-import { useFonts as useInter, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_900Black } from '@expo-google-fonts/inter';
-import { useFonts as useJetBrainsMono, JetBrainsMono_400Regular, JetBrainsMono_500Medium } from '@expo-google-fonts/jetbrains-mono';
-import {
-  useFonts as useCormorantGaramond,
-  CormorantGaramond_500Medium,
-  CormorantGaramond_600SemiBold,
-} from '@expo-google-fonts/cormorant-garamond';
-
+import { useFonts } from 'expo-font';
+import { Fraunces_500Medium, Fraunces_600SemiBold, Fraunces_700Bold, Fraunces_500Medium_Italic } from '@expo-google-fonts/fraunces';
+import { Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, Manrope_700Bold } from '@expo-google-fonts/manrope';
+import { JetBrainsMono_400Regular, JetBrainsMono_500Medium } from '@expo-google-fonts/jetbrains-mono';
+import { BottomNavigation } from '@/components/BottomNavigation';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AutopilotLayer } from '@/components/AutopilotLayer';
 import { ModeReveal } from '@/components/ModeReveal';
 import { ModeToggle } from '@/components/ModeToggle';
@@ -28,17 +26,10 @@ export default function RootLayout() {
   const reloadHandled = useRef(false);
   const theme = useActiveTheme();
   const { width } = useWindowDimensions();
-  const isExplore = pathname === '/' || pathname === '/ask';
+  const isExplore = pathname === '/' || pathname === '/ask' || pathname === '/map';
   const isImmersive = pathname === '/observe/capture';
   const mode = useYonderStore((state) => state.mode);
-  const [interLoaded, interError] = useInter({ Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_900Black });
-  const [monoLoaded, monoError] = useJetBrainsMono({ JetBrainsMono_400Regular, JetBrainsMono_500Medium });
-  const [serifLoaded, serifError] = useCormorantGaramond({
-    CormorantGaramond_500Medium,
-    CormorantGaramond_600SemiBold,
-  });
-  const fontsLoaded = interLoaded && monoLoaded && serifLoaded;
-  const fontError = interError ?? monoError ?? serifError;
+  const [fontsLoaded, fontError] = useFonts({ Fraunces_500Medium, Fraunces_600SemiBold, Fraunces_700Bold, Fraunces_500Medium_Italic, Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, Manrope_700Bold, JetBrainsMono_400Regular, JetBrainsMono_500Medium });
   const hideModeToggle = !DEMO_FLAGS.autopilotEnabled;
 
   useEffect(() => {
@@ -65,11 +56,11 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+    <GestureHandlerRootView style={styles.root}><SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <View onTouchStart={DEMO_FLAGS.autopilotEnabled ? handleTouchStart : undefined} style={[styles.root, { backgroundColor: theme.bg }]}>
         <StatusBar style={mode === 'ask' ? 'dark' : 'light'} animated />
-        {!isImmersive && <AppHeader />}
-        <View style={[styles.root, !isExplore && width > 800 && { width: '100%', maxWidth: pathname === '/about' ? 1040 : 780, alignSelf: 'center', paddingTop: 24 }]}>
+        {!isImmersive && pathname !== '/map' && <AppHeader />}
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={[styles.root, !isExplore && width > 800 && { width: '100%', maxWidth: pathname === '/about' ? 1040 : 780, alignSelf: 'center', paddingTop: 24 }]}>
         <Stack
           screenOptions={{
             headerShown: false,
@@ -78,15 +69,17 @@ export default function RootLayout() {
             gestureEnabled: true,
           }}
         />
-        </View>
+        </KeyboardAvoidingView>
+        {!isImmersive && width < 760 && <BottomNavigation />}
         {!hideModeToggle ? <ModeToggle /> : null}
         <ModeReveal />
         {DEMO_FLAGS.autopilotEnabled ? <AutopilotLayer /> : null}
       </View>
-    </SafeAreaProvider>
+    </SafeAreaProvider></GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
 });
+

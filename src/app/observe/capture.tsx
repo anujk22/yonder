@@ -8,8 +8,6 @@ import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 import Animated, {
-  FadeIn,
-  FadeInDown,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -80,9 +78,8 @@ export default function CaptureScreen() {
 
   useEffect(() => {
     if (!captureReady || (!demoCapture && !permission?.granted)) return;
-    setTargetFound(false);
-    reticleScale.value = 1.18;
-    reticleScale.value = withTiming(1, { duration: TIMING.reticleLockMs });
+    reticleScale.set(1.18);
+    reticleScale.set(withTiming(1, { duration: TIMING.reticleLockMs }));
     const timer = setTimeout(() => {
       setTargetFound(true);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -94,9 +91,9 @@ export default function CaptureScreen() {
     };
   }, [captureReady, demoCapture, permission?.granted, reticleScale]);
 
-  const reticleStyle = useAnimatedStyle(() => ({ transform: [{ scale: reticleScale.value }] }));
-  const captureStyle = useAnimatedStyle(() => ({ transform: [{ scale: captureScale.value }] }));
-  const flashStyle = useAnimatedStyle(() => ({ opacity: flashOpacity.value }));
+  const reticleStyle = useAnimatedStyle(() => ({ transform: [{ scale: reticleScale.get() }] }));
+  const captureStyle = useAnimatedStyle(() => ({ transform: [{ scale: captureScale.get() }] }));
+  const flashStyle = useAnimatedStyle(() => ({ opacity: flashOpacity.get() }));
 
   const captureFrames = async () => {
     const camera = cameraRef.current;
@@ -117,8 +114,8 @@ export default function CaptureScreen() {
       if (!demoCapture) await checkLocation();
       const captured: string[] = [];
       for (let index = 0; index < 3; index += 1) {
-        flashOpacity.value = 1;
-        flashOpacity.value = withTiming(0, { duration: 180 });
+        flashOpacity.set(1);
+        flashOpacity.set(withTiming(0, { duration: 180 }));
         const frameUri = demoCapture
           ? `preset-${index}`
           : (await camera!.takePictureAsync({ quality: 0.78 })).uri;
@@ -173,7 +170,7 @@ export default function CaptureScreen() {
   }
 
   return (
-    <Animated.View entering={FadeIn.duration(220)} style={[styles.flex, { backgroundColor: '#000000' }]}>
+    <Animated.View style={[styles.flex, { backgroundColor: '#000000' }]}>
       {demoCapture ? (
         <View style={[styles.demoFeedBackdrop, { backgroundColor: '#000000' }]}>
           <Image source={PIER_TWO_PROOF} resizeMode="contain" style={styles.demoFeedImage} />
@@ -230,7 +227,7 @@ export default function CaptureScreen() {
 
         <View style={styles.captureArea}>
           {capturing ? (
-            <Animated.View entering={FadeInDown.springify().damping(18).stiffness(140)} style={[styles.capturingBanner, { backgroundColor: 'rgba(0, 0, 0, 0.88)', borderColor: 'rgba(255, 255, 255, 0.14)', borderWidth: 1 }]}>
+            <Animated.View style={[styles.capturingBanner, { backgroundColor: 'rgba(0, 0, 0, 0.88)', borderColor: 'rgba(255, 255, 255, 0.14)', borderWidth: 1 }]}>
               <YMark size={24} bodyColor={theme.accent} headPulse />
               <Text style={[type.mono, styles.capturingText, { color: '#FFFFFF' }]}>Capturing 3 frames · keep the camera steady</Text>
             </Animated.View>
@@ -243,7 +240,7 @@ export default function CaptureScreen() {
               {[0, 1, 2].map((index) => (
                 <View key={index} style={styles.frameSlot}>
                   {frames[index] ? (
-                    <Animated.View entering={FadeInDown.springify().damping(18).stiffness(140)} style={styles.frameImageWrap}>
+                    <Animated.View style={styles.frameImageWrap}>
                       <Image
                         source={demoCapture ? PIER_TWO_PROOF : { uri: frames[index] }}
                         resizeMode="contain"
@@ -267,10 +264,10 @@ export default function CaptureScreen() {
             disabled={!captureReady || capturing}
             onPress={captureFrames}
             onPressIn={() => {
-              captureScale.value = withTiming(0.92, { duration: 60 });
+              captureScale.set(withTiming(0.92, { duration: 60 }));
             }}
             onPressOut={() => {
-              captureScale.value = withSpring(1, { damping: 14, stiffness: 500 });
+              captureScale.set(withSpring(1, { damping: 14, stiffness: 500 }));
             }}
             style={[
               styles.captureButton,

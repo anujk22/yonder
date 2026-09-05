@@ -285,11 +285,11 @@ export const createYonderState: StateCreator<YonderStore> = (set, get) => ({
     if (!activeQueryId) return;
     set((state) => {
       const query = state.queries.find((item) => item.id === activeQueryId);
-      if (!query || query.state !== 'DRAFT' || query.bountyCents > state.walletCents - state.queries.filter(q => q.isNew && !['DRAFT','ANSWERED','REFUNDED','BLOCKED'].includes(q.state)).reduce((sum,q) => sum+q.bountyCents,0)) return state;
+      if (!query || query.state !== 'DRAFT' || query.bountyCents > state.walletCents - state.queries.filter(q => q.isNew && Date.now() < q.createdAt + q.deadlineMinutes * 60000 && !['DRAFT','ANSWERED','REFUNDED','BLOCKED'].includes(q.state)).reduce((sum,q) => sum+q.bountyCents,0)) return state;
       return {
         queries: state.queries.map((item) =>
           item.id === activeQueryId
-            ? { ...item, state: 'OPEN' as const, isNew: true, statusLog: [...item.statusLog, { label: 'Finding eyes nearby', at: Date.now() }] }
+            ? { ...item, state: 'OPEN' as const, isNew: true, statusLog: [...item.statusLog, { label: 'Request saved in preview', at: Date.now() }] }
             : item,
         ),
         activeTaskId: activeQueryId,
@@ -302,7 +302,7 @@ export const createYonderState: StateCreator<YonderStore> = (set, get) => ({
       const answer = state.answers.find(a => a.id === answerId);
       if (!query || query.state !== 'DRAFT' || !answer || query.placeId !== answer.placeId || !sameQuestion(query.question, answer.question)) return state;
       const expected = freshness(answer.observedAt, answer.ttlSeconds).band === 'FRESH' ? 15 : 0;
-      const held = state.queries.filter(q => q.isNew && !['DRAFT','ANSWERED','REFUNDED','BLOCKED'].includes(q.state)).reduce((sum,q) => sum+q.bountyCents,0);
+      const held = state.queries.filter(q => q.isNew && Date.now() < q.createdAt + q.deadlineMinutes * 60000 && !['DRAFT','ANSWERED','REFUNDED','BLOCKED'].includes(q.state)).reduce((sum,q) => sum+q.bountyCents,0);
       if (priceCents !== expected || state.walletCents-held < priceCents) return state;
       return {
       queries: state.queries.map((query) =>
@@ -326,7 +326,7 @@ export const createYonderState: StateCreator<YonderStore> = (set, get) => ({
   updateQueryState: (queryId, queryState, label, detail) =>
     set((state) => ({
       queries: state.queries.map((query) =>
-        query.id === queryId
+        query.id === queryId && !['ANSWERED', 'REFUNDED', 'BLOCKED'].includes(query.state)
           ? {
               ...query,
               state: queryState,

@@ -11,7 +11,7 @@ export default function StatusScreen() {
   const router = useRouter();
   const query = useYonderStore(s => s.queries.find(q => q.id === s.activeQueryId));
   const place = useYonderStore(s => s.places.find(p => p.id === query?.placeId));
-  const [now, setNow] = useState(Date.now());
+  const [now, setNow] = useState(() => Date.now());
   useEffect(() => { const timer = setInterval(() => setNow(Date.now()),1000); return () => clearInterval(timer); }, []);
   useEffect(() => { if (query?.state === 'ANSWERED' && query.answerId) router.replace(`/ask/answer/${query.answerId}`); }, [query?.state, query?.answerId, router]);
   if (!query || !place) return <MissingDataState title="No request is waiting here."/>;
@@ -26,3 +26,4 @@ export default function StatusScreen() {
   </AppScreen>;
 }
 const styles = StyleSheet.create({ hero: { paddingVertical: 24, alignItems: 'center', gap: 15 }, title: { fontFamily: font.black, fontSize: 44, lineHeight: 46, letterSpacing: -2, color: ask.ink, textAlign: 'center' }, question: { ...type.body, fontSize: 19, textAlign: 'center', color: ask.ink, marginTop: 8 }, place: { ...type.label, color: ask.inkSoft }, card: { padding: 24, borderRadius: 18, backgroundColor: ask.surfaceAlt, gap: 14, marginVertical: 20 }, row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, label: { ...type.micro, color: ask.fresh }, clock: { fontFamily: font.mono500, fontSize: 22, color: ask.ink }, body: { ...type.body, color: ask.inkSoft, fontSize: 14, lineHeight: 23 }, actions: { gap: 12, marginBottom: 12 } });
+

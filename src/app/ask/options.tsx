@@ -9,7 +9,7 @@ import { useYonderStore } from '@/lib/store';
 import { ask, font, type } from '@/lib/theme';
 export default function OptionsScreen() {
   const router = useRouter(); const query = useYonderStore(s => s.queries.find(q => q.id === s.activeQueryId)); const answers = useYonderStore(s => s.answers);
-  const [now,setNow] = useState(Date.now()); const [error,setError] = useState('');
+  const [now,setNow] = useState(() => Date.now()); const [error,setError] = useState('');
   useEffect(() => { const timer = setInterval(() => setNow(Date.now()),1000); return () => clearInterval(timer); }, []);
   if (!query) return <MissingDataState title="Start with a place and a question."/>;
   const matching = answers.filter(a => a.placeId === query.placeId && sameQuestion(a.question,query.question)).sort((a,b) => b.observedAt-a.observedAt);
@@ -25,3 +25,4 @@ export default function OptionsScreen() {
     </View><Text style={styles.note}>Sample observations are not current real-world reports. This preview does not dispatch people or process payments.</Text></AppScreen>;
 }
 const styles = StyleSheet.create({ title: { fontFamily: font.black, fontSize: 46, lineHeight: 47, color: ask.ink, letterSpacing: -2, marginTop: 12 }, question: { ...type.body, color: ask.ink, fontSize: 19, marginTop: 20 }, body: { ...type.body, color: ask.inkSoft, fontSize: 13, lineHeight: 22, marginTop: 10 }, cards: { gap: 14, marginTop: 24 }, note: { ...type.label, color: ask.inkSoft, fontSize: 11, lineHeight: 18, marginTop: 24 } });
+

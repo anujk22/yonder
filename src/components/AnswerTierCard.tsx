@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import { Entrance } from './ui';
 
 import { FreshnessLabel } from '@/components/FreshnessLabel';
 import { TickingNumber } from '@/components/TickingNumber';
 import { useAutopilotPressTarget } from '@/lib/autopilot';
 import { formatAge, freshness, freshnessColor } from '@/lib/freshness';
 import { useActiveTheme, useYonderStore } from '@/lib/store';
-import { radii, space, type } from '@/lib/theme';
+import { space, type } from '@/lib/theme';
 
 export type AnswerTierKind = 'last' | 'recent' | 'dispatch';
 
@@ -55,7 +55,7 @@ export function AnswerTierCard({
   useAutopilotPressTarget(testID, ref, handlePress);
 
   return (
-    <Animated.View entering={FadeInDown.delay(index * 45).springify().damping(18).stiffness(140)}>
+    <Entrance index={index}>
       <Pressable
         ref={ref}
         testID={testID}
@@ -113,13 +113,13 @@ export function AnswerTierCard({
           <Text style={[type.mono, styles.reason, { color: theme.inkSoft }]}>{observersNearby} observers within 5 minutes</Text>
         ) : null}
       </Pressable>
-    </Animated.View>
+    </Entrance>
   );
 }
 
 function RecentFreshness({ observedAt, ttlSeconds }: { observedAt: number; ttlSeconds: number }) {
   const theme = useActiveTheme();
-  const [now, setNow] = useState(Date.now());
+  const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
@@ -148,3 +148,4 @@ const styles = StyleSheet.create({
   meta: { marginTop: space.xs, fontSize: 11, lineHeight: 16 },
   reason: { marginTop: space.md, fontSize: 12, lineHeight: 17 },
 });
+

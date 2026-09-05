@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+
 
 import { DeclineSheet } from '@/components/DeclineSheet';
 import { Glyph } from '@/components/Glyph';
@@ -70,8 +70,7 @@ export default function VerifyingScreen() {
   if (!activeTaskId || !query || captureMode !== 'demo') return <MissingDataState title="No demo observation is ready." />;
 
   return (
-    <Animated.View
-      entering={FadeIn.duration(240).withInitialValues({ opacity: 0, transform: [{ scale: 0.98 }] } as never)}
+    <Entrance
       style={styles.flex}
     >
       <AppScreen scroll={false}>
@@ -99,9 +98,8 @@ export default function VerifyingScreen() {
             const done = index < visibleCount - 1;
             const active = index === visibleCount - 1;
             return (
-              <Animated.View
+              <Entrance
                 key={step.label}
-                entering={FadeInDown.springify().damping(18).stiffness(140)}
                 style={[styles.step, { opacity: done ? 0.58 : 1 }]}
               >
                 <View style={styles.rail}>
@@ -117,7 +115,7 @@ export default function VerifyingScreen() {
                     </View>
                   ) : null}
                 </View>
-              </Animated.View>
+              </Entrance>
             );
           })}
         </View>
@@ -127,7 +125,7 @@ export default function VerifyingScreen() {
         </Entrance>
       </AppScreen>
       <DeclineSheet visible={declineVisible} onClose={() => setDeclineVisible(false)} />
-    </Animated.View>
+    </Entrance>
   );
 }
 

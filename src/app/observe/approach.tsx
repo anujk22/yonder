@@ -9,7 +9,7 @@ import { useLiveLocation } from '@/lib/location';
 import { validateLocation } from '@/lib/geo';
 import { observe, font, type } from '@/lib/theme';
 export default function ApproachScreen() {
-  const router=useRouter();const query=useYonderStore(s=>s.queries.find(q=>q.id===s.activeTaskId));const place=useYonderStore(s=>s.places.find(p=>p.id===query?.placeId));const mode=useYonderStore(s=>s.captureMode);const location=useLiveLocation();const [now,setNow]=useState(Date.now());
+  const router=useRouter();const query=useYonderStore(s=>s.queries.find(q=>q.id===s.activeTaskId));const place=useYonderStore(s=>s.places.find(p=>p.id===query?.placeId));const mode=useYonderStore(s=>s.captureMode);const location=useLiveLocation();const [now,setNow]=useState(() => Date.now());
   useEffect(()=>{const timer=setInterval(()=>setNow(Date.now()),1000);return()=>clearInterval(timer);},[]);
   if(!query||!place||['ANSWERED','REFUNDED','BLOCKED'].includes(query.state))return <MissingDataState title="No check is ready here."/>;
   const target={latitude:place.lat,longitude:place.lng};const validation=validateLocation(location.fix,target,place.geofenceM,now);const demo=mode==='demo';
@@ -21,3 +21,4 @@ export default function ApproachScreen() {
   </AppScreen>;
 }
 const styles=StyleSheet.create({map:{height:220,borderRadius:16,overflow:'hidden'},center:{alignItems:'center',paddingVertical:24,gap:15},distance:{fontFamily:font.ui600,fontSize:32,lineHeight:38,color:observe.ink,letterSpacing:-1},body:{...type.body,fontSize:14,lineHeight:23,color:observe.inkSoft},card:{borderRadius:16,backgroundColor:observe.surface,padding:20,gap:12,marginBottom:22},label:{...type.micro,color:observe.accent,fontSize:10},note:{...type.label,color:observe.inkSoft,fontSize:11,lineHeight:18},actions:{gap:12}});
+

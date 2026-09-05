@@ -8,7 +8,7 @@ import { ask, font } from '@/lib/theme';
 export { LOWER_MANHATTAN_REGION, detailRegion } from './MapSurface.types';
 export type { MapCoordinate, MapMarkerData, MapRegion, MapSurfaceHandle, MapSurfaceProps } from './MapSurface.types';
 
-export const MapSurface = forwardRef<MapSurfaceHandle, MapSurfaceProps>(function MapSurface({ initialRegion = LOWER_MANHATTAN_REGION, markers = [], style, onRegionChange, onRegionChangeComplete, userLocation, geofence }, ref) {
+export const MapSurface = forwardRef<MapSurfaceHandle, MapSurfaceProps>(function MapSurface({ initialRegion = LOWER_MANHATTAN_REGION, markers = [], style, onRegionChange, onRegionChangeComplete, userLocation, geofence, controlsInset }, ref) {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<Leaflet.Map | null>(null);
   const library = useRef<typeof Leaflet | null>(null);
@@ -18,9 +18,15 @@ export const MapSurface = forwardRef<MapSurfaceHandle, MapSurfaceProps>(function
   const [ready, setReady] = useState(false);
   const [error, setError] = useState(false);
   const [retry, setRetry] = useState(0);
+  const insetRef = useRef(controlsInset);
+  useEffect(() => { insetRef.current = controlsInset; const node = map.current?.getContainer(); node?.style.setProperty('--yonder-map-top', `${controlsInset?.top ?? 0}px`); node?.style.setProperty('--yonder-map-bottom', `${controlsInset?.bottom ?? 0}px`); }, [controlsInset, ready]);
   useImperativeHandle(ref, () => ({ animateToRegion: (region, duration = 600) => {
     if (!map.current) return;
-    map.current.flyTo([region.latitude, region.longitude], zoomFor(region), { duration: duration / 1000 });
+    const L = library.current;
+    if (L && insetRef.current) {
+      const bounds = L.latLngBounds([region.latitude-region.latitudeDelta/2,region.longitude-region.longitudeDelta/2],[region.latitude+region.latitudeDelta/2,region.longitude+region.longitudeDelta/2]);
+      map.current.flyToBounds(bounds, { duration: duration / 1000, animate: duration > 0, paddingTopLeft: [16,insetRef.current.top],paddingBottomRight: [16,insetRef.current.bottom] });
+    } else map.current.flyTo([region.latitude, region.longitude], zoomFor(region), { duration: duration / 1000, animate: duration > 0 });
   } }), []);
   useEffect(() => {
     let disposed = false;
@@ -52,11 +58,21 @@ export const MapSurface = forwardRef<MapSurfaceHandle, MapSurfaceProps>(function
     const group = L.layerGroup().addTo(instance);
     markers.forEach(marker => {
       // Use DOM textContent: place names from external search must never become HTML.
-      const button = document.createElement('button'); button.className = 'yonder-map-pin'; button.type = 'button';
-      button.textContent = `${marker.label || 'Explore place'} ↗`; button.setAttribute('aria-label', marker.label || 'Explore place');
+      const button = document.createElement('button');
+      const compact = marker.active === false;
+      button.className = `yonder-map-pin${marker.active ? ' active' : ''}${compact ? ' compact' : ''}`;
+      button.type = 'button';
+      button.textContent = compact ? '•' : `${marker.label || 'Explore place'} ↗`;
+      button.title = marker.label || 'Explore place';
+      button.setAttribute('aria-label', marker.label || 'Explore place');
+      if (marker.active) {
+        const beacon = document.createElement('span');
+        beacon.className = 'yonder-pulse-beacon';
+        button.appendChild(beacon);
+      }
       button.addEventListener('click', event => { event.stopPropagation(); marker.onPress?.(); });
-      const icon = L.divIcon({ html: button, className: 'yonder-marker', iconSize: [140, 36], iconAnchor: [70, 36] });
-      L.marker([marker.coordinate.latitude, marker.coordinate.longitude], { icon, keyboard: false }).addTo(group);
+      const icon = L.divIcon({ html: button, className: 'yonder-marker', iconSize: compact ? [36, 36] : [180, 44], iconAnchor: compact ? [18, 18] : [90, 44] });
+      L.marker([marker.coordinate.latitude, marker.coordinate.longitude], { icon, keyboard: false, zIndexOffset: marker.active ? 1000 : 0 }).addTo(group);
     });
     if (geofence) L.circle([geofence.center.latitude, geofence.center.longitude], { radius: geofence.radius, color: '#52745C', weight: 2, fillOpacity: 0.1 }).addTo(group);
     if (userLocation) {

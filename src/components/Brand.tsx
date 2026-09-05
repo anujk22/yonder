@@ -4,6 +4,8 @@ import Svg, { Circle, Path } from 'react-native-svg';
 import { useActiveTheme, useYonderStore } from '@/lib/store';
 import { brand, font, type } from '@/lib/theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Info } from 'lucide-react-native';
+import { MotionPressable } from './MotionPressable';
 
 export function Scout({ size = 44, color = brand.espresso, background = brand.oat }: { size?: number; color?: string; background?: string }) {
   return <Svg width={size} height={size} viewBox="0 0 64 64" accessibilityLabel="Yonder scout" accessibilityRole="image">
@@ -24,6 +26,10 @@ export function AppHeader() {
     useYonderStore.getState().swapMode(route === '/observe' ? 'observe' : 'ask');
     router.push(route);
   };
+  if (!wide) return <View style={{ paddingTop: insets.top, backgroundColor: theme.bg }}><View style={styles.mobileBar}>
+    <MotionPressable accessibilityRole="button" accessibilityLabel="Yonder home" onPress={() => router.navigate('/')} style={styles.wordmark}><Scout size={31}/><Text style={[styles.mobileLogo, { color: theme.ink }]}>yonder.</Text></MotionPressable>
+    <MotionPressable accessibilityRole="button" accessibilityLabel="About this preview" onPress={() => router.push('/about')} style={[styles.previewPill, { borderColor: theme.border }]}><View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: theme.fresh }}/><Text style={[styles.previewText, { color: theme.inkSoft }]}>Preview</Text><Info size={15} color={theme.inkSoft}/></MotionPressable>
+  </View></View>;
   return <View style={[styles.header, { backgroundColor: theme.bg, borderColor: theme.border, paddingTop: insets.top }]}>
     <View style={[styles.headerInner, !wide && { paddingHorizontal: 20 }]}>
       <Pressable accessibilityRole="button" accessibilityLabel="Yonder home" onPress={() => go('/')} style={styles.wordmark}>
@@ -42,6 +48,7 @@ export function AppHeader() {
 }
 
 const styles = StyleSheet.create({
+  mobileBar: { minHeight: 64, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 22 }, mobileLogo: { fontFamily: font.black, fontSize: 29, lineHeight: 36, letterSpacing: -1.2 }, previewPill: { minHeight: 38, flexDirection: 'row', gap: 7, alignItems: 'center', paddingHorizontal: 12, borderWidth: 1, borderRadius: 22 }, previewText: { fontFamily: font.ui600, fontSize: 10, letterSpacing: .2 },
   header: { borderBottomWidth: 1 }, headerInner: { minHeight: 86, width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 48, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
   wordmark: { flexDirection: 'row', alignItems: 'center', gap: 8 }, logo: { fontFamily: font.black, fontSize: 32, letterSpacing: -1.7 },
   nav: { flexDirection: 'row', gap: 28 }, navItem: { paddingVertical: 14, borderBottomWidth: 2, borderBottomColor: 'transparent' },

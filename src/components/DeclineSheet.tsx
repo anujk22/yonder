@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import { Entrance } from './ui';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Glyph } from '@/components/Glyph';
@@ -30,10 +30,6 @@ export function DeclineSheet({ visible, onClose, onComplete }: DeclineSheetProps
   const blockActivePlace = useYonderStore((state) => state.blockActivePlace);
   const setWideShot = useYonderStore((state) => state.setWideShot);
   const [confirmation, setConfirmation] = useState<'blocked' | 'unsafe' | null>(null);
-
-  useEffect(() => {
-    if (!visible) setConfirmation(null);
-  }, [visible]);
 
   const dismiss = () => {
     setConfirmation(null);
@@ -70,10 +66,9 @@ export function DeclineSheet({ visible, onClose, onComplete }: DeclineSheetProps
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={dismiss} presentationStyle="overFullScreen">
       <SafeAreaView style={styles.overlay} edges={['top', 'bottom']}>
-        <Animated.View entering={FadeIn.duration(180)} style={[StyleSheet.absoluteFill, { backgroundColor: theme.scrim }]} />
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: theme.scrim }]} />
         <Pressable accessibilityLabel="Close decline sheet" onPress={dismiss} style={StyleSheet.absoluteFill} />
-        <Animated.View
-          entering={FadeInDown.springify().damping(18).stiffness(140)}
+        <Entrance
           style={[styles.sheet, { backgroundColor: theme.surface, borderColor: theme.border }]}
         >
           <View style={[styles.handle, { backgroundColor: theme.border }]} />
@@ -82,7 +77,7 @@ export function DeclineSheet({ visible, onClose, onComplete }: DeclineSheetProps
               <Text style={[type.title, { color: theme.ink }]}>{confirmation === 'blocked' ? 'Thanks for telling us.' : 'Thanks.'}</Text>
               <Text style={[type.body, { color: theme.inkSoft }]}>
                 {confirmation === 'blocked'
-                  ? `We've removed this location from Yonder.\nYou've been paid in full.`
+                  ? `This location is hidden in your preview.\nNo observation was submitted or rewarded.`
                   : `Never take an observation that doesn't feel right.\nNo penalty.`}
               </Text>
               <Pressable
@@ -121,10 +116,10 @@ export function DeclineSheet({ visible, onClose, onComplete }: DeclineSheetProps
                   </Pressable>
                 ))}
               </View>
-              <Text style={[type.label, styles.reassurance, { color: theme.inkSoft }]}>Observers are always paid for valid evidence, never for a particular answer.</Text>
+              <Text style={[type.label, styles.reassurance, { color: theme.inkSoft }]}>You can always stop. This preview uses demo credits only.</Text>
             </>
           )}
-        </Animated.View>
+        </Entrance>
       </SafeAreaView>
     </Modal>
   );

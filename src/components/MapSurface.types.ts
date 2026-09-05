@@ -4,7 +4,7 @@ import { Mode } from '@/lib/places';
 
 export type MapCoordinate = { latitude: number; longitude: number };
 export type MapRegion = MapCoordinate & { latitudeDelta: number; longitudeDelta: number };
-export type MapMarkerData = { id: string; coordinate: MapCoordinate; label?: string; testID?: string; onPress?: () => void };
+export type MapMarkerData = { id: string; coordinate: MapCoordinate; label?: string; testID?: string; active?: boolean; onPress?: () => void };
 
 export type MapSurfaceHandle = {
   animateToRegion: (region: MapRegion, duration?: number) => void;
@@ -16,6 +16,7 @@ export type MapSurfaceProps = {
   markers?: MapMarkerData[];
   userLocation?: (MapCoordinate & { accuracy: number }) | null;
   geofence?: { center: MapCoordinate; radius: number };
+  controlsInset?: { top: number; bottom: number };
   onRegionChange?: (region: MapRegion) => void;
   onRegionChangeComplete?: (region: MapRegion) => void;
   style?: StyleProp<ViewStyle>;

@@ -44,7 +44,8 @@
           "imageWidth": 148,
           "resizeMode": "contain"
         }
-      ]
+      ],
+      "expo-image"
     ],
     "experiments": {
       "typedRoutes": true,
@@ -52,4 +53,3 @@
     }
   }
 }
-

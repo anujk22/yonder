@@ -14,7 +14,7 @@ type ProofFrameProps = {
 
 export function ProofFrame({ uri, observedAt }: ProofFrameProps) {
   const theme = useActiveTheme();
-  const [now, setNow] = useState(Date.now());
+  const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
@@ -59,3 +59,4 @@ const styles = StyleSheet.create({
   captionLabel: { fontSize: 9, lineHeight: 12, letterSpacing: 0.65 },
   captionText: { flex: 1, textAlign: 'right', fontSize: 10, lineHeight: 14 },
 });
+

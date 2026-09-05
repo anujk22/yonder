@@ -5,10 +5,10 @@ export const brand = {
 } as const;
 
 export const ask = {
-  bg: '#F7F7F0',
+  bg: '#F8F7F2',
   surface: '#FFFFFF',
   surfaceAlt: '#E9EDE2',
-  ink: '#242A22',
+  ink: '#243C32',
   inkSoft: '#60665B',
   inkFaint: '#73796E',
   border: '#DDDFD4',
@@ -52,14 +52,16 @@ export const radii = { small: 12, card: 18, sheet: 28, pill: 999 } as const;
 export const space = { xxs: 4, xs: 8, sm: 12, md: 16, lg: 24, xl: 32, xxl: 48 } as const;
 
 export const font = {
-  serif: 'Inter_600SemiBold',
-  serifMedium: 'CormorantGaramond_500Medium',
-  display600: 'Inter_600SemiBold',
-  display700: 'Inter_900Black',
-  black: 'Inter_900Black',
-  ui400: 'Inter_400Regular',
-  ui500: 'Inter_500Medium',
-  ui600: 'Inter_600SemiBold',
+  serif: 'Fraunces_600SemiBold',
+  serifMedium: 'Fraunces_500Medium',
+  italic: 'Fraunces_500Medium_Italic',
+  display600: 'Fraunces_600SemiBold',
+  display700: 'Fraunces_700Bold',
+  black: 'Fraunces_700Bold',
+  ui400: 'Manrope_400Regular',
+  ui500: 'Manrope_500Medium',
+  ui600: 'Manrope_600SemiBold',
+  ui700: 'Manrope_700Bold',
   mono400: 'JetBrainsMono_400Regular',
   mono500: 'JetBrainsMono_500Medium',
 } as const;

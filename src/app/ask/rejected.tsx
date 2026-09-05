@@ -27,7 +27,7 @@ export default function RejectedScreen() {
         <View style={[styles.icon, { backgroundColor: theme.surface, borderColor: theme.danger }]}>
           <Glyph name="shield" color={theme.danger} size={34} />
         </View>
-        <Text style={[type.title, { color: theme.danger }]}>We can't ask this.</Text>
+        <Text style={[type.title, { color: theme.danger }]}>We can’t ask this.</Text>
         <Text style={[type.body, styles.explanation, { color: theme.inkSoft }]}>Yonder answers questions about places and conditions, never about identifiable people.</Text>
         <View style={[styles.ruleCard, { backgroundColor: theme.surfaceAlt }]}>
           <Text style={[type.micro, { color: theme.inkSoft }]}>THE BOUNDARY</Text>

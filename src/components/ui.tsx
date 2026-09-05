@@ -1,14 +1,15 @@
-import { PropsWithChildren, ReactNode, useRef } from 'react';
+import { PropsWithChildren, ReactNode, useEffect, useRef } from 'react';
 import { Pressable, ScrollView, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { usePathname, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
+import { MotionPressable } from './MotionPressable';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Glyph } from '@/components/Glyph';
 import { useAutopilotPressTarget } from '@/lib/autopilot';
 import { useActiveTheme } from '@/lib/store';
-import { font, radii, space, type } from '@/lib/theme';
+import { font, space, type } from '@/lib/theme';
 
 export function AppScreen({ children, scroll = true, style, bottomInset = true }: PropsWithChildren<{ scroll?: boolean; style?: StyleProp<ViewStyle>; bottomInset?: boolean }>) {
   const theme = useActiveTheme();
@@ -23,7 +24,7 @@ export function AppScreen({ children, scroll = true, style, bottomInset = true }
   ) : (
     <View style={[styles.content, styles.flex, bottomInset && styles.bottomInset, style]}>{children}</View>
   );
-  return <SafeAreaView style={[styles.screen, { backgroundColor: theme.bg }]} edges={['top', 'left', 'right']}>{body}</SafeAreaView>;
+  return <SafeAreaView style={[styles.screen, { backgroundColor: theme.bg }]} edges={['left', 'right']}>{body}</SafeAreaView>;
 }
 
 export function MissingDataState({ title = 'This step is not available yet.' }: { title?: string }) {
@@ -49,8 +50,12 @@ export function MissingDataState({ title = 'This step is not available yet.' }: 
 }
 
 export function Entrance({ children, index = 0, style }: PropsWithChildren<{ index?: number; style?: StyleProp<ViewStyle> }>) {
+  const reduced = useReducedMotion();
+  const progress = useSharedValue(reduced ? 1 : 0);
+  useEffect(() => { progress.set(reduced ? 1 : withDelay(index * 35, withTiming(1, { duration: 350 }))); }, [index, progress, reduced]);
+  const entrance = useAnimatedStyle(() => ({ opacity: progress.get(), transform: [{ translateY: (1 - progress.get()) * 12 }] }));
   return (
-    <Animated.View entering={FadeInDown.delay(index * 45).springify().damping(18).stiffness(140)} style={style}>
+    <Animated.View style={[style, entrance]}>
       {children}
     </Animated.View>
   );
@@ -97,20 +102,22 @@ export function PrimaryButton({ label, onPress, disabled = false, icon = 'arrow'
   };
   useAutopilotPressTarget(testID, ref, handlePress);
   return (
-    <Pressable
+    <MotionPressable
       ref={ref}
+      haptic={false}
+      disabled={disabled}
       testID={testID}
       accessibilityRole="button"
       accessibilityState={{ disabled }}
       onPress={handlePress}
       style={({ pressed }) => [
         styles.primaryButton,
-        { backgroundColor: palette.background, borderColor: palette.border, opacity: disabled ? 0.42 : pressed ? 0.88 : 1, transform: [{ scale: pressed ? 0.985 : 1 }] },
+        { backgroundColor: palette.background, borderColor: palette.border, opacity: disabled ? 0.42 : pressed ? 0.88 : 1 },
       ]}
     >
       <Text style={[type.label, styles.buttonLabel, { color: palette.foreground }]}>{label}</Text>
       <Glyph name={icon} color={palette.foreground} size={20} />
-    </Pressable>
+    </MotionPressable>
   );
 }
 
@@ -130,10 +137,10 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: space.lg, paddingTop: space.sm },
   bottomInset: { paddingBottom: 48 },
   headerRow: { minHeight: 54, flexDirection: 'row', alignItems: 'center', marginBottom: space.lg },
-  backButton: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
+  backButton: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
   headerTitle: { flex: 1, paddingHorizontal: space.sm, gap: 1 },
   headerRight: { minWidth: 42, alignItems: 'flex-end' },
-  primaryButton: { minHeight: 58, borderRadius: radii.small, borderWidth: 1, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  primaryButton: { minHeight: 56, borderRadius: 18, borderWidth: 1, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   buttonLabel: { fontFamily: font.ui600, fontSize: 15, textTransform: 'none', letterSpacing: 0.1 },
   hairline: { height: StyleSheet.hairlineWidth, width: '100%' },
   missingData: { flex: 1, justifyContent: 'center', gap: space.sm, paddingBottom: space.xl },

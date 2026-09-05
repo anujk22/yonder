@@ -22,7 +22,7 @@ const project = ({ latitude, longitude }: MapCoordinate) => ({
 });
 
 export const MapSurface = forwardRef<MapSurfaceHandle, MapSurfaceProps>(function MapSurface(
-  { mode = 'ask', initialRegion = LOWER_MANHATTAN_REGION, markers = [], onRegionChange, onRegionChangeComplete, style, userLocation, geofence },
+  { mode = 'ask', initialRegion = LOWER_MANHATTAN_REGION, markers = [], onRegionChange, onRegionChangeComplete, style, userLocation, geofence, controlsInset },
   ref,
 ) {
   const mapRef = useRef<MapView>(null);
@@ -51,6 +51,7 @@ export const MapSurface = forwardRef<MapSurfaceHandle, MapSurfaceProps>(function
         ref={mapRef}
         style={StyleSheet.absoluteFill}
         initialRegion={initialRegion}
+        mapPadding={{ top: controlsInset?.top ?? 0, bottom: controlsInset?.bottom ?? 0, left: 0, right: 0 }}
         showsPointsOfInterests
         showsTraffic={false}
         showsCompass={false}
