@@ -1,20 +1,165 @@
-import { Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
-import { useRouter } from 'expo-router';
-import { AppScreen, Entrance, PrimaryButton } from '@/components/ui';
-import { Scout } from '@/components/Brand';
-import { ask, font, type } from '@/lib/theme';
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from "react-native";
+import { useRouter } from "expo-router";
+import { AppScreen, Entrance, PrimaryButton } from "@/components/ui";
+import { BrandScene } from "@/components/BrandObject";
+import { ask, font, type } from "@/lib/theme";
 
 export default function AboutScreen() {
-  const router = useRouter(); const { width } = useWindowDimensions();
-  return <AppScreen><Entrance style={styles.hero}><Scout size={78}/><Text style={styles.eyebrow}>YOUR NEW LOCAL INSTINCT</Text><Text accessibilityRole="header" style={[styles.title, width < 600 && { fontSize: 43, lineHeight: 45 }]}>The world changes.{`\n`}Your information should, too.</Text><Text style={styles.body}>A review from last summer can’t tell you how long the line is today. Yonder is for the small, right-now questions that make a real difference to your day.</Text></Entrance>
-    <View style={[styles.steps, width < 800 && { flexDirection: 'column' }]}>{[
-      ['01', 'Pick your place.', 'Find a park, a pizza spot, or anywhere you’re headed. Ask one specific question about what’s happening now.'],
-      ['02', 'Get a pair of eyes.', 'Read an existing observation or request a fresh check. See the price and freshness before you decide.'],
-      ['03', 'Go with a little more certainty.', 'Get a time-stamped answer with its evidence and limitations. Conditions change, so every answer has an expiry.'],
-    ].map(([n,title,body]) => <View key={n} style={styles.step}><Text style={styles.number}>{n} ↗</Text><Text style={styles.stepTitle}>{title}</Text><Text style={styles.stepBody}>{body}</Text></View>)}</View>
-    <View style={styles.ethos}><Text style={styles.stepTitle}>Curious about places. Respectful of people.</Text><Text style={styles.stepBody}>Check public spaces and observable conditions. Don’t track a person, enter restricted areas, or keep filming when someone asks you to stop. A location reading supports a check; it does not prove the contents of a photo.</Text></View>
-    <View style={styles.preview}><Text style={styles.eyebrow}>WHAT YOU CAN TRY TODAY</Text><Text style={styles.stepTitle}>Real map. Honest preview.</Text><Text style={styles.stepBody}>Explore the real world map, search real places, save your favorites, and follow your location with permission. The NYC observations, people nearby, prices, and earnings are sample data. Requests stay on this device. No money moves and no one is dispatched.</Text><Text style={styles.stepBody}>The device-check flow uses actual GPS accuracy, distance and reading age to unlock your camera. Photos remain on your device and are not independently verified. The demo flow lets you try the full answer journey without sharing location or camera access.</Text><Text style={styles.stepBody}>World search sends the public place name you enter to OpenStreetMap through Yonder’s server. Map tiles are fetched from OpenStreetMap for the area you view. Saved places and request history are stored on this device.</Text></View>
-    <View style={styles.actions}><PrimaryButton label="Find your next little adventure" onPress={() => router.push('/')}/><Pressable accessibilityRole="button" onPress={() => router.push('/observe')}><Text style={styles.link}>Already out and about? See how helping works ↗</Text></Pressable></View>
-  </AppScreen>;
+  const router = useRouter();
+  const { width } = useWindowDimensions();
+  return (
+    <AppScreen>
+      <Entrance style={styles.hero}>
+        <BrandScene />
+        <Text style={styles.eyebrow}>YOUR NEW LOCAL INSTINCT</Text>
+        <Text
+          accessibilityRole="header"
+          style={[
+            styles.title,
+            width < 600 && { fontSize: 43, lineHeight: 45 },
+          ]}
+        >
+          The world changes.{`\n`}Your information should, too.
+        </Text>
+        <Text style={styles.body}>
+          A review from last summer can’t tell you how long the line is today.
+          Yonder is for the small, right-now questions that make a real
+          difference to your day.
+        </Text>
+      </Entrance>
+      <View style={[styles.steps, width < 800 && { flexDirection: "column" }]}>
+        {[
+          [
+            "01",
+            "Pick your place.",
+            "Find a park, a pizza spot, or anywhere you’re headed. Ask one specific question about what’s happening now.",
+          ],
+          [
+            "02",
+            "Get a pair of eyes.",
+            "Read an existing observation or request a fresh check. See the price and freshness before you decide.",
+          ],
+          [
+            "03",
+            "Go with a little more certainty.",
+            "Get a time-stamped answer with its evidence and limitations. Conditions change, so every answer has an expiry.",
+          ],
+        ].map(([n, title, body]) => (
+          <View key={n} style={styles.step}>
+            <Text style={styles.number}>{n} ↗</Text>
+            <Text style={styles.stepTitle}>{title}</Text>
+            <Text style={styles.stepBody}>{body}</Text>
+          </View>
+        ))}
+      </View>
+      <View style={styles.ethos}>
+        <Text style={styles.stepTitle}>
+          Curious about places. Respectful of people.
+        </Text>
+        <Text style={styles.stepBody}>
+          Check public spaces and observable conditions. Don’t track a person,
+          enter restricted areas, or keep filming when someone asks you to stop.
+          A location reading supports a check; it does not prove the contents of
+          a photo.
+        </Text>
+      </View>
+      <View style={styles.preview}>
+        <Text style={styles.eyebrow}>WHAT YOU CAN TRY TODAY</Text>
+        <Text style={styles.stepTitle}>What’s available today.</Text>
+        <Text style={styles.stepBody}>
+          Explore the real world map, search real places, save your favorites,
+          and follow your location with permission. The optional NYC tour,
+          prices, and earnings are sample data. Requests stay on this device. No
+          money moves and no one is dispatched.
+        </Text>
+        <Text style={styles.stepBody}>
+          The device-check flow uses actual GPS accuracy, distance and reading
+          age to unlock your camera. Photos remain on your device and are not
+          independently verified. The demo flow lets you try the full answer
+          journey without sharing location or camera access.
+        </Text>
+        <Text style={styles.stepBody}>
+          USA place search sends the place name you enter to OpenStreetMap
+          through Yonder’s server. Nearby discovery sends your map location,
+          rounded to three decimal places, through our server to Overpass to
+          find places. Map tiles are fetched from OpenStreetMap for the area you
+          view. Saved places and request history are stored on this device.
+        </Text>
+      </View>
+      <View style={styles.actions}>
+        <PrimaryButton
+          label="Find your next little adventure"
+          onPress={() => router.push("/")}
+        />
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.push("/observe")}
+        >
+          <Text style={styles.link}>
+            Already out and about? See how helping works ↗
+          </Text>
+        </Pressable>
+      </View>
+    </AppScreen>
+  );
 }
-const styles = StyleSheet.create({ hero: { alignItems: 'center', paddingVertical: 28, gap: 18 }, eyebrow: { ...type.micro, color: ask.inkSoft }, title: { fontFamily: font.black, fontSize: 57, lineHeight: 59, letterSpacing: -2.7, color: ask.ink, textAlign: 'center' }, body: { ...type.body, color: ask.inkSoft, maxWidth: 650, textAlign: 'center' }, steps: { flexDirection: 'row', gap: 16, marginTop: 20 }, step: { flex: 1, padding: 24, borderWidth: 1, borderColor: ask.border, borderRadius: 16, backgroundColor: ask.surface, gap: 14 }, number: { fontFamily: font.mono500, color: ask.fresh, fontSize: 22 }, stepTitle: { fontFamily: font.ui600, fontSize: 22, lineHeight: 28, letterSpacing: -0.7, color: ask.ink }, stepBody: { ...type.body, fontSize: 14, lineHeight: 23, color: ask.inkSoft }, ethos: { padding: 26, backgroundColor: ask.accentSoft, borderRadius: 16, gap: 12, marginTop: 24 }, preview: { padding: 24, borderColor: ask.border, borderWidth: 1, borderRadius: 16, marginTop: 22, gap: 14 }, actions: { gap: 16, marginTop: 24 }, link: { ...type.label, color: ask.fresh, textAlign: 'center', padding: 12 } });
+const styles = StyleSheet.create({
+  hero: { alignItems: "center", paddingVertical: 28, gap: 18 },
+  eyebrow: { ...type.micro, color: ask.inkSoft },
+  title: {
+    fontFamily: font.ui700,
+    fontSize: 36,
+    lineHeight: 41,
+    letterSpacing: -1.5,
+    color: ask.ink,
+    textAlign: "center",
+  },
+  body: {
+    ...type.body,
+    color: ask.inkSoft,
+    maxWidth: 650,
+    textAlign: "center",
+  },
+  steps: { flexDirection: "row", gap: 16, marginTop: 20 },
+  step: {
+    flex: 1,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: ask.border,
+    borderRadius: 16,
+    backgroundColor: ask.surface,
+    gap: 14,
+  },
+  number: { fontFamily: font.mono500, color: ask.fresh, fontSize: 22 },
+  stepTitle: {
+    fontFamily: font.ui600,
+    fontSize: 22,
+    lineHeight: 28,
+    letterSpacing: -0.7,
+    color: ask.ink,
+  },
+  stepBody: { ...type.body, fontSize: 14, lineHeight: 23, color: ask.inkSoft },
+  ethos: {
+    padding: 26,
+    backgroundColor: ask.accentSoft,
+    borderRadius: 16,
+    gap: 12,
+    marginTop: 24,
+  },
+  preview: {
+    padding: 24,
+    borderColor: ask.border,
+    borderWidth: 1,
+    borderRadius: 16,
+    marginTop: 22,
+    gap: 14,
+  },
+  actions: { gap: 16, marginTop: 24 },
+  link: { ...type.label, color: ask.fresh, textAlign: "center", padding: 12 },
+});

@@ -14,7 +14,7 @@ export async function GET(request: Request) {
   busy = true; lastRequest = Date.now();
   try {
     const url = new URL(process.env.GEOCODER_URL || 'https://nominatim.openstreetmap.org/search');
-    url.search = new URLSearchParams({ q, format: 'jsonv2', limit: '6', addressdetails: '1' }).toString();
+    url.search = new URLSearchParams({ q, format: 'jsonv2', limit: '6', addressdetails: '1', countrycodes: 'us' }).toString();
     const response = await fetch(url, { headers: { 'User-Agent': 'YonderPrototype/2.0 (+https://github.com/anujk22/yonder)', 'Accept': 'application/json' }, signal: AbortSignal.timeout(9000) });
     if (!response.ok) throw new Error('Geocoder unavailable');
     const rows = await response.json() as { osm_type: string; osm_id: number; name?: string; display_name: string; lat: string; lon: string; type: string }[];

@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 
 import { Glyph } from '@/components/Glyph';
-import { YMark } from '@/components/YMark';
+import { BrandObject } from '@/components/BrandObject';
 import { AppScreen, Entrance, MissingDataState, PrimaryButton, ScreenHeader } from '@/components/ui';
 import { registerAutopilotAbortHandler, useAutopilotPressTarget } from '@/lib/autopilot';
 import { DEMO_FLAGS } from '@/lib/demoFlags';
@@ -85,7 +85,7 @@ export default function CompileScreen() {
     return (
       <AppScreen scroll={false} style={styles.loadingScreen}>
         <View style={[styles.loadingMark, { backgroundColor: theme.surface, borderColor: theme.border, shadowColor: theme.shadow }]}>
-          <YMark size={88} bodyColor={theme.accent} headColor={theme.accent} headPulse />
+          <BrandObject kind="map" size={150} />
         </View>
         <Text style={[type.micro, { color: theme.inkSoft }]}>COMPILING QUERY</Text>
         <Text style={[type.heading, styles.loadingTitle, { color: theme.ink }]}>Making your question machine-checkable</Text>

@@ -18,8 +18,8 @@ export const freshnessColor = (band: FreshnessBand, theme: AppTheme) => {
 export const formatAge = (seconds: number) => {
   if (seconds < 90) return `${seconds}s ago`;
   if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${seconds % 60}s ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
-  return `${Math.floor(seconds / 86400)} days ago`;
+  if (seconds < 86400) { const hours = Math.floor(seconds / 3600); return `${hours} hour${hours === 1 ? '' : 's'} ago`; }
+  const days = Math.floor(seconds / 86400); return `${days} day${days === 1 ? '' : 's'} ago`;
 };
 
 export const formatVerifiedAge = (seconds: number) => `Verified ${formatAge(seconds)}`;

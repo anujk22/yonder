@@ -5,7 +5,7 @@ import { formatAge, freshness, freshnessColor } from '@/lib/freshness';
 import { useActiveTheme } from '@/lib/store';
 import { type } from '@/lib/theme';
 
-export function FreshnessLabel({ observedAt, ttlSeconds, prefix = 'Verified ', style }: { observedAt: number; ttlSeconds: number; prefix?: string; style?: StyleProp<TextStyle> }) {
+export function FreshnessLabel({ observedAt, ttlSeconds, prefix = 'Sample · ', style }: { observedAt: number; ttlSeconds: number; prefix?: string; style?: StyleProp<TextStyle> }) {
   const theme = useActiveTheme();
   const [now, setNow] = useState(() => Date.now());
 

@@ -17,7 +17,8 @@ import Animated, {
 import { DeclineSheet } from '@/components/DeclineSheet';
 import { Glyph } from '@/components/Glyph';
 import { MissingDataState, PrimaryButton } from '@/components/ui';
-import { YMark } from '@/components/YMark';
+import { BrandObject } from '@/components/BrandObject';
+import { Scout } from '@/components/Brand';
 import { AUTOPILOT_FILMSTRIP_DWELL_MS, isAutopilotRunning, registerAutopilotAbortHandler, useAutopilotPressTarget, waitForAutopilotDelay } from '@/lib/autopilot';
 import { DEMO_FLAGS } from '@/lib/demoFlags';
 import { PIER_TWO_PROOF, PIER_TWO_PROOF_ASPECT_RATIO } from '@/lib/proofMedia';
@@ -151,7 +152,7 @@ export default function CaptureScreen() {
   if (!demoCapture && !permission) {
     return (
       <View style={[styles.permissionScreen, { backgroundColor: theme.bg }]}>
-        <YMark size={72} bodyColor={theme.accent} headPulse />
+        <BrandObject size={110} />
       </View>
     );
   }
@@ -159,7 +160,7 @@ export default function CaptureScreen() {
   if (!demoCapture && !permission?.granted) {
     return (
       <View style={[styles.permissionScreen, { backgroundColor: theme.bg, paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-        <YMark size={76} bodyColor={theme.accent} />
+        <BrandObject size={110} />
         <Text style={[type.title, styles.permissionTitle, { color: theme.ink }]}>Live capture needs the camera.</Text>
         <Text style={[type.body, styles.permissionCopy, { color: theme.inkSoft }]}>Yonder only accepts evidence captured here and now. There is no photo upload.</Text>
         <View style={styles.permissionButton}>
@@ -195,7 +196,7 @@ export default function CaptureScreen() {
         </Animated.View>
         <View style={[styles.targetLabel, { backgroundColor: 'rgba(0, 0, 0, 0.82)', borderColor: targetFound ? theme.accent : 'rgba(255, 255, 255, 0.16)' }]}>
           <Text style={[type.micro, { color: targetFound ? theme.accent : '#FFFFFF' }]}>
-            {targetFound ? (demoCapture ? 'DEMO SCENE · NO LIVE ANALYSIS' : 'CAMERA READY · FRAME THE AREA') : 'Getting the camera ready…'}
+            {targetFound ? (demoCapture ? 'EXAMPLE SCENE · NO LIVE ANALYSIS' : 'CAMERA READY · FRAME THE AREA') : 'Getting the camera ready…'}
           </Text>
         </View>
       </View>
@@ -204,7 +205,7 @@ export default function CaptureScreen() {
         <View style={styles.topArea}>
           <View style={[styles.instructionBar, { backgroundColor: 'rgba(0, 0, 0, 0.82)', borderColor: 'rgba(255, 255, 255, 0.14)' }]}>
             <View style={styles.instructionText}>
-              <Text style={[type.micro, { color: theme.accent }]}>LIVE OBSERVATION</Text>
+              <Text style={[type.micro, { color: theme.accent }]}>{demoCapture ? 'PRACTICE OBSERVATION' : 'LIVE OBSERVATION'}</Text>
               <Text style={[type.body, styles.instruction, { color: '#FFFFFF' }]}>{captureInstruction(place?.id, wideShot)}</Text>
             </View>
             <Pressable
@@ -228,7 +229,7 @@ export default function CaptureScreen() {
         <View style={styles.captureArea}>
           {capturing ? (
             <Animated.View style={[styles.capturingBanner, { backgroundColor: 'rgba(0, 0, 0, 0.88)', borderColor: 'rgba(255, 255, 255, 0.14)', borderWidth: 1 }]}>
-              <YMark size={24} bodyColor={theme.accent} headPulse />
+              <Scout size={24} />
               <Text style={[type.mono, styles.capturingText, { color: '#FFFFFF' }]}>Capturing 3 frames · keep the camera steady</Text>
             </Animated.View>
           ) : null}
@@ -260,7 +261,7 @@ export default function CaptureScreen() {
             ref={shutterRef}
             testID="capture-shutter"
             accessibilityRole="button"
-            accessibilityLabel="Capture three live frames"
+            accessibilityLabel={demoCapture ? 'Capture three sample frames' : 'Capture three live frames'}
             disabled={!captureReady || capturing}
             onPress={captureFrames}
             onPressIn={() => {

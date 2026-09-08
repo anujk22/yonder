@@ -289,7 +289,7 @@ export const createYonderState: StateCreator<YonderStore> = (set, get) => ({
       return {
         queries: state.queries.map((item) =>
           item.id === activeQueryId
-            ? { ...item, state: 'OPEN' as const, isNew: true, statusLog: [...item.statusLog, { label: 'Request saved in preview', at: Date.now() }] }
+            ? { ...item, state: 'OPEN' as const, isNew: true, statusLog: [...item.statusLog, { label: 'Request saved on this device', at: Date.now() }] }
             : item,
         ),
         activeTaskId: activeQueryId,

@@ -77,7 +77,7 @@ export function DeclineSheet({ visible, onClose, onComplete }: DeclineSheetProps
               <Text style={[type.title, { color: theme.ink }]}>{confirmation === 'blocked' ? 'Thanks for telling us.' : 'Thanks.'}</Text>
               <Text style={[type.body, { color: theme.inkSoft }]}>
                 {confirmation === 'blocked'
-                  ? `This location is hidden in your preview.\nNo observation was submitted or rewarded.`
+                  ? `This location is hidden from your places.\nNo observation was submitted or rewarded.`
                   : `Never take an observation that doesn't feel right.\nNo penalty.`}
               </Text>
               <Pressable
@@ -116,7 +116,7 @@ export function DeclineSheet({ visible, onClose, onComplete }: DeclineSheetProps
                   </Pressable>
                 ))}
               </View>
-              <Text style={[type.label, styles.reassurance, { color: theme.inkSoft }]}>You can always stop. This preview uses demo credits only.</Text>
+              <Text style={[type.label, styles.reassurance, { color: theme.inkSoft }]}>You can always stop. Only simulated credits are used.</Text>
             </>
           )}
         </Entrance>
