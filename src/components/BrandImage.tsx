@@ -2,7 +2,8 @@ import { Image } from "expo-image";
 import { StyleSheet } from "react-native";
 
 export const brandArtwork = {
-  compass: require("../../assets/brand/objects/compass-vinyl.webp"),
+  grocery: require("../../assets/brand/objects/grocery-vinyl.webp"),
+  compass: require("../../assets/brand/objects/compass-classic-vinyl.webp"),
   chat: require("../../assets/brand/objects/chat-vinyl.webp"),
   coffee: require("../../assets/brand/objects/coffee-vinyl.webp"),
   outside: require("../../assets/brand/objects/outside-vinyl.webp"),

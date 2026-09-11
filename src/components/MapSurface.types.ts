@@ -19,6 +19,7 @@ export type MapSurfaceProps = {
   controlsInset?: { top: number; bottom: number };
   onRegionChange?: (region: MapRegion) => void;
   onRegionChangeComplete?: (region: MapRegion) => void;
+  onMapPress?: (coordinate: MapCoordinate) => void;
   style?: StyleProp<ViewStyle>;
 };
 

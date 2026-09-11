@@ -8,6 +8,7 @@ const art: Record<
   PlaceArtKind,
   { object: ArtworkKind; colors: [string, string]; caption: string }
 > = {
+  grocery: { object: "grocery", colors: ["#F6EFCF", "#DCDDAD"], caption: "A LITTLE EVERYDAY ESSENTIAL." },
   court: {
     object: "basketball",
     colors: ["#FFF0C0", "#F2D899"],

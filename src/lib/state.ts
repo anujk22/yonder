@@ -153,11 +153,13 @@ const makeInitialState = () => {
     isModeSwitching: false,
     savedPlaceIds: [] as string[],
     captureMode: 'demo' as 'demo' | 'device',
+    spotConfirmedQueryId: null as string | null,
     locationEvidence: null as LocationFix | null,
   };
 };
 
 type ModeRevealState = {
+  destination?: string;
   id: number;
   x: number;
   y: number;
@@ -168,6 +170,8 @@ type ModeRevealState = {
 export type YonderStore = {
   savedPlaceIds: string[];
   captureMode: 'demo' | 'device';
+  spotConfirmedQueryId: string | null;
+  setSpotConfirmed: (queryId: string | null) => void;
   locationEvidence: LocationFix | null;
   toggleSavedPlace: (id: string) => void;
   addPlace: (place: Place) => void;
@@ -221,7 +225,8 @@ export const createYonderState: StateCreator<YonderStore> = (set, get) => ({
   ...makeInitialState(),
   toggleSavedPlace: (id) => set(s => ({ savedPlaceIds: s.savedPlaceIds.includes(id) ? s.savedPlaceIds.filter(p => p !== id) : [...s.savedPlaceIds, id] })),
   addPlace: (place) => set(s => ({ places: s.places.some(p => p.id === place.id) ? s.places : [...s.places, place] })),
-  setCaptureMode: (captureMode) => set({ captureMode, locationEvidence: null, capturedFrames: [] }),
+  setCaptureMode: (captureMode) => set({ captureMode, locationEvidence: null, capturedFrames: [], spotConfirmedQueryId: null }),
+  setSpotConfirmed: (spotConfirmedQueryId) => set({ spotConfirmedQueryId }),
   setLocationEvidence: (locationEvidence) => set({ locationEvidence }),
   cancelQuery: (id) => set(s => ({ queries: s.queries.map(q => q.id === id && !['ANSWERED', 'REFUNDED', 'BLOCKED'].includes(q.state) ? { ...q, state: 'REFUNDED', refundReason: 'Cancelled by you', statusLog: [...q.statusLog, { label: 'Request cancelled · no charge', at: Date.now() }] } : q) })),
 
@@ -267,7 +272,7 @@ export const createYonderState: StateCreator<YonderStore> = (set, get) => ({
       placeId: state.resolvedPlaceId,
       queryType,
       targetHint: state.targetHint.trim() || null,
-      spec: compileSpec(state.resolvedPlaceId, queryType),
+      spec: place?.communitySpot ? [`Identify the spot: ${place.communitySpot.description}`, "Include the identifying landmarks and the requested detail in the frame", "Confirm the pin and landmarks match before capture", "Fresh in-app photos within 50 m; independent review still required"] : compileSpec(state.resolvedPlaceId, queryType),
       ...pricing,
       deadlineMinutes: state.deadlineMinutes,
       createdAt: Date.now(),
@@ -322,7 +327,7 @@ export const createYonderState: StateCreator<YonderStore> = (set, get) => ({
       activeAnswerId: answerId,
       walletCents: Math.max(0, state.walletCents - priceCents),
     }; }),
-  setActiveTask: (activeTaskId) => set({ activeTaskId, capturedFrames: [], wideShot: false }),
+  setActiveTask: (activeTaskId) => set({ activeTaskId, capturedFrames: [], wideShot: false, spotConfirmedQueryId: null }),
   updateQueryState: (queryId, queryState, label, detail) =>
     set((state) => ({
       queries: state.queries.map((query) =>
@@ -349,6 +354,7 @@ export const createYonderState: StateCreator<YonderStore> = (set, get) => ({
     if (!query || query.state !== 'VERIFYING' || state.captureMode !== 'demo') return null;
     if (query.isNew && (Date.now() > query.createdAt + query.deadlineMinutes * 60000 || state.walletCents < query.bountyCents)) return null;
     const place = state.places.find((item) => item.id === query.placeId);
+    if (place?.communitySpot) return null;
     const result = resultFor(query.placeId, query.queryType);
     const charged = result.confidence >= CONFIDENCE_THRESHOLD;
     const answerId = `answer-${query.id}-${Date.now()}`;

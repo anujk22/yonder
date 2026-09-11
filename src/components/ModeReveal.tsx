@@ -1,177 +1,219 @@
 import { useEffect } from "react";
 import { StyleSheet, useWindowDimensions, View, Text } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, type Href } from "expo-router";
 import * as Haptics from "expo-haptics";
+import Svg, { Path } from "react-native-svg";
 import Animated, {
   Easing,
+  useAnimatedProps,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
-  withSpring,
+  withDelay,
+  withSequence,
   cancelAnimation,
 } from "react-native-reanimated";
-
 import { BrandImage } from "@/components/BrandImage";
 import { registerAutopilotAbortHandler } from "@/lib/autopilot";
 import { useYonderStore } from "@/lib/store";
 import { font } from "@/lib/theme";
+const AnimatedPath = Animated.createAnimatedComponent(Path);
 
+/** A moving band covers the route swap, then recedes to reveal the destination. */
+function waveBand(
+  width: number,
+  height: number,
+  progress: number,
+  phase: number,
+  lead: number,
+) {
+  "worklet";
+  const crest = height + 100 - progress * (height + 200) - lead;
+  const bottom = crest + height + 200;
+  const amplitude = Math.min(55, width * 0.1);
+  let path = "";
+  for (let i = 0; i <= 32; i++) {
+    const x = -10 + ((width + 20) * i) / 32;
+    const y = crest + Math.sin((i / 32) * Math.PI * 2 + phase) * amplitude;
+    path += `${i ? "L" : "M"}${x},${y} `;
+  }
+  for (let i = 32; i >= 0; i--) {
+    const x = -10 + ((width + 20) * i) / 32;
+    const y =
+      bottom + Math.sin((i / 32) * Math.PI * 2 + phase + 1.3) * amplitude;
+    path += `L${x},${y} `;
+  }
+  return path + "Z";
+}
 export function ModeReveal() {
   const router = useRouter();
   const { width, height } = useWindowDimensions();
-  const reveal = useYonderStore((state) => state.modeReveal);
-  const activeAnswerId = useYonderStore((state) => state.activeAnswerId);
-  const swapMode = useYonderStore((state) => state.swapMode);
-  const finishModeReveal = useYonderStore((state) => state.finishModeReveal);
-  const scale = useSharedValue(1);
+  const reveal = useYonderStore((s) => s.modeReveal);
+  const activeAnswerId = useYonderStore((s) => s.activeAnswerId);
+  const swapMode = useYonderStore((s) => s.swapMode);
+  const finish = useYonderStore((s) => s.finishModeReveal);
+  const progress = useSharedValue(0);
+  const phase = useSharedValue(0);
   const opacity = useSharedValue(1);
-  const logoOpacity = useSharedValue(0.4);
-  const logoScale = useSharedValue(0.4);
-
+  const mark = useSharedValue(0);
+  const spin = useSharedValue(0);
   useEffect(() => {
     if (!reveal) return;
-    const duration = reveal.reduceMotion ? 0 : 430;
-    const swapAt = reveal.reduceMotion ? 0 : 450;
-    const total = reveal.reduceMotion ? 160 : 1080;
-    const coverScale = (2 * Math.hypot(width, height)) / 20;
-    scale.value = reveal.reduceMotion ? coverScale : 1;
-    opacity.value = 1;
-    logoOpacity.value = 0;
-    logoOpacity.value = withTiming(reveal.reduceMotion ? 0 : 1, {
-      duration: 300,
-    });
-    logoScale.value = 0.4;
-    scale.value = withTiming(coverScale, {
-      duration,
-      easing: Easing.bezier(0.22, 1, 0.36, 1),
-    });
-    logoScale.value = reveal.reduceMotion
-      ? 1
-      : withSpring(1, { damping: 12, stiffness: 140 });
-
-    const swapTimer = setTimeout(() => {
-      swapMode(reveal.to);
-      void Haptics.selectionAsync().catch(() => {});
-      if (reveal.to === "observe") {
-        router.replace("/observe");
-      } else if (activeAnswerId) {
-        router.replace(`/ask/answer/${activeAnswerId}`);
-      } else {
-        router.replace("/ask");
-      }
-    }, swapAt);
-
-    const fadeTimer = setTimeout(
+    const reduced = reveal.reduceMotion;
+    progress.set(reduced ? 1 : 0);
+    phase.set(0);
+    opacity.set(1);
+    mark.set(0);
+    spin.set(0);
+    if (!reduced) {
+      progress.set(
+        withSequence(
+          withTiming(1, { duration: 650, easing: Easing.inOut(Easing.cubic) }),
+          withDelay(
+            100,
+            withTiming(2, {
+              duration: 600,
+              easing: Easing.inOut(Easing.cubic),
+            }),
+          ),
+        ),
+      );
+      phase.set(
+        withTiming(Math.PI * 2.8, { duration: 1350, easing: Easing.linear }),
+      );
+      mark.set(
+        withDelay(
+          210,
+          withSequence(
+            withTiming(1, { duration: 250 }),
+            withDelay(430, withTiming(0, { duration: 230 })),
+          ),
+        ),
+      );
+      spin.set(
+        withDelay(
+          190,
+          withTiming(360, { duration: 810, easing: Easing.out(Easing.cubic) }),
+        ),
+      );
+    }
+    const swap = setTimeout(
       () => {
-        opacity.value = withTiming(0, {
-          duration: reveal.reduceMotion ? 140 : 260,
-        });
-        logoOpacity.value = withTiming(0, { duration: 180 });
+        swapMode(reveal.to);
+        void Haptics.selectionAsync().catch(() => {});
+        const destination =
+          reveal.destination ??
+          (reveal.to === "observe"
+            ? "/observe"
+            : activeAnswerId
+              ? `/ask/answer/${activeAnswerId}`
+              : "/");
+        router.replace(destination as Href);
+        if (reduced) opacity.set(withTiming(0, { duration: 140 }));
       },
-      reveal.reduceMotion ? 10 : 800,
+      reduced ? 0 : 670,
     );
-
-    const doneTimer = setTimeout(finishModeReveal, total);
-    const unregisterAbort = registerAutopilotAbortHandler(() => {
-      clearTimeout(swapTimer);
-      clearTimeout(fadeTimer);
-      clearTimeout(doneTimer);
-      finishModeReveal();
+    const done = setTimeout(finish, reduced ? 160 : 1380);
+    const abort = registerAutopilotAbortHandler(() => {
+      clearTimeout(swap);
+      clearTimeout(done);
+      finish();
     });
     return () => {
-      clearTimeout(swapTimer);
-      clearTimeout(fadeTimer);
-      clearTimeout(doneTimer);
-      cancelAnimation(scale);
-      cancelAnimation(opacity);
-      cancelAnimation(logoOpacity);
-      cancelAnimation(logoScale);
-      unregisterAbort();
+      clearTimeout(swap);
+      clearTimeout(done);
+      [progress, phase, opacity, mark, spin].forEach(cancelAnimation);
+      abort();
     };
   }, [
-    activeAnswerId,
-    finishModeReveal,
-    height,
-    logoOpacity,
-    logoScale,
-    opacity,
     reveal,
+    activeAnswerId,
     router,
-    scale,
     swapMode,
-    width,
+    finish,
+    progress,
+    phase,
+    opacity,
+    mark,
+    spin,
   ]);
-
-  const discStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-    opacity: opacity.value,
+  const backWave = useAnimatedProps(() => ({
+    d: waveBand(width, height, progress.get(), phase.get() + 0.6, 32),
   }));
-  const markStyle = useAnimatedStyle(() => ({
-    opacity: logoOpacity.value,
-    transform: [{ scale: logoScale.value }],
+  const frontWave = useAnimatedProps(() => ({
+    d: waveBand(width, height, progress.get(), phase.get(), 0),
   }));
-
+  const shell = useAnimatedStyle(() => ({ opacity: opacity.get() }));
+  const label = useAnimatedStyle(() => ({
+    opacity: mark.get(),
+    transform: [{ translateY: (1 - mark.get()) * 16 }],
+  }));
+  const mascot = useAnimatedStyle(() => ({
+    transform: [
+      { rotate: `${spin.get()}deg` },
+      { scale: 0.88 + 0.12 * mark.get() },
+    ],
+  }));
   if (!reveal) return null;
-
   return (
-    <View style={[StyleSheet.absoluteFill, styles.noPointerEvents]}>
-      <Animated.View
-        style={[
-          styles.disc,
-          {
-            left: reveal.x - 10,
-            top: reveal.y - 10,
-            backgroundColor: "#F5E6A7",
-          },
-          discStyle,
-        ]}
-      />
-      <Animated.View style={[styles.mark, markStyle]}>
-        <BrandImage kind="scout" size={180} />
+    <Animated.View style={[StyleSheet.absoluteFill, styles.shell, shell]}>
+      {reveal.reduceMotion ? (
+        <View
+          style={[StyleSheet.absoluteFill, { backgroundColor: "#F7E8AB" }]}
+        />
+      ) : (
+        <Svg
+          width={width}
+          height={height}
+          style={StyleSheet.absoluteFill}
+          aria-hidden={true}
+        >
+          <AnimatedPath animatedProps={backWave} fill="#A7C9BC" />
+          <AnimatedPath
+            animatedProps={frontWave}
+            fill="#F7E8AB"
+            stroke="#FFF8DC"
+            strokeWidth={2}
+          />
+        </Svg>
+      )}
+      <Animated.View style={[styles.center, label]}>
+        <Animated.View style={mascot}>
+          <View style={{ transform: [{ scaleX: -1 }] }}>
+            <BrandImage kind="scout" size={164} />
+          </View>
+        </Animated.View>
         <Text style={styles.title}>
           {reveal.to === "observe"
             ? "A fresh pair of eyes."
             : "A little more clarity."}
         </Text>
-        <Text style={styles.subtitle}>
-          {reveal.to === "observe" ? "SCOUT MODE" : "EXPLORE YONDER"}
+        <Text style={styles.caption}>
+          {reveal.to === "observe" ? "LET’S GO SCOUTING" : "BACK TO YOUR WORLD"}
         </Text>
       </Animated.View>
-    </View>
+    </Animated.View>
   );
 }
-
 const styles = StyleSheet.create({
-  disc: {
-    position: "absolute",
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-    overflow: "hidden",
-    zIndex: 999,
-  },
-  mark: {
+  shell: { zIndex: 2000, elevation: 30, overflow: "hidden" },
+  center: {
     ...StyleSheet.absoluteFill,
     alignItems: "center",
     justifyContent: "center",
-    zIndex: 1000,
+    gap: 13,
   },
   title: {
     fontFamily: font.ui700,
-    fontSize: 29,
-    color: "#2C3E33",
+    fontSize: 28,
     letterSpacing: -1,
+    color: "#2C3E33",
     textAlign: "center",
-    marginTop: 12,
   },
-  subtitle: {
+  caption: {
     fontFamily: font.ui700,
-    fontSize: 11,
+    fontSize: 10,
     letterSpacing: 2,
     color: "#596646",
-    marginTop: 14,
   },
-  noPointerEvents: { zIndex: 2000, elevation: 30, overflow: "hidden" },
 });

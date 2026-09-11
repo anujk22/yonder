@@ -691,6 +691,7 @@ export default function ExploreMap() {
         )}
       </View>
       {desktop && <View style={styles.desktopSearch}>{searchField}</View>}
+      <MotionPressable accessibilityRole="button" accessibilityLabel="Drop a pin for a new spot" onPress={() => router.push({ pathname: "/spots/new", params: { lat: String(center.current.latitude), lng: String(center.current.longitude), delta: String(center.current.latitudeDelta) } })} style={{ position: "absolute", right: 78, bottom: desktop ? 35 : peek + 38, flexDirection: "row", alignItems: "center", gap: 7, backgroundColor: "#F7EDB3", paddingHorizontal: 15, height: 46, borderRadius: 17, boxShadow: "0 3px 0 #CBB949" }}><MapPin size={19} color={ask.ink}/><Text style={{fontFamily: font.ui700, fontSize: 13, color: ask.ink}}>Drop a pin</Text></MotionPressable>
       {(source !== "start" || !desktop) && (
         <MotionPressable
           accessibilityRole="button"

@@ -98,6 +98,7 @@ export default function CaptureScreen() {
 
   const captureFrames = async () => {
     const camera = cameraRef.current;
+    if (place?.communitySpot && (demoCapture || useYonderStore.getState().spotConfirmedQueryId !== query?.id)) return;
     if (capturing || (!demoCapture && (!cameraReady || !camera))) return;
     if (!query || !place || ['ANSWERED','REFUNDED','BLOCKED'].includes(query.state)) return;
     setCapturing(true);
@@ -147,6 +148,7 @@ export default function CaptureScreen() {
 
   if (!query) return <MissingDataState title="No observation is ready to capture." />;
   if (!place) return <MissingDataState title="The observation's place is not available." />;
+  if (place.communitySpot && (demoCapture || useYonderStore.getState().spotConfirmedQueryId !== query.id)) return <MissingDataState title="Confirm the community spot before capture." />;
   if (!demoCapture && !locationEvidence) return <MissingDataState title="Check your location before opening the camera." />;
 
   if (!demoCapture && !permission) {

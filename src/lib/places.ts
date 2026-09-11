@@ -9,7 +9,9 @@ export type QueryType =
   | 'accessibility'
   | 'open_closed';
 
+export type PlaceKind = 'park' | 'court' | 'pizza' | 'coffee' | 'shop' | 'grocery' | 'transit' | 'map';
 export type Place = {
+  kind?: PlaceKind;
   id: string;
   name: string;
   area: string;
@@ -18,6 +20,12 @@ export type Place = {
   status: PlaceStatus;
   geofenceM: number;
   categories: QueryType[];
+  communitySpot?: {
+    description: string;
+    kind: PlaceKind;
+    verification: 'unverified';
+    publicAccessConfirmedAt: number;
+  };
 };
 
 export type Answer = {

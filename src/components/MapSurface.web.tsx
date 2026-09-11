@@ -39,6 +39,7 @@ export const MapSurface = forwardRef<MapSurfaceHandle, MapSurfaceProps>(
       style,
       onRegionChange,
       onRegionChangeComplete,
+      onMapPress,
       userLocation,
       geofence,
       controlsInset,
@@ -48,8 +49,8 @@ export const MapSurface = forwardRef<MapSurfaceHandle, MapSurfaceProps>(
     const container = useRef<HTMLDivElement>(null);
     const map = useRef<Leaflet.Map | null>(null);
     const library = useRef<typeof Leaflet | null>(null);
-    const callbacks = useRef({ onRegionChange, onRegionChangeComplete });
-    callbacks.current = { onRegionChange, onRegionChangeComplete };
+    const callbacks = useRef({ onRegionChange, onRegionChangeComplete, onMapPress });
+    callbacks.current = { onRegionChange, onRegionChangeComplete, onMapPress };
     const initial = useRef(initialRegion);
     const [ready, setReady] = useState(false);
     const [error, setError] = useState(false);
@@ -110,6 +111,7 @@ export const MapSurface = forwardRef<MapSurfaceHandle, MapSurfaceProps>(
             zoomFor(initial.current),
           );
           map.current = instance;
+          instance.on("click", (event: Leaflet.LeafletMouseEvent) => callbacks.current.onMapPress?.({ latitude: event.latlng.lat, longitude: event.latlng.wrap().lng }));
           L.control.zoom({ position: "topright" }).addTo(instance);
           instance.attributionControl.setPrefix(false);
           const tiles = L.tileLayer(

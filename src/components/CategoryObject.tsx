@@ -24,6 +24,7 @@ export function CategoryObject({
   animated?: boolean;
 }) {
   const kinds = {
+    grocery: "grocery",
     court: "basketball",
     pizza: "food",
     coffee: "coffee",

@@ -12,10 +12,15 @@ export function useScoutNavigation() {
   return (route: Href, origin?: { x: number; y: number }) => {
     const state = useYonderStore.getState();
     if (state.isModeSwitching || pathname === route) return;
-    if (route === "/observe" && !pathname.startsWith("/observe")) {
+    if (
+      typeof route === "string" &&
+      ((route === "/observe" && !pathname.startsWith("/observe")) ||
+        (pathname.startsWith("/observe") && !route.startsWith("/observe")))
+    ) {
       state.startModeReveal({
         id: Date.now(),
-        to: "observe",
+        to: route === "/observe" ? "observe" : "ask",
+        destination: route,
         x: origin?.x ?? width * 0.86,
         y: origin?.y ?? height - 45,
         reduceMotion: reduced,

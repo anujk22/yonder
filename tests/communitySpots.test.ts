@@ -1,0 +1,41 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { createStore } from 'zustand/vanilla';
+import { createCommunitySpot, validateSpot, type SpotDraft } from '../src/lib/communitySpots';
+import { createYonderState } from '../src/lib/state';
+import { validateLocation } from '../src/lib/geo';
+
+const draft: SpotDraft = { name: ' Creekside courts ', description: 'Two public courts beside the wooden footbridge on Oak Street.', kind: 'court', coordinate: { latitude: 40.6975, longitude: -73.9975 }, publicAccess: true };
+test('community pins require a precise point, landmarks and public-access confirmation', () => {
+  assert.equal(validateSpot(draft), null);
+  for (const patch of [{ coordinate: null }, { coordinate: { latitude: NaN, longitude: 0 } }, { name: 'Hi' }, { description: 'Near me' }, { publicAccess: false }]) assert.ok(validateSpot({ ...draft, ...patch }));
+  const spot = createCommunitySpot(draft, 'one', 1000);
+  assert.equal(spot.name, 'Creekside courts');
+  assert.equal(spot.lat, draft.coordinate!.latitude);
+  assert.equal(spot.lng, draft.coordinate!.longitude);
+  assert.equal(spot.communitySpot?.verification, 'unverified');
+  assert.equal(spot.geofenceM, 50);
+  const fix = { ...draft.coordinate!, accuracy: 26, timestamp: 1000 };
+  assert.equal(validateLocation(fix, draft.coordinate!, spot.geofenceM, 1000).valid, false);
+});
+test('community requests preserve landmarks and cannot produce a sample answer or payout', () => {
+  const store = createStore(createYonderState);
+  const spot = createCommunitySpot(draft, 'two');
+  store.getState().addPlace(spot);
+  store.getState().setResolvedPlace(spot.id);
+  store.getState().setDraftQuestion('Are any courts free?');
+  const id = store.getState().createDraftQuery()!;
+  assert.ok(id);
+  const query = store.getState().queries.find(q => q.id === id)!;
+  assert.ok(query.spec[0].includes(draft.description));
+  store.getState().setActiveTask(id);
+  store.getState().setSpotConfirmed(id);
+  store.getState().setCaptureMode('demo');
+  assert.equal(store.getState().spotConfirmedQueryId, null);
+  store.getState().updateQueryState(id, 'VERIFYING', 'Attempt sample completion');
+  const before = store.getState();
+  assert.equal(store.getState().completeObservation(), null);
+  assert.equal(store.getState().answers.length, before.answers.length);
+  assert.equal(store.getState().walletCents, before.walletCents);
+  assert.equal(store.getState().earnedCents, before.earnedCents);
+});

@@ -34,6 +34,7 @@ export const MapSurface = forwardRef<MapSurfaceHandle, MapSurfaceProps>(
       markers = [],
       onRegionChange,
       onRegionChangeComplete,
+      onMapPress,
       style,
       userLocation,
       geofence,
@@ -86,6 +87,7 @@ export const MapSurface = forwardRef<MapSurfaceHandle, MapSurfaceProps>(
           ref={mapRef}
           style={StyleSheet.absoluteFill}
           initialRegion={initialRegion}
+          onPress={(event) => onMapPress?.(event.nativeEvent.coordinate)}
           onMapReady={() => {
             mapReady.current = true;
             if (pending.current)

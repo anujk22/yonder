@@ -51,3 +51,8 @@ Explore now starts without selecting NYC. Use the foreground location button to 
 The nearby route queries a 2.5 km area, caches responses for an hour, bounds response size, filters private/invalid/duplicate entries, and sorts returned places by distance. It is a selection of mapped places, not an exhaustive directory. Public Overpass is a prototype dependency; configure OVERPASS_URL for a managed or self-hosted provider and use shared rate limiting before a public rollout. Search failures keep an explicit retry/search path.
 
 Six optimized transparent 3D objects now live in assets/brand/objects. Category images are illustrations, not venue photos. Larger compositions animate; result-list artwork stays static for readability and performance. The complete built-in image prompts are in ART_DIRECTION.md.
+
+## Community pins
+Explore → Drop a pin lets people search an area, tap an exact coordinate, choose a category, and save a name plus identifying landmarks. Pins are stored locally and appear in Saved, with a 50 m capture boundary. They are public-access assertions, not independently verified listings.
+
+Community requests preserve the landmark instructions. Scouts must confirm a landmark match and pass fresh GPS/accuracy checks before in-app capture. The sample answer/settlement path explicitly refuses community pins. Photos remain local and unverified; there is no shared publication, identity verification, moderation queue or independent scene matching yet. A production launch needs authenticated ownership, immutable request/location versions, server-side capture attestations, abuse reporting/review and payment integration.

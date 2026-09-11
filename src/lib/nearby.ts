@@ -1,3 +1,4 @@
+import { kindFromTags } from "./placeKinds";
 import { Place, QueryType } from "./places";
 import { distanceMeters } from "./geo";
 export type OSMElement = {
@@ -42,6 +43,7 @@ export function placesFromOSM(
         {
           id: `osm-${row.type}-${row.id}`,
           name: tags.name,
+          kind: kindFromTags(tags),
           area:
             [tags["addr:street"], tags["addr:city"], tags["addr:state"]]
               .filter(Boolean)

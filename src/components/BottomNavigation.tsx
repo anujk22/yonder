@@ -113,7 +113,7 @@ export function BottomNavigation() {
   if (keyboard) return null;
   const current = pathname.startsWith("/observe")
     ? "/observe"
-    : pathname.startsWith("/ask") || pathname === "/map"
+    : pathname.startsWith("/ask") || pathname.startsWith("/spots") || pathname === "/map"
       ? "/"
       : pathname;
   return (

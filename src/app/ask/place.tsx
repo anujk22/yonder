@@ -1,3 +1,4 @@
+import { CommunitySpotDetails } from "@/components/CommunitySpotDetails";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useRouter } from "expo-router";
@@ -88,6 +89,7 @@ export default function PlaceScreen() {
         />
       </View>
       <Text style={styles.area}>{place.area}</Text>
+      <CommunitySpotDetails place={place}/>
       <View style={styles.divider} />
       <View
         style={{
