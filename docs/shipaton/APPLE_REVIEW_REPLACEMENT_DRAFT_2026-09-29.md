@@ -1,10 +1,18 @@
-# Apple replacement-build response — DRAFT, not sent
+# Apple build 8 review package — DRAFT, not sent
 
-**Pending:** production Apple credentials/key, exact replacement binary, successful physical-device Apple sandbox purchase and recording. The Paid Apps Agreement is Active. This describes the intended Apple-key build with Supabase disabled. It is not evidence that those steps passed. Before sending, verify every statement against the selected binary, replace all evidence fields, attach the recording and copy access instructions into Notes for Review. Do not reuse this for build 7.
+**Build:** iOS 1.0.0 (8), EAS `e6f6041d-51dc-4035-8367-101ee773234d`, source revision `77d099c`. The review text was checked against that revision, not subsequent working-tree changes. Production uses the Apple public SDK key and API URL only; Supabase and Test Store are disabled. Paid Apps Agreement and RevenueCat credentials are verified ready. Apple non-consumable `6817497507` / `com.anujkakumanu.yonder.plus.lifetime` has U.S. availability, $2.99 price and English localization saved, with RevenueCat entitlement/package mapping verified.
+
+**Still required before sending:** verify the processed build 8 on a physical iPhone, complete an Apple sandbox purchase and confirm the second collection unlock/relaunch/restore, capture the actual Plus review screenshot, and attach Apple's requested physical-device recording on the latest iOS. Simulator launch and web QA do not prove these. Replace the recording fields below only with observed evidence. Do not reuse this response for build 7.
+
+## App Review Notes / IAP review notes
+
+Yonder 1.0.0 (8) requires no Yonder login or invitation. Search a U.S. place in Explore and save it, then open Saved → Organize into collections. Create a first collection for free. Tap Explore Yonder Plus to purchase the non-consumable Yonder Plus (`com.anujkakumanu.yonder.plus.lifetime`; U.S. price $2.99). The purchase button uses the localized App Store price. Plus unlocks additional named collections on this device. Restore purchases is on the Plus screen; it restores the entitlement, not deleted collections. Map search and saving stay free. Ask/Observe credits, answers and earnings are labeled local simulations; no person is dispatched and no payment or payout occurs there. The invited pilot is disabled. Location is optional for map centering; camera/location are requested only for the optional device-check demo. Photos stay on device. Privacy/support links are on the Plus screen.
+
+## Six-answer reply
 
 Hello App Review team,
 
-Thank you for reviewing Yonder. We have selected replacement version **[version]**, build **[build number]**, and provide the requested information for that binary.
+Thank you for reviewing Yonder. This information concerns the replacement iOS binary **1.0.0 (8)**.
 
 1. **Physical-device recording:** **[attachment or accessible link]**, recorded on **[iPhone model]** running **[exact latest iOS version]** on **[date]**. It begins at launch and shows **[actual recorded steps and permission prompts, including free discovery, the collection purchase, unlock and restore]**. Yonder account registration, login, deletion and user-shared content are not enabled in this build.
 2. **Purpose, audience and value:** Yonder helps people discover and organize public places they may visit. Users can search mapped U.S. places, view the map, save places, add personal pins and organize saved places into named collections on their device. One collection is free; optional Yonder Plus unlocks additional collections through a one-time purchase. Ask and Observe are explicitly labeled local demonstrations. They do not contact another person, report live conditions, transfer money or pay an observer.
@@ -12,7 +20,5 @@ Thank you for reviewing Yonder. We have selected replacement version **[version]
 4. **External services and tools:** The app uses Expo SDK 57, React Native and Expo Router. iPhone maps use Apple Maps through `react-native-maps`. Place search uses our API at `https://yonder.expo.app/api/places`, backed by OpenStreetMap Nominatim data. RevenueCat and Apple's In-App Purchase service provide Plus purchase and restore functionality. RevenueCat manages purchase and entitlement records using an anonymous SDK customer identifier. Supabase authentication and shared checks are disabled. Demo credits and earnings are local simulations; no Shopify payment or payout service is connected. Privacy and support information are at `https://yonder.expo.app/privacy` and `https://yonder.expo.app/support`.
 5. **Regional behavior:** The app and purchase availability are configured for the United States. Place-search requests filter results to U.S. places. No state-specific feature restrictions are implemented. Place coverage depends on available OpenStreetMap data. The interface is in English; the purchase screen uses the price returned by the App Store.
 6. **Regulated or protected material:** Yonder offers place discovery and organization, with no medical, financial or other regulated professional service. Place data comes from OpenStreetMap contributors under the ODbL, with attribution in the app. The Scout and category artwork are generated illustrations, not venue photographs or evidence of current conditions. The earlier demonstration court photograph has been removed from the replacement source. Fraunces, Manrope and JetBrains Mono fonts use the SIL Open Font License 1.1. Open-source software retains its applicable licenses; the source includes Expo and Leaflet notices. Demo answers and credits are sample content.
-
-We have also included the access instructions in Notes for Review.
 
 — Yonder team
