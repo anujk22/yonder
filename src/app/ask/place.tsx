@@ -17,6 +17,7 @@ import { categoryFor, questionFor, suggestions } from "@/lib/discovery";
 import { inferQueryType } from "@/lib/places";
 import { money, priceQuery } from "@/lib/pricing";
 import { isUnsafeQuestion } from "@/lib/safety";
+import { liveConfigured } from "@/lib/liveClient";
 
 export default function PlaceScreen() {
   const router = useRouter();
@@ -68,14 +69,18 @@ export default function PlaceScreen() {
       }
     >
       <ScreenHeader eyebrow="LOCAL DEMO REQUEST" title={place.name} />
-      <PrimaryButton
-        label="Request an invited live check"
-        variant="secondary"
-        onPress={() => router.push("/live/new")}
-      />
-      <Text style={[styles.note, { marginBottom: 16 }]}>
-        Free pilot · invitation required · no guaranteed response.
-      </Text>
+      {liveConfigured && (
+        <>
+          <PrimaryButton
+            label="Request an invited live check"
+            variant="secondary"
+            onPress={() => router.push("/live/new")}
+          />
+          <Text style={[styles.note, { marginBottom: 16 }]}>
+            Free pilot · invitation required · no guaranteed response.
+          </Text>
+        </>
+      )}
       <View style={styles.map}>
         <MapSurface
           style={StyleSheet.absoluteFill}

@@ -11,6 +11,7 @@ import { useYonderStore } from "@/lib/store";
 import { isQueryExpired } from "@/lib/state";
 import { observe, font, type } from "@/lib/theme";
 import { money } from "@/lib/pricing";
+import { liveConfigured } from "@/lib/liveClient";
 export default function ObserveHome() {
   const router = useRouter();
   const queries = useYonderStore((s) => s.queries);
@@ -48,11 +49,13 @@ export default function ObserveHome() {
           answers are verified or rewards paid.
         </Text>
       </View>
-      <PrimaryButton
-        label="See invited live checks"
-        variant="secondary"
-        onPress={() => router.push("/live")}
-      />
+      {liveConfigured && (
+        <PrimaryButton
+          label="See invited live checks"
+          variant="secondary"
+          onPress={() => router.push("/live")}
+        />
+      )}
       <Text style={styles.listLabel}>
         {tasks.length} REQUESTS TO EXPLORE · SAMPLE BOARD
       </Text>

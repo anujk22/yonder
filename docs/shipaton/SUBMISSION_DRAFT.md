@@ -4,7 +4,7 @@
 
 **Title:** Yonder — ask someone already there
 
-**Tagline:** Explore places worth going to, and prototype a better way to know what is happening there now.
+**Tagline:** Ask someone already there before you make the trip.
 
 **Primary category:** Next Gen. Both builders report being 19 and second-year college students. Verify the academic email on Devpost and add both actual team members.
 
@@ -14,13 +14,13 @@ Maps can tell you where a basketball court is. They cannot reliably tell you whe
 
 ## What it does today
 
-Yonder is a native mobile product preview with real map exploration, submitted place search, saved places and custom pins. Collections organize saved places on the device. One collection is free. The current source implements a RevenueCat-backed Yonder Plus entitlement for additional collections; dashboard configuration and native transaction verification are still pending. Replace this status only after verification.
+Yonder is a native mobile product preview with real map exploration, submitted place search, saved places and custom pins. Collections organize saved places on the device. One collection is free. The current source implements a RevenueCat-backed Yonder Plus entitlement for additional collections; the Test Store dashboard is configured, and native transaction verification is still pending. Replace this status only after verification.
 
 The main Ask and Observe path demonstrates the proposed request-and-answer experience using explicitly labeled local samples. The separate device-check path uses foreground location and an in-app camera capture. It does not dispatch to another user, independently verify evidence, upload the photo, or settle a payment. Source also includes an optional, invite-only Supabase pilot for free shared place checks and self-reported text answers. That pilot still needs account configuration and a verified two-device exchange; we have not launched a live observer network.
 
 ## RevenueCat
 
-The implemented client is designed to load the configured Lifetime package and price, purchase through the SDK, read `yonder_plus`, listen for entitlement updates, and restore purchases. Those live transaction paths still require account configuration and native verification. Plus buys additional local collections, not answers or observer labor.
+The implemented client is designed to load the configured Lifetime package and price, purchase through the SDK, read `yonder_plus`, listen for entitlement updates, and restore purchases. The Yonder Test Store project (`4850e856`) has entitlement `yonder_plus`, non-consumable product `yonder_plus_lifetime` at US $2.99, and the current `default` offering with `$rc_lifetime`. Native transactions remain unverified. Plus buys additional local collections, not answers or observer labor.
 
 Before submitting this paragraph as a completed integration, replace this sentence with the exact native test environment, date, successful purchase/restore results and evidence link. Never describe Test Store purchases as revenue.
 
@@ -39,10 +39,10 @@ Deploying and proving the invited cross-device pilot, observer recruitment, oper
 ## Final fields to fill
 
 - Both team members and qualifying academic email: owner to verify.
-- Public repository URL and final commit: https://github.com/anujk22/yonder (publish the tested changes first).
+- Public repository URL and final commit: https://github.com/anujk22/yonder — revision `493602e` passed a clean public-clone check.
 - Public YouTube/Vimeo URL: pending final native recording and edit.
 - 1024-square icon and 1179×2556 frame-free screenshot: capture/verify from final build.
-- RevenueCat evidence: pending account setup and native test.
+- RevenueCat evidence: dashboard setup complete; native purchase, restore and entitlement proof pending.
 - App Store URL: include as a qualifying store release only when publicly available with the required integration.
 
 Do not submit placeholders. If the hosted pilot passes a two-device test, replace its unverified status with the observed flow and actual limitations. Do not imply that a branded animation shows working software.

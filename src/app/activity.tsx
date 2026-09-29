@@ -6,6 +6,7 @@ import { BrandScene } from "@/components/BrandObject";
 import { useYonderStore } from "@/lib/store";
 import { ask, font, type } from "@/lib/theme";
 import { money } from "@/lib/pricing";
+import { liveConfigured } from "@/lib/liveClient";
 
 export default function ActivityScreen() {
   const router = useRouter();
@@ -30,13 +31,15 @@ export default function ActivityScreen() {
       <Text accessibilityRole="header" style={styles.title}>
         Your demo requests
       </Text>
-      <View style={{ marginBottom: 20 }}>
-        <PrimaryButton
-          label="Your invited live checks"
-          variant="secondary"
-          onPress={() => router.push("/live")}
-        />
-      </View>
+      {liveConfigured && (
+        <View style={{ marginBottom: 20 }}>
+          <PrimaryButton
+            label="Your invited live checks"
+            variant="secondary"
+            onPress={() => router.push("/live")}
+          />
+        </View>
+      )}
       <View style={styles.balances}>
         <View>
           <Text style={styles.amount}>{money(wallet)}</Text>

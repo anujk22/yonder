@@ -1,6 +1,6 @@
 # Next Gen source readiness
 
-The working tree is ahead of the public repository. Publish the exact tested source state, including currently untracked app modules and assets, before presenting the public repo as reproducible. No source was pushed or submitted during this check.
+The source, native assets, setup instructions and MIT license were published on September 29, 2026 at [revision `493602e`](https://github.com/anujk22/yonder/commit/493602e275cd64ea80ea870fc0b3429f039bfb90). A fresh clone of that exact public revision passed installation, both test commands, typecheck, lint and the all-platform export. This verifies source reproducibility; native transactions and physical-device footage remain separate requirements.
 
 ## Reproduce from a clean source export
 
@@ -21,7 +21,7 @@ npx expo export --platform all
 
 The export retains the dated App Store and Shipaton readiness notes linked from the README. They describe the earlier build 7 and should not be read as verification of the newer RevenueCat source. The film production pack is distributed separately and is excluded here.
 
-The source includes the two runtime assets that are still untracked in this checkout: `assets/brand/concepts/yonder-scout-green-3d-v2.png` (the iOS icon in `app.json`) and `assets/brand/objects/scout-transition.webp` (used by `ModeReveal`). A tracked-files-only archive would omit them. The export also includes the MIT `LICENSE` with both the Yonder and upstream Expo notices and the bundled Leaflet license in `src/components/leaflet-LICENSE.txt`.
+The published source includes the two previously untracked runtime assets: `assets/brand/concepts/yonder-scout-green-3d-v2.png` (the iOS icon in `app.json`) and `assets/brand/objects/scout-transition.webp` (used by `ModeReveal`). Both are now tracked; the earlier public revision omitted them. The export also includes the MIT `LICENSE` with both the Yonder and upstream Expo notices and the bundled Leaflet license in `src/components/leaflet-LICENSE.txt`.
 
 ## Clean-check evidence
 
@@ -29,6 +29,6 @@ On September 27, 2026, an isolated pilot source export with no original `node_mo
 
 The JavaScript bundle and disposable-Postgres checks do not verify a hosted Supabase Auth/PostgREST project, two-device exchange, signed native release, or in-app purchase. A local iOS simulator build needs macOS and the Expo 57-compatible Xcode toolchain; a distributable build needs Apple signing. The checked-in Expo project and Apple team identifiers belong to this app's owner, so forks need their own identifiers and credentials for EAS or store distribution. The working-tree iOS debug build linked the RevenueCat native SDK, but no account configuration or transaction has been verified. Follow the [exact owner inputs](../setup/NEEDED_FROM_YOU.md) for pilot and purchase setup.
 
-## Asset origin to settle before public licensing claims
+## Asset origin
 
 The art documents include ImageGen prompts for the Scout, green iOS icon, and category illustrations; they also document the transition image's ImageGen origin. The September 29 source replaces the demo court photo of undocumented origin with the existing generated basketball illustration at `assets/brand/objects/basketball-vinyl.webp`. It is artwork, not a venue photograph or observation. The undocumented image is excluded from the current source. Existing Expo and Leaflet notices are preserved.

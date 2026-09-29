@@ -1,6 +1,6 @@
 # Yonder Plus: finish the purchase integration
 
-Implemented in this checkout. Account configuration and native transactions remain unverified.
+Implemented in source. On September 29, 2026, project **Yonder** (`4850e856`) was configured with entitlement `yonder_plus`, Test Store non-consumable `yonder_plus_lifetime` at US $2.99, and current offering `default` / package `$rc_lifetime`. Its public SDK key is in the ignored local debug configuration only. The native SDK fetched this offering and fresh unpurchased CustomerInfo on iOS 27. Native transactions remain unverified.
 
 ## Dashboard configuration
 
@@ -23,7 +23,7 @@ npx expo run:ios
 npx expo run:android
 ```
 
-The first native build needs the usual Xcode/CocoaPods or Android toolchain. Expo Go and the web preview deliberately cannot purchase. Restart Metro after changing keys; installing the SDK requires rebuilding the native app. On this Mac, select `/Applications/Xcode.app/Contents/Developer` as `DEVELOPER_DIR` if the system points at command-line tools.
+The first native build needs the usual Xcode/CocoaPods or Android toolchain. Expo Go and the web preview deliberately cannot purchase. Restart Metro after changing keys; installing the SDK requires rebuilding the native app. On this Mac, select `/Applications/Xcode.app/Contents/Developer` as `DEVELOPER_DIR` if the system points at command-line tools. The app enables Expo SDK 57 scene support for Xcode/iOS 27. If you already have an older generated `ios/` folder, regenerate it with `npx expo prebuild --clean --platform ios` before building; preserve any manual native changes first.
 
 Test Store keys are accepted only in development native builds. `eas build --profile preview` currently produces a release-mode simulator build: do not expect its Test Store key to activate. Use the debug build above for Test Store. Never ship a Test Store key as the Apple key.
 

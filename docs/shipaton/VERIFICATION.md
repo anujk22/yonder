@@ -34,3 +34,16 @@ The submitted Apple build predates this work. No store submission, source push, 
 ## Dependency audit limitation
 
 The aligned dependency lock still reports 15 npm audit findings (14 moderate, one high). The high finding is `image-size` 1.2.1 under Metro 0.84.4, a build-tool dependency. Its fixed major changes the module interface used by Metro; a blind override is not verified compatible. `npm audit fix --force` proposes an Expo 46 downgrade and was not applied. Dependency alignment and successful builds do not establish that these findings are resolved. The current app does not feed user-uploaded images into Metro's asset parser.
+
+## September 29 follow-up
+
+- Published source revision `493602e` to public GitHub with MIT licensing, complete native assets and setup instructions. A fresh clone passed `npm ci`, all 27 unit tests, all 52 database assertions, typecheck, lint and all-platform export (28 static routes, four API routes).
+- Replaced the demo court photograph of undocumented origin with the existing generated basketball illustration; removed the old image from current source. Native visual acceptance of the illustration change remains pending.
+- Configured RevenueCat project Yonder (`4850e856`), `yonder_plus`, Test Store lifetime product at US $2.99, and current `default` offering / `$rc_lifetime`. The public Test Store key is configured locally for debug only. Purchase, restore and dashboard transaction evidence are not yet verified.
+
+The earlier sections record September 27 checks; their pending-source/account statements are superseded by this follow-up. Physical-device recordings, academic email/team validation and final submission remain open.
+
+- Reproduced an iOS 27 launch rejection caused by the SDK 57 application lifecycle. Added Expo's supported `expo-build-properties` scene opt-in and regenerated the ignored iOS project. Native rebuild passed with zero compiler errors/warnings; cold launch rendered the home map on iOS 27. Actual RevenueCat native cache contained the current `default` / `$rc_lifetime` offering and fresh unpurchased CustomerInfo. This is SDK connectivity evidence, not a purchase.
+- Unconfigured invited-pilot entry points are hidden in Requests, the observer board and the selected-place screen. Typecheck and targeted lint passed. The rendered browser Requests and observer board showed no unavailable pilot links, while local demo controls remained.
+- Updated privacy/support were deployed to `https://yonder.expo.app` (deployment `gpo6kko0di`); unauthenticated Node HTTP checks returned 200 and Plus/pilot disclosures. Place search returned 200 with two New York results.
+- Apple Paid Apps Agreement is **New**, not Active. Its agreement and any required financial/tax setup are awaiting the owner before Apple purchases can be tested or submitted.
