@@ -13,9 +13,18 @@ export default function EarnedScreen() {
   const answer = useYonderStore((s) =>
     s.answers.find((a) => a.id === query?.answerId),
   );
+  const payout = useYonderStore((s) =>
+    s.payouts.find((p) => p.queryId === query?.id),
+  );
   if (!query || !answer)
     return <MissingDataState title="No completed check is available." />;
-  const reward = answer.charged ? query.observerRewardCents : 0;
+  const reward = payout?.amountCents ?? 0;
+  const arrival = payout
+    ? new Date(payout.arrivesBy).toLocaleDateString(undefined, { weekday: "long" })
+    : "";
+  const sameDay = payout
+    ? new Date(payout.arrivesBy).toDateString() === new Date(payout.sentAt).toDateString()
+    : false;
   return (
     <AppScreen>
       <View style={styles.hero}>
@@ -27,13 +36,17 @@ export default function EarnedScreen() {
             : "Some questions\nneed another look."}
         </Text>
         <Text style={styles.amount}>+{money(reward)}</Text>
-        <Text style={styles.body}>Simulated earnings · not withdrawable</Text>
+        <Text style={styles.body}>
+          {reward
+            ? `Deposit to your bank ${sameDay ? "today" : `by ${arrival}`} · demo, no money sent`
+            : "No payout for this one"}
+        </Text>
       </View>
       <View style={styles.card}>
         <Text style={styles.body}>
           {reward
-            ? "You’ve completed the sample observer journey. The answer is ready to view from the asker’s side."
-            : "There is no confident sample answer for this question. No credits were charged and no reward was added."}
+            ? "You’ve completed the sample Scout journey. Each answer is paid out on its own, the same business day. The answer is ready to view from the asker’s side."
+            : "There is no confident sample answer for this question. The asker wasn’t billed and no payout was sent."}
         </Text>
         <Text style={styles.body}>
           No location, photo analysis, or payment was verified in this

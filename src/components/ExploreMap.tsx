@@ -471,7 +471,7 @@ export default function ExploreMap() {
           </MotionPressable>
           <Text style={styles.privacy}>
             {source === "tour"
-              ? "Sample tour · try a request with demo credits."
+              ? "Sample tour · try a demo request, no card charged."
               : "Real place · requests currently run as a local demo."}
           </Text>
         </>

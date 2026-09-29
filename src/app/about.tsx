@@ -44,7 +44,7 @@ export default function AboutScreen() {
           [
             "02",
             "Explore the sample flow.",
-            "Read an example answer or save a sample request. See demo credits before you decide.",
+            "Read a free older answer, buy the latest one, or post a bounty. You see the price and the Scout's share before you decide.",
           ],
           [
             "03",

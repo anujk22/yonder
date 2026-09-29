@@ -25,8 +25,8 @@ npx expo export --platform all
 ## Try the complete preview
 
 1. Explore a place on the map, or submit a place search. Select **Ask here**.
-2. Pick a supported question and an answer option. A new check creates a local request and a demo credit hold.
-3. Open the observer side, select the request, and choose **Try a demo check**. Finish the sample capture to see the answer and demo reward.
+2. Pick a supported question, set a bounty ($2 minimum) and choose an answer option: a free answer from a day or more ago, the latest answer as an in-app purchase, or a new bounty.
+3. Open the observer side, select the request, and choose **Try a demo check**. Finish the sample capture to see the answer, the poster's tab and the Scout's payout.
 4. Requests keeps local history; Saved keeps favorite places on this device.
 
 The separate GPS and camera path uses actual device readings and captures. Location validation checks freshness, reported accuracy, distance, and mocked readings where available. These checks are a prototype safeguard, not a server-backed anti-fraud guarantee. Real evidence stays on the device; it does not become a verified answer or trigger a payout.
@@ -41,7 +41,7 @@ The default public Nominatim service is for modest prototype use. Requests are s
 
 ## Preview boundaries
 
-The main Ask/Observe walkthrough, demo balances, rewards, and sample answers are local state. They do not pay observers or dispatch a check to another person. A separate, optional Supabase-backed **invited live pilot** is present in source: two allowlisted accounts can share a free place check and a self-reported text answer. It requires owner configuration and has not been verified against a hosted project or two devices. Follow the [invited-pilot setup and acceptance steps](docs/setup/INVITED_PILOT.md); the app keeps the local demo available when the pilot is unconfigured.
+The main Ask/Observe walkthrough, bounty tab, Scout payouts, and sample answers are local state. They do not pay observers or dispatch a check to another person. A separate, optional Supabase-backed **invited live pilot** is present in source: two allowlisted accounts can share a free place check and a self-reported text answer. It requires owner configuration and has not been verified against a hosted project or two devices. Follow the [invited-pilot setup and acceptance steps](docs/setup/INVITED_PILOT.md); the app keeps the local demo available when the pilot is unconfigured.
 
 The invited pilot has structured questions, short expiry, cancellation, reports, blocks and account deletion. It does not review photo evidence, guarantee someone is nearby or available, pay a reward, or send push notifications. Before expanding beyond a small invited group, verify cross-device behavior and physical-device paths, define server-data retention, and add operational abuse review. Start with one neighborhood and measure fulfilled requests, time to a useful answer and repeat use before expanding coverage.
 
@@ -59,10 +59,10 @@ Explore → Drop a pin lets people search an area, tap an exact coordinate, choo
 
 Community requests preserve the landmark instructions. Scouts must confirm a landmark match and pass fresh GPS/accuracy checks before in-app capture. The sample answer/settlement path explicitly refuses community pins. Photos remain local and unverified; there is no shared publication, identity verification, moderation queue or independent scene matching yet. A production launch needs authenticated ownership, immutable request/location versions, server-side capture attestations, abuse reporting/review and payment integration.
 
-## Yonder Plus and Shipaton handoff
+## Pricing, payments and Shipaton handoff
 
-Saved → Organize into collections provides one free local collection. A one-time Yonder Plus entitlement unlocks additional collections through RevenueCat. The purchase UI includes restore, cancellation/error handling and a price loaded from the current Lifetime package. Purchases stay unavailable until a native build has a correctly configured public SDK key; web and Expo Go are not purchase demonstrations.
+Collections are free and unlimited. Yonder earns from answers: the latest answer to a question is a 50¢ in-app purchase through RevenueCat, and bounties ($2 minimum) are split so Yonder keeps $1 plus 3% of anything above $2. Posters pay through a running card tab and Scouts are paid out per answer by same-day bank deposit. Bounties, tabs and payouts are simulated in this build; see [pricing and payments](docs/PAYMENTS.md) for the fee math and production plan.
 
-Follow [RevenueCat setup and native acceptance tests](docs/shipaton/REVENUECAT_SETUP.md). Copy `.env.example` to `.env.local`, configure the dashboard and rebuild natively with `npx expo run:ios` or `npx expo run:android`. Do not put secret API keys in client variables. RevenueCat stores purchase entitlement information; it does not synchronize local collections or make the Ask/Observe demo networked.
+The answer purchase loads its price from the current RevenueCat offering and handles cancellation and store errors. Purchases stay unavailable until a native build has a correctly configured public SDK key; web and Expo Go are not purchase demonstrations. Follow [RevenueCat setup and native acceptance tests](docs/shipaton/REVENUECAT_SETUP.md). Copy `.env.example` to `.env.local`, configure the dashboard and rebuild natively with `npx expo run:ios` or `npx expo run:android`. Do not put secret API keys in client variables.
 
 [Delivery checklist](SHIPATON_CHECKLIST.md), [submission draft](docs/shipaton/SUBMISSION_DRAFT.md), and [market positioning](docs/shipaton/POSITIONING.md) track the remaining evidence. The PC film pack is distributed separately from the app source. The public repository and submitted App Store binary must be updated separately; local changes do not update either automatically.

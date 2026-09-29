@@ -30,6 +30,7 @@ export default function AnswerScreen() {
   );
   const queries = useYonderStore((s) => s.queries);
   const active = useYonderStore((s) => s.activeQueryId);
+  const tab = useYonderStore((s) => s.tab);
   const [now, setNow] = useState(() => Date.now());
   const [details, setDetails] = useState(false);
   useEffect(() => {
@@ -43,6 +44,17 @@ export default function AnswerScreen() {
   const query =
     queries.find((q) => q.id === active && q.answerId === answer.id) ??
     queries.find((q) => q.answerId === answer.id && !q.id.startsWith("seed-"));
+  // Bought answers have no Scout reward; bounties do.
+  const bought = query ? query.observerRewardCents === 0 : false;
+  const billed = query ? (bought ? query.bountyCents : answer.charged ? query.bountyCents : 0) : 0;
+  const onTab = query ? tab.openQueryIds.includes(query.id) : false;
+  const receiptTitle = !query ? "" : bought
+    ? billed ? "Latest answer purchased" : "Free answer"
+    : !answer.charged ? "No charge" : onTab ? "Added to your tab" : "Bounty billed";
+  const receiptBody = !query ? "" : bought
+    ? billed ? "In-app purchase through the app store" : "Answers a day or more old are always free"
+    : !answer.charged ? "You’re only billed when you get an answer"
+      : onTab ? "Billed once your tab reaches $5 · demo, no card charged" : "Demo · no card was charged";
   const refresh = () => {
     const s = useYonderStore.getState();
     s.setResolvedPlace(place.id);
@@ -67,7 +79,7 @@ export default function AnswerScreen() {
       <Text style={styles.detail}>
         {available
           ? answer.detail
-          : "There is no example observation for this question. No real payment was made."}
+          : "There is no example observation for this question. You weren’t billed."}
       </Text>
       <View style={styles.art}>
         <PlaceArt kind={artFor(place)} />
@@ -90,7 +102,7 @@ export default function AnswerScreen() {
             </Text>
             <Text style={styles.body}>
               {age.band === "FRESH"
-                ? `Created ${formatAge(age.ageSeconds)} ago · not a live report`
+                ? `Created ${formatAge(age.ageSeconds)} · not a live report`
                 : "This example has aged. Conditions can change."}
             </Text>
           </View>
@@ -103,18 +115,10 @@ export default function AnswerScreen() {
               <Receipt size={23} color="#725A88" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.cardTitle}>
-                {answer.charged ? "Demo credits used" : "No demo charge"}
-              </Text>
-              <Text style={styles.body}>
-                {answer.charged
-                  ? "Simulated credits · no money moved"
-                  : "All your credits stay with you"}
-              </Text>
+              <Text style={styles.cardTitle}>{receiptTitle}</Text>
+              <Text style={styles.body}>{receiptBody}</Text>
             </View>
-            <Text style={styles.amount}>
-              {money(answer.charged ? query.bountyCents : 0)}
-            </Text>
+            <Text style={styles.amount}>{money(billed)}</Text>
           </View>
         </View>
       )}
@@ -146,10 +150,10 @@ export default function AnswerScreen() {
             The artwork represents the place category. It is not a photo of this
             location.
           </Text>
-          {query && answer.charged && (
+          {query && !bought && answer.charged && (
             <Text style={styles.body}>
-              {money(query.observerRewardCents)} reward ·{" "}
-              {money(query.platformFeeCents)} fee, in simulated credits.
+              {money(query.observerRewardCents)} to the Scout ·{" "}
+              {money(query.platformFeeCents)} to Yonder (demo, no money moved).
             </Text>
           )}
         </View>

@@ -1,18 +1,24 @@
 import type { StateCreator } from 'zustand';
 import { isUnsafeQuestion } from '@/lib/safety';
 import type { LocationFix } from '@/lib/geo';
-import { freshness } from '@/lib/freshness';
 import { sameQuestion } from '@/lib/queryMatching';
 
 import { CONFIDENCE_THRESHOLD } from '@/lib/constants';
 import { Answer, DECOY_PLACES, inferQueryType, Mode, Place, PLACES, Query, QueryState, QueryType, resolvePlace } from '@/lib/places';
-import { priceQuery, splitBounty } from '@/lib/pricing';
+import { answerPriceCents, priceQuery, splitBounty } from '@/lib/pricing';
 import { compileSpec, resultFor } from '@/lib/results';
-import { shopify } from '@/lib/shopify';
+import { addBountyToTab, canPostBounty, createPayout, emptyTab, Payout, settleTab, Tab } from '@/lib/ledger';
+import { payments } from '@/lib/payments';
 let querySequence = 0;
 
 export const isQueryExpired = (query: Query, now = Date.now()) =>
   query.isNew && now >= query.createdAt + query.deadlineMinutes * 60_000;
+
+/** Bounties the poster could still owe: their own requests that are live and unanswered. */
+export const pendingBountyCents = (queries: Query[], now = Date.now()) =>
+  queries
+    .filter(q => q.isNew && !isQueryExpired(q, now) && !['DRAFT', 'ANSWERED', 'REFUNDED', 'BLOCKED'].includes(q.state))
+    .reduce((sum, q) => sum + q.bountyCents, 0);
 
 const makeSeededAnswers = (startedAt: number): Answer[] => [
   {
@@ -30,6 +36,22 @@ const makeSeededAnswers = (startedAt: number): Answer[] => [
     capturedByVendor: false,
     proofFrameUri: null,
     facesBlurred: 4,
+  },
+  {
+    id: 'seed-pier2-yesterday',
+    placeId: 'pier2',
+    queryType: 'availability',
+    question: 'Are any basketball courts free?',
+    headline: 'Two courts are open',
+    detail: '2 of 4 courts occupied. 9 players on site.',
+    structured: { availableCourts: 2, occupiedCourts: 2, playersDetected: 9 },
+    confidence: 0.9,
+    charged: true,
+    observedAt: startedAt - 30 * 60 * 60_000,
+    ttlSeconds: 300,
+    capturedByVendor: false,
+    proofFrameUri: null,
+    facesBlurred: 2,
   },
   {
     id: 'seed-nike-stock',
@@ -103,7 +125,6 @@ const makeSeedQuery = (
   placeId: string,
   queryType: QueryType,
   bountyCents: number,
-  observerRewardCents: number,
   createdOffsetMs: number,
   startedAt: number,
 ): Query => ({
@@ -113,9 +134,7 @@ const makeSeedQuery = (
   queryType,
   targetHint: null,
   spec: compileSpec(placeId, queryType),
-  bountyCents,
-  observerRewardCents,
-  platformFeeCents: bountyCents - observerRewardCents,
+  ...splitBounty(bountyCents),
   deadlineMinutes: 10,
   createdAt: startedAt - createdOffsetMs,
   state: 'OPEN',
@@ -126,10 +145,10 @@ const makeSeedQuery = (
 });
 
 const makeSeededQueries = (startedAt: number): Query[] => [
-  makeSeedQuery('seed-pier2', 'Are any basketball courts free?', 'pier2', 'availability', 150, 120, 12_000, startedAt),
-  makeSeedQuery('seed-joes-query', "How long is the line at Joe's Pizza?", 'joes', 'queue', 200, 160, 22_000, startedAt),
-  makeSeedQuery('seed-unionsq', 'Is the Union Sq north elevator working?', 'unionsq', 'accessibility', 150, 120, 31_000, startedAt),
-  makeSeedQuery('seed-nike', 'Is the black Pegasus 41 in a 10 at Nike SoHo?', 'nikesoho', 'stock_check', 250, 200, 44_000, startedAt),
+  makeSeedQuery('seed-pier2', 'Are any basketball courts free?', 'pier2', 'availability', 200, 12_000, startedAt),
+  makeSeedQuery('seed-joes-query', "How long is the line at Joe's Pizza?", 'joes', 'queue', 250, 22_000, startedAt),
+  makeSeedQuery('seed-unionsq', 'Is the Union Sq north elevator working?', 'unionsq', 'accessibility', 200, 31_000, startedAt),
+  makeSeedQuery('seed-nike', 'Is the black Pegasus 41 in a 10 at Nike SoHo?', 'nikesoho', 'stock_check', 300, 44_000, startedAt),
 ];
 
 const makeInitialState = () => {
@@ -139,8 +158,8 @@ const makeInitialState = () => {
     places: [...PLACES, ...DECOY_PLACES],
     answers: makeSeededAnswers(startedAt),
     queries: makeSeededQueries(startedAt),
-    walletCents: 2000,
-    earnedCents: 0,
+    tab: emptyTab(),
+    payouts: [] as Payout[],
     draftQuestion: '',
     resolvedPlaceId: null,
     pinnedCoordinate: null,
@@ -185,8 +204,8 @@ export type YonderStore = {
   places: Place[];
   answers: Answer[];
   queries: Query[];
-  walletCents: number;
-  earnedCents: number;
+  tab: Tab;
+  payouts: Payout[];
   draftQuestion: string;
   resolvedPlaceId: string | null;
   pinnedCoordinate: { lat: number; lng: number } | null;
@@ -260,15 +279,6 @@ export const createYonderState: StateCreator<YonderStore> = (set, get) => ({
     const pricing = splitBounty(state.draftBountyCents ?? calculatedPricing.bountyCents);
     const id = `query-${Date.now()}-${++querySequence}`;
     const place = state.places.find((item) => item.id === state.resolvedPlaceId);
-    // Prototype ledger only. No payment request leaves the device.
-    shopify.createBountyEscrow({
-      queryId: id,
-      bountyCents: pricing.bountyCents,
-      observerRewardCents: pricing.observerRewardCents,
-      platformFeeCents: pricing.platformFeeCents,
-      placeName: place?.name || 'Local Place',
-      question: state.draftQuestion.trim(),
-    }).catch(() => undefined);
     const query: Query = {
       id,
       question: state.draftQuestion.trim(),
@@ -293,8 +303,9 @@ export const createYonderState: StateCreator<YonderStore> = (set, get) => ({
     if (!activeQueryId) return;
     set((state) => {
       const query = state.queries.find((item) => item.id === activeQueryId);
-      if (!query || query.state !== 'DRAFT' || query.bountyCents > state.walletCents - state.queries.filter(q => q.isNew && Date.now() < q.createdAt + q.deadlineMinutes * 60000 && !['DRAFT','ANSWERED','REFUNDED','BLOCKED'].includes(q.state)).reduce((sum,q) => sum+q.bountyCents,0)) return state;
+      if (!query || query.state !== 'DRAFT' || !canPostBounty(state.tab, query.bountyCents, pendingBountyCents(state.queries))) return state;
       return {
+        tab: settleTab(state.tab, Date.now()),
         queries: state.queries.map((item) =>
           item.id === activeQueryId
             ? { ...item, state: 'OPEN' as const, createdAt: Date.now(), isNew: true, statusLog: [...item.statusLog, { label: 'Request saved on this device', at: Date.now() }] }
@@ -309,9 +320,8 @@ export const createYonderState: StateCreator<YonderStore> = (set, get) => ({
       const query = state.queries.find(q => q.id === state.activeQueryId);
       const answer = state.answers.find(a => a.id === answerId);
       if (!query || query.state !== 'DRAFT' || !answer || query.placeId !== answer.placeId || !sameQuestion(query.question, answer.question)) return state;
-      const expected = freshness(answer.observedAt, answer.ttlSeconds).band === 'FRESH' ? 15 : 0;
-      const held = state.queries.filter(q => q.isNew && Date.now() < q.createdAt + q.deadlineMinutes * 60000 && !['DRAFT','ANSWERED','REFUNDED','BLOCKED'].includes(q.state)).reduce((sum,q) => sum+q.bountyCents,0);
-      if (priceCents !== expected || state.walletCents-held < priceCents) return state;
+      // A paid answer is only unlocked after its RevenueCat purchase succeeds (see ask/options).
+      if (priceCents !== answerPriceCents(answer.observedAt)) return state;
       return {
       queries: state.queries.map((query) =>
         query.id === state.activeQueryId
@@ -323,12 +333,11 @@ export const createYonderState: StateCreator<YonderStore> = (set, get) => ({
               platformFeeCents: priceCents,
               answerId,
               isNew: false,
-              statusLog: [...query.statusLog, { label: 'Fresh cached answer delivered', at: Date.now() }],
+              statusLog: [...query.statusLog, { label: priceCents ? 'Recent answer purchased' : 'Free answer delivered', at: Date.now() }],
             }
           : query,
       ),
       activeAnswerId: answerId,
-      walletCents: Math.max(0, state.walletCents - priceCents),
     }; }),
   setActiveTask: (activeTaskId) => set({ activeTaskId, capturedFrames: [], wideShot: false, spotConfirmedQueryId: null }),
   updateQueryState: (queryId, queryState, label, detail) =>
@@ -355,19 +364,19 @@ export const createYonderState: StateCreator<YonderStore> = (set, get) => ({
     const state = get();
     const query = state.queries.find((item) => item.id === state.activeTaskId);
     if (!query || query.state !== 'VERIFYING' || state.captureMode !== 'demo') return null;
-    if (query.isNew && (isQueryExpired(query) || state.walletCents < query.bountyCents)) return null;
+    if (query.isNew && isQueryExpired(query)) return null;
     const place = state.places.find((item) => item.id === query.placeId);
     if (place?.communitySpot || place?.status === 'blocked') return null;
     const result = resultFor(query.placeId, query.queryType);
     const charged = result.confidence >= CONFIDENCE_THRESHOLD;
-    const answerId = `answer-${query.id}-${Date.now()}`;
-    // Demo-only settlement. Real evidence must be reviewed by a trusted backend.
-    shopify.releaseObserverPayout({
-      queryId: query.id,
-      answerId,
-      observerRewardCents: query.observerRewardCents,
-      platformFeeCents: query.platformFeeCents,
-    }).catch(() => undefined);
+    const now = Date.now();
+    const answerId = `answer-${query.id}-${now}`;
+    // Demo-only settlement. Real evidence must be reviewed by a trusted backend
+    // before the poster's tab is billed and the Scout is paid.
+    const tab = charged && query.isNew ? addBountyToTab(state.tab, query.id, query.bountyCents, now) : state.tab;
+    if (tab.charges.length > state.tab.charges.length) payments.chargeTab(tab.charges[tab.charges.length - 1]).catch(() => undefined);
+    const payout = charged && !state.payouts.some(p => p.queryId === query.id) ? createPayout(query.id, query.observerRewardCents, now) : null;
+    if (payout) payments.sendPayout(payout).catch(() => undefined);
     const answer: Answer = {
       id: answerId,
       placeId: query.placeId,
@@ -388,8 +397,8 @@ export const createYonderState: StateCreator<YonderStore> = (set, get) => ({
       ),
       activeQueryId: query.isNew ? query.id : current.activeQueryId,
       activeAnswerId: answerId,
-      earnedCents: current.earnedCents + (charged ? query.observerRewardCents : 0),
-      walletCents: current.walletCents - (query.isNew && charged ? query.bountyCents : 0),
+      tab,
+      payouts: payout ? [payout, ...current.payouts] : current.payouts,
     }));
     return answerId;
   },
@@ -398,7 +407,6 @@ export const createYonderState: StateCreator<YonderStore> = (set, get) => ({
     if (!activeTaskId) return;
     const query = get().queries.find(q => q.id === activeTaskId);
     if (!query || ['ANSWERED','REFUNDED','BLOCKED'].includes(query.state)) return;
-    shopify.refundBounty(activeTaskId, reason).catch(() => undefined);
     set((state) => ({
       queries: state.queries.map((query) =>
         query.id === activeTaskId

@@ -27,9 +27,9 @@ type AnswerTierCardProps = {
 };
 
 const EYEBROWS: Record<AnswerTierKind, string> = {
-  last: "OLDER SAMPLE",
-  recent: "RECENT SAMPLE",
-  dispatch: "LOCAL DEMO",
+  last: "A DAY OR MORE OLD",
+  recent: "LATEST ANSWER",
+  dispatch: "FRESH LOOK",
 };
 
 export function AnswerTierCard({
@@ -61,7 +61,7 @@ export function AnswerTierCard({
         ref={ref}
         testID={testID}
         accessibilityRole="button"
-        accessibilityLabel={`${EYEBROWS[kind]}, ${priceCents === 0 ? "free" : `$${(priceCents / 100).toFixed(2)} in demo credits`}, ${headline}`}
+        accessibilityLabel={`${EYEBROWS[kind]}, ${priceCents === 0 ? "free" : `$${(priceCents / 100).toFixed(2)}`}, ${headline}`}
         onPress={handlePress}
         style={({ pressed }) => [
           styles.card,
@@ -152,11 +152,6 @@ function RecentFreshness({
   }, []);
 
   const value = freshness(observedAt, ttlSeconds, now);
-  const remainingSeconds = Math.max(0, ttlSeconds - value.ageSeconds);
-  const expiry =
-    remainingSeconds < 60
-      ? `${remainingSeconds}s`
-      : `${Math.max(1, Math.floor(remainingSeconds / 60))}m`;
 
   return (
     <Text
@@ -166,7 +161,7 @@ function RecentFreshness({
         { color: freshnessColor(value.band, theme) },
       ]}
     >
-      Sample · {formatAge(value.ageSeconds)} · expires in {expiry}
+      Sample · answered {formatAge(value.ageSeconds)}
     </Text>
   );
 }

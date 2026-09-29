@@ -40,7 +40,6 @@ import { useActiveTheme, useYonderStore } from "@/lib/store";
 import { DEMO_FLAGS } from "@/lib/demoFlags";
 import { abortAutopilot } from "@/lib/autopilot";
 import { AppHeader } from "@/components/Brand";
-import { observePurchases } from "@/lib/purchaseStore";
 import { observeLiveAuth } from "@/lib/liveAuth";
 
 SplashScreen.preventAutoHideAsync();
@@ -70,16 +69,6 @@ export default function RootLayout() {
   const hideModeToggle = !DEMO_FLAGS.autopilotEnabled;
 
   useEffect(() => observeLiveAuth(), []);
-
-  useEffect(() => {
-    let disposed = false;
-    let unsubscribe: (() => void) | undefined;
-    void observePurchases((cleanup) => {
-      if (disposed) cleanup();
-      else unsubscribe = cleanup;
-    });
-    return () => { disposed = true; unsubscribe?.(); };
-  }, []);
 
   useEffect(() => {
     useYonderStore

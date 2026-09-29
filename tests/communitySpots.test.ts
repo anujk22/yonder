@@ -36,6 +36,6 @@ test('community requests preserve landmarks and cannot produce a sample answer o
   const before = store.getState();
   assert.equal(store.getState().completeObservation(), null);
   assert.equal(store.getState().answers.length, before.answers.length);
-  assert.equal(store.getState().walletCents, before.walletCents);
-  assert.equal(store.getState().earnedCents, before.earnedCents);
+  assert.deepEqual(store.getState().tab, before.tab);
+  assert.deepEqual(store.getState().payouts, before.payouts);
 });

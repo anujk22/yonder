@@ -120,7 +120,7 @@ export function DeclineSheet({ visible, onClose, onComplete }: DeclineSheetProps
                   </Pressable>
                 ))}
               </View>
-              <Text style={[type.label, styles.reassurance, { color: theme.inkSoft }]}>You can always stop. Only simulated credits are used.</Text>
+              <Text style={[type.label, styles.reassurance, { color: theme.inkSoft }]}>You can always stop. The asker isn’t billed for a declined check.</Text>
             </>
           )}
         </Entrance>

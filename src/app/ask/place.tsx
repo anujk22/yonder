@@ -15,7 +15,7 @@ import { useYonderStore } from "@/lib/store";
 import { ask, font, type } from "@/lib/theme";
 import { categoryFor, questionFor, suggestions } from "@/lib/discovery";
 import { inferQueryType } from "@/lib/places";
-import { money, priceQuery } from "@/lib/pricing";
+import { BOUNTY_STEP_CENTS, MIN_BOUNTY_CENTS, money, priceQuery, splitBounty } from "@/lib/pricing";
 import { isUnsafeQuestion } from "@/lib/safety";
 import { liveConfigured } from "@/lib/liveClient";
 
@@ -26,15 +26,19 @@ export default function PlaceScreen() {
   );
   const question = useYonderStore((s) => s.draftQuestion);
   const deadline = useYonderStore((s) => s.deadlineMinutes);
+  const chosenBounty = useYonderStore((s) => s.draftBountyCents);
   const [error, setError] = useState("");
   const [details, setDetails] = useState(false);
   if (!place)
     return <MissingDataState title="Choose a place to take a closer look." />;
-  const cost = priceQuery(
+  const suggested = priceQuery(
     place.id,
     inferQueryType(question || questionFor(place)),
     deadline,
   );
+  const cost = splitBounty(chosenBounty ?? suggested.bountyCents);
+  const stepBounty = (delta: number) =>
+    useYonderStore.getState().setDraftBountyCents(Math.max(MIN_BOUNTY_CENTS, cost.bountyCents + delta));
   const prompts = [
     ...new Set([
       questionFor(place),
@@ -193,13 +197,32 @@ export default function PlaceScreen() {
       <View style={styles.price}>
         <View style={styles.row}>
           <View>
-            <Text style={styles.label}>FRESH CHECK · DEMO ESTIMATE</Text>
+            <Text style={styles.label}>YOUR BOUNTY · {money(MIN_BOUNTY_CENTS)} MINIMUM</Text>
             <Text style={styles.priceValue}>{money(cost.bountyCents)}</Text>
           </View>
           <Glyph name="eye" color={ask.fresh} size={30} />
         </View>
+        <View style={styles.steppers}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Lower bounty by 50 cents"
+            disabled={cost.bountyCents <= MIN_BOUNTY_CENTS}
+            onPress={() => stepBounty(-BOUNTY_STEP_CENTS)}
+            style={[styles.stepper, cost.bountyCents <= MIN_BOUNTY_CENTS && { opacity: 0.4 }]}
+          >
+            <Text style={styles.stepperText}>− $0.50</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Raise bounty by 50 cents"
+            onPress={() => stepBounty(BOUNTY_STEP_CENTS)}
+            style={styles.stepper}
+          >
+            <Text style={styles.stepperText}>+ $0.50</Text>
+          </Pressable>
+        </View>
         <Text style={styles.body}>
-          Example answers and a sample check are on the next screen.
+          Offer more if it’s worth more to you. Scout gets {money(cost.observerRewardCents)}.
         </Text>
         <Pressable
           accessibilityRole="button"
@@ -212,13 +235,15 @@ export default function PlaceScreen() {
         </Pressable>
         {details && (
           <Text style={styles.body}>
-            Sample split: {money(cost.observerRewardCents)} observer reward ·{" "}
-            {money(cost.platformFeeCents)} platform fee. No money moves.
+            {money(cost.observerRewardCents)} to the Scout ·{" "}
+            {money(cost.platformFeeCents)} to Yonder. Yonder keeps $1, plus 3%
+            of anything above {money(MIN_BOUNTY_CENTS)} to cover card fees.
+            You’re only billed if you get an answer.
           </Text>
         )}
       </View>
       <Text style={styles.note}>
-        Requests stay on this device. No live check or payment is created.
+        Demo: requests stay on this device. No card is charged and no one is dispatched.
       </Text>
     </AppScreen>
   );
@@ -315,6 +340,18 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   priceLink: { ...type.label, color: ask.fresh, paddingVertical: 9 },
+  steppers: { flexDirection: "row", gap: 9, marginTop: 12 },
+  stepper: {
+    flex: 1,
+    minHeight: 44,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: ask.border,
+    backgroundColor: ask.surface,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  stepperText: { ...type.label, color: ask.ink },
   note: {
     ...type.label,
     fontSize: 10,

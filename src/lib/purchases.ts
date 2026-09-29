@@ -1,9 +1,11 @@
 import { Platform } from "react-native";
 import Constants from "expo-constants";
-import type { CustomerInfo, PurchasesPackage } from "react-native-purchases";
+import type { PurchasesPackage } from "react-native-purchases";
 import { purchaseKey } from "./purchasePolicy";
 
-export const PLUS_ENTITLEMENT = "yonder_plus";
+// Consumable product for unlocking the most recent answer to a question.
+// Configure it in RevenueCat and add it to the current offering.
+export const RECENT_ANSWER_PRODUCT = "yonder_recent_answer";
 const apiKey = purchaseKey({
   platform: Platform.OS,
   development: __DEV__,
@@ -34,19 +36,16 @@ export function purchaseClient() {
   return initialization;
 }
 
-export const hasPlus = (info: CustomerInfo) => Boolean(info.entitlements.active[PLUS_ENTITLEMENT]);
-
-export async function loadPurchaseOptions() {
+/** The recent-answer package from the current offering, or null if it isn't set up. */
+export async function loadRecentAnswerPackage() {
   const client = await purchaseClient();
-  const [info, offerings] = await Promise.all([client.getCustomerInfo(), client.getOfferings()]);
-  return { info, packages: offerings.current?.availablePackages ?? [] };
+  const offerings = await client.getOfferings();
+  return offerings.current?.availablePackages.find((item) => item.product.identifier === RECENT_ANSWER_PRODUCT) ?? null;
 }
 
-export async function buyPackage(option: PurchasesPackage) {
+/** Buys one recent answer. Resolves with the store transaction id once the purchase succeeds. */
+export async function buyRecentAnswer(option: PurchasesPackage) {
   const client = await purchaseClient();
-  return (await client.purchasePackage(option)).customerInfo;
-}
-
-export async function restorePurchase() {
-  return (await purchaseClient()).restorePurchases();
+  const { transaction } = await client.purchasePackage(option);
+  return transaction.transactionIdentifier;
 }

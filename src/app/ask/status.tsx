@@ -76,13 +76,13 @@ export default function StatusScreen() {
         </View>
         <Text style={styles.body}>
           {cancelled
-            ? "This request has been closed. No demo credits were used."
+            ? "This request has been closed. You weren’t billed."
             : expired
               ? "The sample deadline passed. No live check was requested."
               : "This is saved on your device. No observer has been dispatched. Try the example observer journey below."}
         </Text>
         <Text style={styles.body}>
-          Demo estimate: {money(query.bountyCents)} · no real payment
+          Bounty {money(query.bountyCents)} · billed only if answered · demo, no card charged
         </Text>
       </View>
       {!cancelled && !expired && (

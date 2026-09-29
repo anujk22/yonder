@@ -13,8 +13,9 @@ export default function ActivityScreen() {
   const [filter, setFilter] = useState<"All" | "Waiting" | "Answered">("All");
   const queries = useYonderStore((s) => s.queries);
   const places = useYonderStore((s) => s.places);
-  const wallet = useYonderStore((s) => s.walletCents);
-  const earned = useYonderStore((s) => s.earnedCents);
+  const tab = useYonderStore((s) => s.tab);
+  const payouts = useYonderStore((s) => s.payouts);
+  const earned = payouts.reduce((sum, p) => sum + p.amountCents, 0);
   const own = queries.filter(
     (q) => !q.id.startsWith("seed-") && q.state !== "DRAFT",
   );
@@ -42,14 +43,18 @@ export default function ActivityScreen() {
       )}
       <View style={styles.balances}>
         <View>
-          <Text style={styles.amount}>{money(wallet)}</Text>
-          <Text style={styles.meta}>Simulated credits</Text>
+          <Text style={styles.amount}>{money(tab.openCents)}</Text>
+          <Text style={styles.meta}>On your tab</Text>
         </View>
         <View>
           <Text style={styles.amount}>{money(earned)}</Text>
-          <Text style={styles.meta}>Simulated earnings</Text>
+          <Text style={styles.meta}>Paid out to your bank</Text>
         </View>
       </View>
+      <Text style={[styles.meta, { marginTop: -12, marginBottom: 24, lineHeight: 19 }]}>
+        Demo · no card is charged and no money is sent. Your tab is billed as
+        one card payment once it reaches $5 or after 7 days.
+      </Text>
       <View style={styles.filters}>
         {(["All", "Waiting", "Answered"] as const).map((f) => (
           <Pressable
@@ -92,7 +97,7 @@ export default function ActivityScreen() {
                     ? "UNAVAILABLE"
                     : "SAVED REQUEST"}
             </Text>
-            <Text style={styles.meta}>{money(q.bountyCents)} demo</Text>
+            <Text style={styles.meta}>{money(q.bountyCents)}</Text>
           </View>
           <Text style={styles.question}>{q.question}</Text>
           <Text style={styles.meta}>
