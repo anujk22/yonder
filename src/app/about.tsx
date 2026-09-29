@@ -98,6 +98,18 @@ export default function AboutScreen() {
         >
           <Text style={styles.link}>Place data © OpenStreetMap contributors · ODbL ↗</Text>
         </Pressable>
+        <Pressable
+          accessibilityRole="link"
+          onPress={() => void Linking.openURL("https://yonder.expo.app/privacy")}
+        >
+          <Text style={styles.link}>Privacy policy ↗</Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="link"
+          onPress={() => void Linking.openURL("https://yonder.expo.app/support")}
+        >
+          <Text style={styles.link}>Yonder support ↗</Text>
+        </Pressable>
       </View>
       <View style={styles.actions}>
         <PrimaryButton
