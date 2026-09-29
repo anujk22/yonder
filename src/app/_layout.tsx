@@ -41,6 +41,7 @@ import { DEMO_FLAGS } from "@/lib/demoFlags";
 import { abortAutopilot } from "@/lib/autopilot";
 import { AppHeader } from "@/components/Brand";
 import { observeLiveAuth } from "@/lib/liveAuth";
+import { DEMO_SCREEN_NAMES } from "@/lib/demoRoutes";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -66,14 +67,14 @@ export default function RootLayout() {
     JetBrainsMono_400Regular,
     JetBrainsMono_500Medium,
   });
-  const hideModeToggle = !DEMO_FLAGS.autopilotEnabled;
+  const hideModeToggle = !__DEV__ || !DEMO_FLAGS.autopilotEnabled;
 
-  useEffect(() => observeLiveAuth(), []);
+  useEffect(() => (__DEV__ ? observeLiveAuth() : undefined), []);
 
   useEffect(() => {
     useYonderStore
       .getState()
-      .swapMode(pathname.startsWith("/observe") ? "observe" : "ask");
+      .swapMode(__DEV__ && pathname.startsWith("/observe") ? "observe" : "ask");
   }, [pathname]);
 
   useEffect(() => {
@@ -108,7 +109,7 @@ export default function RootLayout() {
       <SafeAreaProvider initialMetrics={initialWindowMetrics}>
         <View
           onTouchStart={
-            DEMO_FLAGS.autopilotEnabled ? handleTouchStart : undefined
+            __DEV__ && DEMO_FLAGS.autopilotEnabled ? handleTouchStart : undefined
           }
           style={[styles.root, { backgroundColor: theme.bg }]}
         >
@@ -140,17 +141,19 @@ export default function RootLayout() {
               <Stack.Screen name="index" options={{ animation: "fade" }} />
               <Stack.Screen name="map" options={{ animation: "fade" }} />
               <Stack.Screen name="saved" options={{ animation: "fade" }} />
-              <Stack.Screen name="activity" options={{ animation: "fade" }} />
-              <Stack.Screen
-                name="observe/index"
-                options={{ animation: "fade" }}
-              />
+              <Stack.Protected guard={__DEV__}>
+                {DEMO_SCREEN_NAMES.map((name) => (
+                  <Stack.Screen key={name} name={name} options={
+                    name === "activity" || name === "observe/index" ? { animation: "fade" } : undefined
+                  } />
+                ))}
+              </Stack.Protected>
             </Stack>
           </KeyboardAvoidingView>
           {!isImmersive && width < 900 && <BottomNavigation />}
           {!hideModeToggle ? <ModeToggle /> : null}
-          <ModeReveal />
-          {DEMO_FLAGS.autopilotEnabled ? <AutopilotLayer /> : null}
+          {__DEV__ ? <ModeReveal /> : null}
+          {__DEV__ && DEMO_FLAGS.autopilotEnabled ? <AutopilotLayer /> : null}
         </View>
       </SafeAreaProvider>
     </GestureHandlerRootView>

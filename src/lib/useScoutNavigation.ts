@@ -13,6 +13,7 @@ export function useScoutNavigation() {
     const state = useYonderStore.getState();
     if (state.isModeSwitching || pathname === route) return;
     if (
+      __DEV__ &&
       typeof route === "string" &&
       ((route === "/observe" && !pathname.startsWith("/observe")) ||
         (pathname.startsWith("/observe") && !route.startsWith("/observe")))

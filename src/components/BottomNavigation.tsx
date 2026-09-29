@@ -126,7 +126,7 @@ export function BottomNavigation() {
         },
       ]}
     >
-      {tabs.map((tab) => (
+      {tabs.filter((tab) => __DEV__ || tab.route === "/" || tab.route === "/saved").map((tab) => (
         <TabItem
           key={tab.route}
           {...tab}

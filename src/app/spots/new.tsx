@@ -27,6 +27,7 @@ import {
 import { searchWorldPlaces } from "@/lib/worldSearch";
 import { Place } from "@/lib/places";
 import { ask, font } from "@/lib/theme";
+import { placeMapRoute } from "@/lib/placeNavigation";
 
 export default function NewSpotScreen() {
   const router = useRouter();
@@ -123,6 +124,10 @@ export default function NewSpotScreen() {
     const state = useYonderStore.getState();
     state.addPlace(place);
     state.toggleSavedPlace(place.id);
+    if (!__DEV__) {
+      router.replace(placeMapRoute(place.id));
+      return;
+    }
     state.setResolvedPlace(place.id);
     state.setDraftQuestion("");
     state.setDeadline(10);
@@ -138,7 +143,7 @@ export default function NewSpotScreen() {
               {error}
             </Text>
           )}
-          <PrimaryButton label="Save spot & ask here" onPress={save} />
+          <PrimaryButton label={__DEV__ ? "Save spot & ask here" : "Save spot"} onPress={save} />
         </View>
       }
     >

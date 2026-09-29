@@ -1,5 +1,5 @@
 import { useScoutNavigation } from "@/lib/useScoutNavigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Keyboard,
@@ -41,6 +41,7 @@ import { BrandObject } from "./BrandObject";
 import { CategoryObject } from "./CategoryObject";
 import { TactileIcon, categoryPalette } from "./TactileIcon";
 import { openPlaceDraft } from "./PlaceTile";
+import { CommunitySpotDetails } from "./CommunitySpotDetails";
 import { useYonderStore } from "@/lib/store";
 import { useLiveLocation } from "@/lib/location";
 import { searchWorldPlaces } from "@/lib/worldSearch";
@@ -64,20 +65,22 @@ const filters: { name: Category; label: string }[] = [
 export default function ExploreMap() {
   const router = useRouter();
   const navigate = useScoutNavigation();
-  const params = useLocalSearchParams<{ search?: string }>();
+  const params = useLocalSearchParams<{ search?: string; placeId?: string }>();
   const { width } = useWindowDimensions();
   const desktop = width >= 900;
   const insets = useSafeAreaInsets();
   const reduced = useReducedMotion();
   const stored = useYonderStore((s) => s.places);
   const saved = useYonderStore((s) => s.savedPlaceIds);
+  const requestedPlace = stored.find((place) => place.id === params.placeId);
+  const openedPlace = useRef<string | undefined>(undefined);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<Category>("All places");
-  const [places, setPlaces] = useState<Place[]>([]);
-  const [source, setSource] = useState<"start" | "search" | "location" | "tour">(
-    "start",
+  const [places, setPlaces] = useState<Place[]>(requestedPlace ? [requestedPlace] : []);
+  const [source, setSource] = useState<"start" | "search" | "location" | "tour" | "saved">(
+    requestedPlace ? "saved" : "start",
   );
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(requestedPlace?.id ?? null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [expanded, setExpanded] = useState(false);
@@ -139,7 +142,7 @@ export default function ExploreMap() {
       ),
     onPanResponderTerminate: () => height.set(expanded ? maximum : peek),
   });
-  const focus = (place: Place) => {
+  const focus = useCallback((place: Place) => {
     Keyboard.dismiss();
     setSelectedId(place.id);
     setExpanded(false);
@@ -152,7 +155,19 @@ export default function ExploreMap() {
       },
       reduced ? 0 : 650,
     );
-  };
+  }, [reduced]);
+  useEffect(() => {
+    if (!requestedPlace || openedPlace.current === requestedPlace.id) return;
+    openedPlace.current = requestedPlace.id;
+    version.current++;
+    setLocationRequested(false);
+    setBusy(false);
+    setError("");
+    setCategory("All places");
+    setPlaces([requestedPlace]);
+    setSource("saved");
+    focus(requestedPlace);
+  }, [requestedPlace, focus]);
   useEffect(() => {
     if (!locationRequested || !location.fix) return;
     const fix = location.fix;
@@ -328,12 +343,12 @@ export default function ExploreMap() {
           >
             <View style={styles.halo} />
             <View style={styles.haloSmall} />
-            <Text style={styles.eyebrow}>LESS GUESSING. MORE GOING.</Text>
+            <Text style={styles.eyebrow}>{__DEV__ ? "LESS GUESSING. MORE GOING." : "FIND PLACES. MAKE PLANS."}</Text>
             <Text style={styles.welcomeTitle}>
-              Good plans.{`\n`}Better intel.
+              {__DEV__ ? "Good plans.\nBetter intel." : "Good places.\nYour next plan."}
             </Text>
             <Text style={styles.welcomeBody}>
-              A little look before{`\n`}you head out.
+              {__DEV__ ? "A little look before\nyou head out." : "Find a place.\nSave a little adventure."}
             </Text>
             <View style={styles.heroScout}>
               <BrandObject size={132} playful />
@@ -360,14 +375,14 @@ export default function ExploreMap() {
             Centers the map on your location. Or search any US city.
           </Text>
           <View style={styles.startLinks}>
-            <MotionPressable
+            {__DEV__ && <MotionPressable
               accessibilityRole="button"
               onPress={tour}
               style={styles.textButton}
             >
               <Text style={styles.link}>Take the NYC sample tour</Text>
               <ArrowUpRight size={14} color={ask.ink} />
-            </MotionPressable>
+            </MotionPressable>}
             <MotionPressable
               accessibilityRole="button"
               onPress={() => router.push("/about")}
@@ -376,7 +391,7 @@ export default function ExploreMap() {
               <Text style={styles.link}>How it works</Text>
             </MotionPressable>
           </View>
-          {desktop && (
+          {desktop && __DEV__ && (
             <View style={styles.steps}>
               <Text style={styles.eyebrow}>YOUR NEXT GOOD DECISION</Text>
               {[
@@ -456,12 +471,19 @@ export default function ExploreMap() {
             <Text style={styles.area} numberOfLines={2}>
               {selected.area}
             </Text>
-            <View style={styles.question}>
+            <CommunitySpotDetails place={selected} />
+            {__DEV__ && <View style={styles.question}>
               <Text style={styles.questionText}>{questionFor(selected)}</Text>
               <Sparkles size={16} color="#9A79B1" />
-            </View>
+            </View>}
           </LinearGradient>
-          <MotionPressable
+          {selected.id.startsWith("osm-") && <Pressable
+            accessibilityRole="link"
+            onPress={() => void Linking.openURL("https://www.openstreetmap.org/copyright")}
+          >
+            <Text style={styles.small}>Place data © OpenStreetMap contributors · ODbL ↗</Text>
+          </Pressable>}
+          {__DEV__ && <><MotionPressable
             accessibilityRole="button"
             onPress={() => openPlaceDraft(selected, router)}
             style={styles.primary}
@@ -473,7 +495,7 @@ export default function ExploreMap() {
             {source === "tour"
               ? "Sample tour · try a demo request, no card charged."
               : "Real place · requests currently run as a local demo."}
-          </Text>
+          </Text></>}
         </>
       ) : (
         <>
@@ -508,7 +530,7 @@ export default function ExploreMap() {
               >
                 <Text style={styles.small}>Place data © OpenStreetMap contributors · ODbL ↗</Text>
               </Pressable>
-              <Text style={styles.small}>Live answers are not available yet.</Text>
+              {__DEV__ && <Text style={styles.small}>Live answers are not available yet.</Text>}
             </>
           )}
           {busy ? (
@@ -644,7 +666,7 @@ export default function ExploreMap() {
                   ["/saved", "Saved"],
                   ["/observe", "Scout"],
                 ] as const
-              ).map(([route, label]) => (
+              ).filter(([route]) => __DEV__ || route === "/" || route === "/saved").map(([route, label]) => (
                 <MotionPressable
                   key={route}
                   accessibilityRole="button"

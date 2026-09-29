@@ -7,6 +7,7 @@ import { artFor, categoryFor, questionFor } from "@/lib/discovery";
 import { Place } from "@/lib/places";
 import { useYonderStore } from "@/lib/store";
 import { ask, font } from "@/lib/theme";
+import { placeMapRoute } from "@/lib/placeNavigation";
 
 export function openPlaceDraft(
   place: Place,
@@ -14,6 +15,10 @@ export function openPlaceDraft(
 ) {
   const state = useYonderStore.getState();
   state.addPlace(place);
+  if (!__DEV__) {
+    router.push(placeMapRoute(place.id));
+    return;
+  }
   state.setResolvedPlace(place.id);
   state.setDraftQuestion("");
   state.setDeadline(10);
@@ -36,7 +41,7 @@ export function PlaceTile({
     <View style={[styles.card, { width }, compact && { flexDirection: "row" }]}>
       <MotionPressable
         accessibilityRole="button"
-        accessibilityLabel={`Ask about ${place.name}`}
+        accessibilityLabel={`${__DEV__ ? "Ask about" : "Show"} ${place.name}`}
         onPress={() => openPlaceDraft(place, router)}
         style={[
           { flex: 1 },
@@ -74,7 +79,7 @@ export function PlaceTile({
           {!compact && (
             <View style={styles.bottom}>
               <Text style={styles.question} numberOfLines={2}>
-                {questionFor(place)}
+                {__DEV__ ? questionFor(place) : "Show on map"}
               </Text>
               <View style={styles.arrow}>
                 <ArrowUpRight size={17} color={ask.ink} />

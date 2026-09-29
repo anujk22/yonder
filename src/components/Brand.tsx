@@ -110,7 +110,7 @@ export function AppHeader() {
                 ["/activity", "Your activity"],
                 ["/about", "How it works"],
               ] as const
-            ).map(([route, label]) => (
+            ).filter(([route]) => __DEV__ || route !== "/activity").map(([route, label]) => (
               <Pressable
                 key={route}
                 accessibilityRole="button"
@@ -128,7 +128,7 @@ export function AppHeader() {
             ))}
           </View>
         )}
-        <Pressable
+        {__DEV__ && <Pressable
           accessibilityRole="button"
           onPress={() => go(pathname.startsWith("/observe") ? "/" : "/observe")}
           style={[styles.earn, { borderColor: theme.border }]}
@@ -140,7 +140,7 @@ export function AppHeader() {
                 ? "Go scouting ↗"
                 : "Try scouting ↗"}
           </Text>
-        </Pressable>
+        </Pressable>}
       </View>
       {!wide && (
         <View style={styles.mobileNav}>
@@ -150,7 +150,7 @@ export function AppHeader() {
               ["/activity", "Activity"],
               ["/about", "How it works"],
             ] as const
-          ).map(([route, label]) => (
+          ).filter(([route]) => __DEV__ || route !== "/activity").map(([route, label]) => (
             <Pressable
               key={route}
               accessibilityRole="button"
