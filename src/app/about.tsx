@@ -26,16 +26,14 @@ export default function AboutScreen() {
             width < 600 && { fontSize: 43, lineHeight: 45 },
           ]}
         >
-          The world changes.{`\n`}Your information should, too.
+          {__DEV__ ? <>The world changes.{`\n`}Your information should, too.</> : <>Your places.{`\n`}All together.</>}
         </Text>
         <Text style={styles.body}>
-          A review from last summer can’t tell you how long the line is today.
-          Yonder is for the small, right-now questions that make a real
-          difference to your day.
+          {__DEV__ ? "A review from last summer can’t tell you how long the line is today. Yonder is for the small, right-now questions that make a real difference to your day." : "Search places, save the ones that matter, and organize them into your own collections. Your lists and personal pins stay on this device."}
         </Text>
       </Entrance>
       <View style={[styles.steps, width < 800 && { flexDirection: "column" }]}>
-        {[
+        {(__DEV__ ? [
           [
             "01",
             "Pick your place.",
@@ -51,7 +49,11 @@ export default function AboutScreen() {
             "See an example result.",
             "Explore a time-stamped sample answer and its limitations. Samples do not report current conditions.",
           ],
-        ].map(([n, title, body]) => (
+        ] : [
+          ["01", "Find a place.", "Search for a U.S. place or city, then see it on the map. Location access is optional."],
+          ["02", "Keep it close.", "Save a place or add a personal pin for somewhere you want to remember."],
+          ["03", "Make your own lists.", "Organize saved places into named collections. Collections are free and unlimited."],
+        ]).map(([n, title, body]) => (
           <View key={n} style={styles.step}>
             <Text style={styles.number}>{n} ↗</Text>
             <Text style={styles.stepTitle}>{title}</Text>
@@ -59,7 +61,7 @@ export default function AboutScreen() {
           </View>
         ))}
       </View>
-      <View style={styles.ethos}>
+      {__DEV__ && <View style={styles.ethos}>
         <Text style={styles.stepTitle}>
           Curious about places. Respectful of people.
         </Text>
@@ -69,27 +71,24 @@ export default function AboutScreen() {
           A location reading supports a check; it does not prove the contents of
           a photo.
         </Text>
-      </View>
+      </View>}
       <View style={styles.preview}>
-        <Text style={styles.eyebrow}>WHAT YOU CAN TRY TODAY</Text>
+        <Text style={styles.eyebrow}>WHAT YOU CAN DO TODAY</Text>
         <Text style={styles.stepTitle}>What’s available today.</Text>
         <Text style={styles.stepBody}>
-          Explore the real world map, search real places, save your favorites,
-          and follow your location with permission. The optional NYC tour,
-          prices, and earnings are sample data. Requests stay on this device. No
-          money moves and no one is dispatched.
+          {__DEV__ ? "Explore the real world map, search real places, save your favorites, and follow your location with permission. The NYC tour, bounties and earnings are sample data. Requests stay on this device and no one is dispatched." : "Explore the map, search U.S. places, save your favorites and create personal pins and collections. No account or payment is required. Your saved lists do not sync between devices."}
         </Text>
-        <Text style={styles.stepBody}>
+        {__DEV__ && <Text style={styles.stepBody}>
           The device-check flow uses actual GPS accuracy, distance and reading
           age to unlock your camera. Photos remain on your device and are not
           independently verified. The demo flow lets you try the full answer
           journey without sharing location or camera access.
-        </Text>
+        </Text>}
         <Text style={styles.stepBody}>
           USA place search sends the place name you enter to OpenStreetMap
           through Yonder’s server. Your location centers the map; Yonder does
           not send it to its search server. iPhone maps use Apple Maps; web
-          maps use OpenStreetMap tiles. Saved places and request history are
+          maps use OpenStreetMap tiles. Saved places, pins and collections are
           stored on this device.
         </Text>
         <Pressable
@@ -113,17 +112,17 @@ export default function AboutScreen() {
       </View>
       <View style={styles.actions}>
         <PrimaryButton
-          label="Find your next little adventure"
+          label="Explore places"
           onPress={() => router.push("/")}
         />
-        <Pressable
+        {__DEV__ && <Pressable
           accessibilityRole="button"
           onPress={() => router.push("/observe")}
         >
           <Text style={styles.link}>
             Already out and about? See how helping works ↗
           </Text>
-        </Pressable>
+        </Pressable>}
       </View>
     </AppScreen>
   );

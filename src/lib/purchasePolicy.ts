@@ -8,7 +8,8 @@ export type PurchaseEnvironment = {
 };
 
 export function purchaseKey(env: PurchaseEnvironment): string | null {
-  if (env.expoGo || !["ios", "android"].includes(env.platform)) return null;
+  // The current public release is free; purchases are limited to development builds.
+  if (!env.development || env.expoGo || !["ios", "android"].includes(env.platform)) return null;
   if (env.development && env.testKey?.startsWith("test_")) return env.testKey;
   const key = env.platform === "ios" ? env.appleKey : env.googleKey;
   const prefix = env.platform === "ios" ? "appl_" : "goog_";
