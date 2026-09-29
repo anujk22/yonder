@@ -13,8 +13,8 @@
       "bundleIdentifier": "com.anujkakumanu.yonder",
       "supportsTablet": false,
       "infoPlist": {
-        "NSCameraUsageDescription": "Yonder captures live observations in the app.",
-        "NSLocationWhenInUseUsageDescription": "Yonder verifies you are at the location you are observing.",
+        "NSCameraUsageDescription": "Yonder uses your camera for the optional local device-check demo. Photos stay on your device and are not uploaded.",
+        "NSLocationWhenInUseUsageDescription": "Yonder uses your location to center the map and check your position during the optional local device-check demo.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
@@ -37,7 +37,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Yonder captures live observations in the app.",
+          "cameraPermission": "Yonder uses your camera for the optional local device-check demo. Photos stay on your device and are not uploaded.",
           "recordAudioAndroid": false,
           "barcodeScannerEnabled": false
         }

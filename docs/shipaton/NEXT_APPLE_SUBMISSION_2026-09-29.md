@@ -7,13 +7,15 @@ This is a preparation package, not proof of submission or approval. Shipaton clo
 - App Store Connect app `6815955359`, bundle ID `com.anujkakumanu.yonder`, iOS version 1.0/build 7 was rejected for 2.1.0 Information Needed. The six-answer draft in `APP_REVIEW_RESPONSE_2026-09-29.md` describes that binary, which has no RevenueCat or invited pilot.
 - New source has `react-native-purchases` 10.10.2; the local native dependency lock includes RevenueCat 5.90.2. Plus unlocks additional **local collections** with one non-consumable purchase. One collection, map search and saving places are free. Restore recovers Plus, not deleted collections.
 - RevenueCat project `4850e856` has Test Store app `app98d2f2dbaa`, product `yonder_plus_lifetime` (US $2.99), entitlement `yonder_plus`, and current offering `default` / `$rc_lifetime`. An actual transaction is still unverified. These are Test Store records, not Apple product records.
-- At initial inspection, EAS production had the API URL but no Apple public SDK key. Safari confirmed the Paid Apps Agreement is **New**, not Active. The owner is completing that agreement and any required banking/tax setup. Apple IAP and RevenueCat Apple credentials remain unconfigured.
-- Root deployed and promoted deployment `gpo6kko0di` to `yonder.expo.app`; its unauthenticated Node checks returned privacy/support HTTP 200 with Plus text and place-search HTTP 200 with results. Signed-out Safari and the submitted device still need checking. Another tool's HTTP 403 is not evidence that the deployment is broken.
+- W9 tax information is **Active**; banking and the Paid Apps Agreement are **Processing**, with Apple's banner advising up to 24 hours. Active purchase readiness is not yet established. Required In-App Purchase key generation approval is pending; RevenueCat Apple credentials and the production Apple public SDK key remain to be configured.
+- Apple non-consumable `6817497507`, product ID `com.anujkakumanu.yonder.plus.lifetime`, has U.S. availability, $2.99 pricing and English localization saved. Its review screenshot and notes are still pending.
+- Latest hosting deployment is `clr7lgc7zg` at `yonder.expo.app`; the privacy page passed signed-out in-app-browser inspection. Earlier unauthenticated HTTP checks passed privacy/support and place search. Verify links and search in the submitted device build. A clean public clone of revision `83964da` passed installation, tests, typecheck, lint, all-platform export and iOS scene configuration checks.
+- App Privacy was updated and published on September 29: Search History for App Functionality, linked to identity; Purchase History for App Functionality and Analytics, not linked to identity; no tracking. Camera and location prompt descriptions now accurately describe optional local device checks and map centering; Expo introspection verified the generated iOS values.
 
 ## Configure Apple and RevenueCat before the production binary
 
 1. **Business:** verify the Paid Apps Agreement is **Active**, with required banking and tax information complete. Apple requires this even for sandbox IAP tests. Account Holder action may be necessary. [Apple setup](https://developer.apple.com/help/app-store-connect/configure-in-app-purchase-settings/overview-for-configuring-in-app-purchases/).
-2. **Monetization → In-App Purchases:** inspect for an existing matching product before creating one. Use the following minimal record; Apple product IDs cannot be edited or reused after deletion. Add English (U.S.) localization, price, availability and applicable tax category; clear every Missing Metadata field. [Apple fields](https://developer.apple.com/help/app-store-connect/reference/in-app-purchases-and-subscriptions/in-app-purchase-information/).
+2. **Monetization → In-App Purchases:** finish existing product `6817497507`; do not create a duplicate. Confirm applicable tax category and clear every Missing Metadata field. Saved values and the outstanding screenshot are below. [Apple fields](https://developer.apple.com/help/app-store-connect/reference/in-app-purchases-and-subscriptions/in-app-purchase-information/).
 
 | Field | Value |
 | --- | --- |
@@ -22,7 +24,7 @@ This is a preparation package, not proof of submission or approval. Shipaton clo
 | Product ID | `com.anujkakumanu.yonder.plus.lifetime` |
 | Display name | Yonder Plus |
 | Description | Unlock additional local place collections. |
-| Initial U.S. price | $2.99; confirm the selected Apple price point |
+| Initial U.S. price | $2.99 saved |
 | Availability | United States, matching the app listing |
 | Review screenshot | Actual iPhone Plus screen showing benefit and loaded localized Apple price |
 
@@ -47,11 +49,13 @@ Build the new production binary, upload it, wait for processing, and test that e
 
 For this purchase implementation, RevenueCat is configured with no custom `appUserID`, email/customer attributes, IDFA collection or advertising integration in source. In App Privacy, disclose **Purchases → Purchase History**, used for **Analytics** and **App Functionality**. RevenueCat permits **not linked to identity** for anonymous IDs with no way to identify the user, and does not inherently track across apps for advertising. Confirm dashboard integrations do not change those answers. RevenueCat alone does not require card information, location or diagnostics disclosures. Reassess the complete app's search/hosting/map collection separately; do not select “Data Not Collected.” The bundled SDK privacy manifest does not replace App Store Connect answers. [RevenueCat privacy guidance](https://www.revenuecat.com/docs/platform-resources/apple-platform-resources/apple-app-privacy).
 
+Disclose **Search History → App Functionality** because the place-search server retains readable query terms beyond the request. The cache itself has no user mapping; assess hosting/provider logs before choosing identity linkage. Device-only photos/location/local lists are not collection; Apple says its own MapKit collection is not the developer's disclosure responsibility. [Apple privacy definitions](https://developer.apple.com/app-store/app-privacy-details/).
+
 Use this IAP review note after testing:
 
 > Yonder Plus is a one-time non-consumable that unlocks additional named place collections on this device. One collection, searching and saving places are free. Open Saved → Organize into collections; create a first collection, then tap Explore Yonder Plus. The purchase button displays the localized App Store price. Restore purchases is on that screen. Plus does not buy observations or pay observers. Collections do not sync; restore recovers the purchase entitlement only. No Yonder account is required.
 
-Update all six Apple answers to the **new selected binary** before sending: replace build-7 purchase/service statements with verified Plus behavior; describe the pilot as disabled if absent; add the correct recording and permission details; confirm U.S. behavior and third-party material licenses. Do not send the old six-answer draft unchanged or claim unsupported rights clearance.
+Use `APPLE_REVIEW_REPLACEMENT_DRAFT_2026-09-29.md` for the **new selected binary** after verifying its purchase and physical-device evidence. It remains a draft. Do not send the old build-7 six-answer response unchanged.
 
 ## Submit the complete package
 
