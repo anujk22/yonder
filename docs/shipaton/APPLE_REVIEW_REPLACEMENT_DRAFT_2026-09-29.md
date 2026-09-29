@@ -1,6 +1,6 @@
 # Apple replacement-build response — DRAFT, not sent
 
-**Pending:** production Apple credentials/key, Active Paid Apps Agreement, exact replacement binary, successful physical-device Apple sandbox purchase and recording. This describes the intended Apple-key build with Supabase disabled. It is not evidence that those steps passed. Before sending, verify every statement against the selected binary, replace all evidence fields, attach the recording and copy access instructions into Notes for Review. Do not reuse this for build 7.
+**Pending:** production Apple credentials/key, exact replacement binary, successful physical-device Apple sandbox purchase and recording. The Paid Apps Agreement is Active. This describes the intended Apple-key build with Supabase disabled. It is not evidence that those steps passed. Before sending, verify every statement against the selected binary, replace all evidence fields, attach the recording and copy access instructions into Notes for Review. Do not reuse this for build 7.
 
 Hello App Review team,
 
