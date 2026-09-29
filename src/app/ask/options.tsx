@@ -124,6 +124,7 @@ export default function OptionsScreen() {
         {old && (
           <AnswerTierCard
             kind="last"
+            testID="options-last"
             headline={old.headline}
             priceCents={0}
             observedAt={old.observedAt}

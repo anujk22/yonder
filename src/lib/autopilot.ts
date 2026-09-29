@@ -77,7 +77,8 @@ export const STEPS: readonly Step[] = [
   { type: 'wait', durationMs: DURATION.answerMs },
   { type: 'navigate', route: '/ask?autopilotDuplicate=1' },
   { type: 'wait', durationMs: DURATION.tierOptionsMs },
-  { type: 'tap', target: 'options-recent' },
+  // The free answer: the latest answer is a real in-app purchase and needs a person to confirm it.
+  { type: 'tap', target: 'options-last' },
   { type: 'wait', durationMs: DURATION.cachedAnswerMs },
 
   // --- Act 2: Retail Shoe Stock Check Demo (Nike SoHo / Shopify Verified Merchant) ---
