@@ -36,8 +36,7 @@ export async function GET(request: Request) {
     }).toString();
     const response = await fetch(url, {
       headers: {
-        "User-Agent":
-          "YonderPrototype/2.0 (+https://github.com/anujk22/yonder)",
+        "User-Agent": "Yonder/1.0 (+https://yonder.expo.app/support)",
         Accept: "application/json",
       },
       signal: AbortSignal.timeout(9000),

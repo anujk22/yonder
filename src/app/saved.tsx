@@ -21,6 +21,9 @@ export default function SavedScreen() {
           Places you’re curious about. Ready when you are.
         </Text>
       </Entrance>
+      <View style={{ marginTop: 20 }}>
+        <PrimaryButton label="Organize into collections" variant="secondary" onPress={() => router.push("/collections")} />
+      </View>
       <View style={styles.list}>
         {shown.map((p) => (
           <PlaceTile key={p.id} place={p} compact width="100%" />
@@ -28,7 +31,6 @@ export default function SavedScreen() {
       </View>
       {!shown.length && (
         <View style={styles.empty}>
-          <BrandScene />
           <Text style={styles.emptyTitle}>A few future favorites.</Text>
           <Text style={[styles.copy, { textAlign: "center" }]}>
             Tap the heart on a place to tuck it away for another day.
@@ -39,6 +41,7 @@ export default function SavedScreen() {
               onPress={() => router.navigate("/")}
             />
           </View>
+          <BrandScene />
         </View>
       )}
     </AppScreen>

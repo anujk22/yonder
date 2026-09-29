@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { Image } from "expo-image";
 import { StyleSheet, useWindowDimensions, View, Text } from "react-native";
 import { useRouter, type Href } from "expo-router";
 import * as Haptics from "expo-haptics";
@@ -13,7 +14,6 @@ import Animated, {
   withSequence,
   cancelAnimation,
 } from "react-native-reanimated";
-import { BrandImage } from "@/components/BrandImage";
 import { registerAutopilotAbortHandler } from "@/lib/autopilot";
 import { useYonderStore } from "@/lib/store";
 import { font } from "@/lib/theme";
@@ -56,7 +56,6 @@ export function ModeReveal() {
   const phase = useSharedValue(0);
   const opacity = useSharedValue(1);
   const mark = useSharedValue(0);
-  const spin = useSharedValue(0);
   useEffect(() => {
     if (!reveal) return;
     const reduced = reveal.reduceMotion;
@@ -64,7 +63,6 @@ export function ModeReveal() {
     phase.set(0);
     opacity.set(1);
     mark.set(0);
-    spin.set(0);
     if (!reduced) {
       progress.set(
         withSequence(
@@ -88,12 +86,6 @@ export function ModeReveal() {
             withTiming(1, { duration: 250 }),
             withDelay(430, withTiming(0, { duration: 230 })),
           ),
-        ),
-      );
-      spin.set(
-        withDelay(
-          190,
-          withTiming(360, { duration: 810, easing: Easing.out(Easing.cubic) }),
         ),
       );
     }
@@ -122,7 +114,7 @@ export function ModeReveal() {
     return () => {
       clearTimeout(swap);
       clearTimeout(done);
-      [progress, phase, opacity, mark, spin].forEach(cancelAnimation);
+      [progress, phase, opacity, mark].forEach(cancelAnimation);
       abort();
     };
   }, [
@@ -135,7 +127,6 @@ export function ModeReveal() {
     phase,
     opacity,
     mark,
-    spin,
   ]);
   const backWave = useAnimatedProps(() => ({
     d: waveBand(width, height, progress.get(), phase.get() + 0.6, 32),
@@ -149,10 +140,7 @@ export function ModeReveal() {
     transform: [{ translateY: (1 - mark.get()) * 16 }],
   }));
   const mascot = useAnimatedStyle(() => ({
-    transform: [
-      { rotate: `${spin.get()}deg` },
-      { scale: 0.88 + 0.12 * mark.get() },
-    ],
+    transform: [{ scale: 0.88 + 0.12 * mark.get() }],
   }));
   if (!reveal) return null;
   return (
@@ -179,9 +167,12 @@ export function ModeReveal() {
       )}
       <Animated.View style={[styles.center, label]}>
         <Animated.View style={mascot}>
-          <View style={{ transform: [{ scaleX: -1 }] }}>
-            <BrandImage kind="scout" size={164} />
-          </View>
+          <Image
+            source={require("../../assets/brand/objects/scout-transition.webp")}
+            contentFit="contain"
+            accessible={false}
+            style={{ width: 164, height: 164 }}
+          />
         </Animated.View>
         <Text style={styles.title}>
           {reveal.to === "observe"

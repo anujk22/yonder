@@ -9,6 +9,7 @@ import {
 } from "@/components/ui";
 import { BrandObject } from "@/components/BrandObject";
 import { useYonderStore } from "@/lib/store";
+import { isQueryExpired } from "@/lib/state";
 import { ask, font, type } from "@/lib/theme";
 import { money } from "@/lib/pricing";
 
@@ -36,7 +37,7 @@ export default function StatusScreen() {
     0,
     Math.ceil((query.createdAt + query.deadlineMinutes * 60000 - now) / 1000),
   );
-  const expired = remaining === 0 && !cancelled && query.state !== "ANSWERED";
+  const expired = isQueryExpired(query, now) && !cancelled;
   const simulate = () => {
     const state = useYonderStore.getState();
     state.setCaptureMode("demo");
@@ -45,7 +46,7 @@ export default function StatusScreen() {
   };
   return (
     <AppScreen>
-      <ScreenHeader eyebrow="03 / YOUR REQUEST" />
+      <ScreenHeader eyebrow="03 / LOCAL DEMO REQUEST" />
       <View style={styles.hero}>
         <BrandObject size={150} playful />
         <Text accessibilityRole="header" style={styles.title}>
@@ -77,8 +78,8 @@ export default function StatusScreen() {
           {cancelled
             ? "This request has been closed. No demo credits were used."
             : expired
-              ? "No answer arrived within your deadline. Create a new request when you’re ready."
-              : "Your request is saved on this device. Explore the observer’s side to follow the answer journey."}
+              ? "The sample deadline passed. No live check was requested."
+              : "This is saved on your device. No observer has been dispatched. Try the example observer journey below."}
         </Text>
         <Text style={styles.body}>
           Demo estimate: {money(query.bountyCents)} · no real payment
@@ -86,7 +87,7 @@ export default function StatusScreen() {
       </View>
       {!cancelled && !expired && (
         <View style={styles.actions}>
-          <PrimaryButton label="Try the observer’s side" onPress={simulate} />
+          <PrimaryButton label="Try the example observer journey" onPress={simulate} />
           <PrimaryButton
             label="Cancel this request"
             variant="secondary"

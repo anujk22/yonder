@@ -56,7 +56,7 @@ export default function AnswerScreen() {
       <View style={styles.badge}>
         <Info size={14} color="#725A88" />
         <Text style={styles.badgeText}>
-          {available ? "Illustrative answer" : "Still unanswered"}
+          {available ? "Example answer · not live" : "No example answer"}
         </Text>
       </View>
       <Text accessibilityRole="header" style={styles.headline}>
@@ -67,7 +67,7 @@ export default function AnswerScreen() {
       <Text style={styles.detail}>
         {available
           ? answer.detail
-          : "There isn’t an observation for this question yet. Your credits are safe."}
+          : "There is no example observation for this question. No real payment was made."}
       </Text>
       <View style={styles.art}>
         <PlaceArt kind={artFor(place)} />
@@ -104,7 +104,7 @@ export default function AnswerScreen() {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.cardTitle}>
-                {answer.charged ? "Credits used" : "No charge"}
+                {answer.charged ? "Demo credits used" : "No demo charge"}
               </Text>
               <Text style={styles.body}>
                 {answer.charged
@@ -156,7 +156,7 @@ export default function AnswerScreen() {
       )}
       <View style={styles.actions}>
         <PrimaryButton
-          label={available ? "Ask for a fresh look" : "Try another question"}
+          label={available ? "Try another demo request" : "Try another question"}
           onPress={refresh}
         />
         <PrimaryButton

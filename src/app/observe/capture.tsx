@@ -23,6 +23,7 @@ import { AUTOPILOT_FILMSTRIP_DWELL_MS, isAutopilotRunning, registerAutopilotAbor
 import { DEMO_FLAGS } from '@/lib/demoFlags';
 import { PIER_TWO_PROOF, PIER_TWO_PROOF_ASPECT_RATIO } from '@/lib/proofMedia';
 import { useActiveTheme, useYonderStore } from '@/lib/store';
+import { isQueryExpired } from '@/lib/state';
 import { radii, space, type } from '@/lib/theme';
 import { TIMING } from '@/lib/timing';
 
@@ -75,6 +76,7 @@ export default function CaptureScreen() {
   const flashOpacity = useSharedValue(0);
   // DEMO: deterministic path for recording. Real implementation below.
   const demoCapture = captureMode === 'demo';
+  const courtSample = demoCapture && query?.placeId === 'pier2';
   const captureReady = demoCapture || cameraReady;
 
   useEffect(() => {
@@ -100,11 +102,11 @@ export default function CaptureScreen() {
     const camera = cameraRef.current;
     if (place?.communitySpot && (demoCapture || useYonderStore.getState().spotConfirmedQueryId !== query?.id)) return;
     if (capturing || (!demoCapture && (!cameraReady || !camera))) return;
-    if (!query || !place || ['ANSWERED','REFUNDED','BLOCKED'].includes(query.state)) return;
+    if (!query || !place || place.status === 'blocked' || ['ANSWERED','REFUNDED','BLOCKED'].includes(query.state) || isQueryExpired(query)) return;
     setCapturing(true);
     setCaptureError(false);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    if (query) updateQueryState(query.id, 'CAPTURING', 'Capturing live evidence', '3 frames, in-app only');
+    if (query) updateQueryState(query.id, 'CAPTURING', demoCapture ? 'Showing example frames' : 'Capturing device photos', '3 frames, in-app only');
 
     try {
       const checkLocation = async () => {
@@ -146,10 +148,14 @@ export default function CaptureScreen() {
   };
   useAutopilotPressTarget('capture-shutter', shutterRef, captureFrames);
 
-  if (!query) return <MissingDataState title="No observation is ready to capture." />;
-  if (!place) return <MissingDataState title="The observation's place is not available." />;
-  if (place.communitySpot && (demoCapture || useYonderStore.getState().spotConfirmedQueryId !== query.id)) return <MissingDataState title="Confirm the community spot before capture." />;
-  if (!demoCapture && !locationEvidence) return <MissingDataState title="Check your location before opening the camera." />;
+  if (!declineVisible) {
+    if (!query) return <MissingDataState title="No observation is ready to capture." />;
+    if (!place) return <MissingDataState title="The observation's place is not available." />;
+    if (place.status === 'blocked') return <MissingDataState title="This place is no longer available for checks." />;
+    if (isQueryExpired(query)) return <MissingDataState title="This check's deadline has passed." />;
+    if (place.communitySpot && (demoCapture || useYonderStore.getState().spotConfirmedQueryId !== query.id)) return <MissingDataState title="Confirm the community spot before capture." />;
+    if (!demoCapture && !locationEvidence) return <MissingDataState title="Check your location before opening the camera." />;
+  }
 
   if (!demoCapture && !permission) {
     return (
@@ -176,7 +182,14 @@ export default function CaptureScreen() {
     <Animated.View style={[styles.flex, { backgroundColor: '#000000' }]}>
       {demoCapture ? (
         <View style={[styles.demoFeedBackdrop, { backgroundColor: '#000000' }]}>
-          <Image source={PIER_TWO_PROOF} resizeMode="contain" style={styles.demoFeedImage} />
+          {courtSample ? (
+            <Image source={PIER_TWO_PROOF} accessibilityLabel="Illustrative basketball artwork, not a place photo" resizeMode="contain" style={styles.demoFeedImage} />
+          ) : (
+            <View style={styles.demoPreview}>
+              <Scout size={120} />
+              <Text style={styles.demoPreviewLabel}>SAMPLE PREVIEW · NO PLACE PHOTO</Text>
+            </View>
+          )}
         </View>
       ) : (
         <CameraView
@@ -232,7 +245,7 @@ export default function CaptureScreen() {
           {capturing ? (
             <Animated.View style={[styles.capturingBanner, { backgroundColor: 'rgba(0, 0, 0, 0.88)', borderColor: 'rgba(255, 255, 255, 0.14)', borderWidth: 1 }]}>
               <Scout size={24} />
-              <Text style={[type.mono, styles.capturingText, { color: '#FFFFFF' }]}>Capturing 3 frames · keep the camera steady</Text>
+              <Text style={[type.mono, styles.capturingText, { color: '#FFFFFF' }]}>{demoCapture ? 'Showing 3 sample frames' : 'Capturing 3 frames · keep the camera steady'}</Text>
             </Animated.View>
           ) : null}
 
@@ -244,11 +257,18 @@ export default function CaptureScreen() {
                 <View key={index} style={styles.frameSlot}>
                   {frames[index] ? (
                     <Animated.View style={styles.frameImageWrap}>
-                      <Image
-                        source={demoCapture ? PIER_TWO_PROOF : { uri: frames[index] }}
-                        resizeMode="contain"
-                        style={styles.frameImage}
-                      />
+                      {demoCapture && !courtSample ? (
+                        <View style={styles.demoFrame}>
+                          <Scout size={34} />
+                          <Text style={styles.demoFrameLabel}>SAMPLE</Text>
+                        </View>
+                      ) : (
+                        <Image
+                          source={courtSample ? PIER_TWO_PROOF : { uri: frames[index] }}
+                          resizeMode="contain"
+                          style={styles.frameImage}
+                        />
+                      )}
                       <Text style={[type.mono, styles.frameLabel, { color: '#FFFFFF' }]}>frame {index + 1} / 3</Text>
                     </Animated.View>
                   ) : (
@@ -293,6 +313,8 @@ const styles = StyleSheet.create({
   flashOverlay: { backgroundColor: '#FFFFFF', zIndex: 100 },
   demoFeedBackdrop: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 },
   demoFeedImage: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, width: '100%', height: '100%' },
+  demoPreview: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16, backgroundColor: '#26352B' },
+  demoPreviewLabel: { ...type.micro, color: '#F7E8AB', fontSize: 10, textAlign: 'center' },
   permissionScreen: { flex: 1, paddingHorizontal: space.lg, alignItems: 'center', justifyContent: 'center' },
   permissionTitle: { marginTop: space.lg, textAlign: 'center', maxWidth: 320 },
   permissionCopy: { marginTop: space.sm, textAlign: 'center', maxWidth: 330 },
@@ -315,6 +337,8 @@ const styles = StyleSheet.create({
   frameSlot: { flex: 1, aspectRatio: PIER_TWO_PROOF_ASPECT_RATIO },
   frameImageWrap: { flex: 1, overflow: 'hidden', borderRadius: 8 },
   frameImage: { width: '100%', height: '100%', borderRadius: 8 },
+  demoFrame: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#26352B' },
+  demoFrameLabel: { ...type.micro, color: '#F7E8AB', fontSize: 8 },
   frameLabel: { position: 'absolute', bottom: 3, left: 5, fontSize: 9, lineHeight: 12 },
   framePlaceholder: { flex: 1, borderWidth: 1, borderRadius: 8 },
   captureButton: { width: 82, height: 82, borderRadius: 41, borderWidth: 4, alignItems: 'center', justifyContent: 'center' },

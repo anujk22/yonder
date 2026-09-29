@@ -27,9 +27,9 @@ type AnswerTierCardProps = {
 };
 
 const EYEBROWS: Record<AnswerTierKind, string> = {
-  last: "LAST KNOWN",
+  last: "OLDER SAMPLE",
   recent: "RECENT SAMPLE",
-  dispatch: "NEW CHECK",
+  dispatch: "LOCAL DEMO",
 };
 
 export function AnswerTierCard({
@@ -61,7 +61,7 @@ export function AnswerTierCard({
         ref={ref}
         testID={testID}
         accessibilityRole="button"
-        accessibilityLabel={`${EYEBROWS[kind]}, ${priceCents === 0 ? "free" : `$${(priceCents / 100).toFixed(2)}`}, ${headline}`}
+        accessibilityLabel={`${EYEBROWS[kind]}, ${priceCents === 0 ? "free" : `$${(priceCents / 100).toFixed(2)} in demo credits`}, ${headline}`}
         onPress={handlePress}
         style={({ pressed }) => [
           styles.card,

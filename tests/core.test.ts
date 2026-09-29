@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createStore, StoreApi } from 'zustand/vanilla';
-import { createYonderState } from '../src/lib/state';
+import { createYonderState, isQueryExpired } from '../src/lib/state';
 import { validateLocation, distanceMeters } from '../src/lib/geo';
 import { sameQuestion } from '../src/lib/queryMatching';
 import { splitBounty } from '../src/lib/pricing';
@@ -54,8 +54,40 @@ test('insufficient credits, cancellation and released tasks keep the ledger cons
   store.getState().releaseActiveTask('try later');assert.equal(store.getState().queries.find(q=>q.id===second)?.isNew,true);
   store.getState().blockActivePlace();store.getState().blockActivePlace();assert.equal(store.getState().walletCents,200);
 });
+test('request deadline begins when posted and expired requests cannot be accepted', () => {
+  const store=createStore(createYonderState);const id=draft(store);
+  store.setState(s=>({queries:s.queries.map(q=>q.id===id?{...q,createdAt:Date.now()-11*60_000}:q)}));
+  store.getState().postActiveQuery();
+  let query=store.getState().queries.find(q=>q.id===id)!;
+  assert.equal(query.state,'OPEN');assert.equal(isQueryExpired(query),false);
+  assert.ok(Date.now()-query.createdAt<1000);
+  store.setState(s=>({queries:s.queries.map(q=>q.id===id?{...q,createdAt:Date.now()-11*60_000}:q)}));
+  store.getState().acceptActiveTask();
+  query=store.getState().queries.find(q=>q.id===id)!;
+  assert.equal(isQueryExpired(query),true);assert.equal(query.state,'OPEN');
+  assert.equal(isQueryExpired(store.getState().queries.find(q=>q.id==='seed-pier2')!),false);
+});
+test('blocking a place closes every outstanding check there', () => {
+  const store=createStore(createYonderState);
+  const first=draft(store);store.getState().postActiveQuery();
+  const second=draft(store);store.getState().postActiveQuery();
+  store.getState().setActiveTask(first);store.getState().blockActivePlace();
+  assert.equal(store.getState().places.find(p=>p.id==='pier2')?.status,'blocked');
+  for(const id of [first,second]) assert.equal(store.getState().queries.find(q=>q.id===id)?.state,'BLOCKED');
+  store.getState().setActiveTask(second);store.getState().acceptActiveTask();
+  assert.equal(store.getState().queries.find(q=>q.id===second)?.state,'BLOCKED');
+});
 test('unsafe and blocked requests cannot be created through the store', () => {
   const store=createStore(createYonderState);assert.equal(draft(store,'applesq'),null);assert.equal(draft(store,'pier2','Follow my ex'),null);
+});
+test('a persisted verifying request at a blocked place cannot settle', () => {
+  const store=createStore(createYonderState);const id=draft(store);store.getState().postActiveQuery();
+  store.getState().updateQueryState(id,'VERIFYING');
+  store.setState(s=>({places:s.places.map(p=>p.id==='pier2'?{...p,status:'blocked' as const}:p)}));
+  const answers=store.getState().answers.length;
+  assert.equal(store.getState().completeObservation(),null);
+  assert.equal(store.getState().answers.length,answers);
+  assert.equal(store.getState().walletCents,2000);assert.equal(store.getState().earnedCents,0);
 });
 test('unknown questions produce no confident sample and no charge', () => {
   const store=createStore(createYonderState);const id=draft(store,'wsp','Is it crowded?');store.getState().postActiveQuery();store.getState().updateQueryState(id,'VERIFYING');assert.ok(store.getState().completeObservation());assert.equal(store.getState().walletCents,2000);assert.equal(store.getState().earnedCents,0);

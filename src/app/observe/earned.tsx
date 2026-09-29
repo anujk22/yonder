@@ -20,7 +20,7 @@ export default function EarnedScreen() {
     <AppScreen>
       <View style={styles.hero}>
         <BrandScene complete />
-        <Text style={styles.label}>CHECK COMPLETE</Text>
+        <Text style={styles.label}>DEMO JOURNEY COMPLETE</Text>
         <Text style={styles.title}>
           {reward
             ? "A little help.\nA better day."
@@ -42,7 +42,7 @@ export default function EarnedScreen() {
       </View>
       <View style={styles.actions}>
         <PrimaryButton
-          label="See the answer you helped create"
+          label="See the example answer"
           onPress={() => router.push(`/ask/answer/${answer.id}`)}
         />
         <PrimaryButton

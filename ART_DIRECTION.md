@@ -22,6 +22,8 @@ Butter yellow, forest green, warm ivory, and restrained lilac. Soft vinyl surfac
 
 The artwork never blocks search, location, attribution, save, or ask controls. The completion scene is explicitly a demo completion; real evidence is kept separate.
 
+The September 27 transition-only `assets/brand/objects/scout-transition.webp` was generated with the built-in ImageGen tool from the existing Scout identity. It faces straight ahead on a transparent background, without a floor shadow. `ModeReveal` uses this asset without spin or mirroring; other Scout artwork retains its original treatment.
+
 ## Generation prompts
 
 ### Vinyl Scout

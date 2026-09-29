@@ -1,25 +1,32 @@
+import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
-import { AppScreen, Entrance } from "@/components/ui";
+import { AppScreen, Entrance, PrimaryButton } from "@/components/ui";
 import { BrandObject } from "@/components/BrandObject";
 import { CategoryObject } from "@/components/CategoryObject";
 import { categoryFor } from "@/lib/discovery";
 import { MotionPressable } from "@/components/MotionPressable";
 import { Glyph } from "@/components/Glyph";
 import { useYonderStore } from "@/lib/store";
+import { isQueryExpired } from "@/lib/state";
 import { observe, font, type } from "@/lib/theme";
 import { money } from "@/lib/pricing";
 export default function ObserveHome() {
   const router = useRouter();
   const queries = useYonderStore((s) => s.queries);
   const places = useYonderStore((s) => s.places);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
   const tasks = queries
-    .filter((q) => q.state === "OPEN")
+    .filter((q) => q.state === "OPEN" && !isQueryExpired(q, now) && places.find(p => p.id === q.placeId)?.status !== "blocked")
     .sort((a, b) => Number(Boolean(b.isNew)) - Number(Boolean(a.isNew)));
   return (
     <AppScreen>
       <Entrance style={styles.intro}>
-        <Text style={styles.eyebrow}>SCOUT · YOUR LOCAL SUPERPOWER</Text>
+        <Text style={styles.eyebrow}>SCOUT · DEMO BOARD</Text>
         <View style={styles.heroRow}>
           <Text accessibilityRole="header" style={[styles.title, { flex: 1 }]}>
             Be someone’s eyes.
@@ -29,18 +36,23 @@ export default function ObserveHome() {
           </View>
         </View>
         <Text style={styles.body}>
-          Already at a place? Take a quick look and help someone decide whether
-          to make the trip.
+          Explore how a place check could work. This board does not connect you
+          to live requests or pay rewards.
         </Text>
       </Entrance>
       <View style={styles.explainer}>
         <Text style={styles.explainerTitle}>Two ways to try a check</Text>
         <Text style={styles.body}>
           Walk through a sample task with no permissions, or use your device to
-          capture with GPS and your camera. Rewards shown here are simulated
-          amounts.
+          capture with GPS and your camera. Photos stay on your device; no
+          answers are verified or rewards paid.
         </Text>
       </View>
+      <PrimaryButton
+        label="See invited live checks"
+        variant="secondary"
+        onPress={() => router.push("/live")}
+      />
       <Text style={styles.listLabel}>
         {tasks.length} REQUESTS TO EXPLORE · SAMPLE BOARD
       </Text>
@@ -71,7 +83,7 @@ export default function ObserveHome() {
               ) : null;
             })()}
             <Text style={[styles.eyebrow, { flex: 1, marginLeft: 10 }]}>
-              {q.isNew ? "YOUR REQUEST" : "SAMPLE REQUEST"}
+              {q.isNew ? "YOUR LOCAL REQUEST" : "SAMPLE REQUEST"}
             </Text>
             <Text style={styles.reward}>{money(q.observerRewardCents)}</Text>
           </View>

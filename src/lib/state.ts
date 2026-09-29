@@ -11,6 +11,9 @@ import { compileSpec, resultFor } from '@/lib/results';
 import { shopify } from '@/lib/shopify';
 let querySequence = 0;
 
+export const isQueryExpired = (query: Query, now = Date.now()) =>
+  query.isNew && now >= query.createdAt + query.deadlineMinutes * 60_000;
+
 const makeSeededAnswers = (startedAt: number): Answer[] => [
   {
     id: 'seed-pier2-last',
@@ -294,7 +297,7 @@ export const createYonderState: StateCreator<YonderStore> = (set, get) => ({
       return {
         queries: state.queries.map((item) =>
           item.id === activeQueryId
-            ? { ...item, state: 'OPEN' as const, isNew: true, statusLog: [...item.statusLog, { label: 'Request saved on this device', at: Date.now() }] }
+            ? { ...item, state: 'OPEN' as const, createdAt: Date.now(), isNew: true, statusLog: [...item.statusLog, { label: 'Request saved on this device', at: Date.now() }] }
             : item,
         ),
         activeTaskId: activeQueryId,
@@ -344,7 +347,7 @@ export const createYonderState: StateCreator<YonderStore> = (set, get) => ({
     const { activeTaskId } = get();
     if (!activeTaskId) return;
     const query = get().queries.find(q => q.id === activeTaskId);
-    if (!query || query.state !== 'OPEN') return;
+    if (!query || query.state !== 'OPEN' || isQueryExpired(query) || get().places.find(p => p.id === query.placeId)?.status === 'blocked') return;
     get().updateQueryState(activeTaskId, 'ACCEPTED', 'Observer accepted', 'already on site');
   },
   setCapturedFrames: (capturedFrames) => set({ capturedFrames }),
@@ -352,9 +355,9 @@ export const createYonderState: StateCreator<YonderStore> = (set, get) => ({
     const state = get();
     const query = state.queries.find((item) => item.id === state.activeTaskId);
     if (!query || query.state !== 'VERIFYING' || state.captureMode !== 'demo') return null;
-    if (query.isNew && (Date.now() > query.createdAt + query.deadlineMinutes * 60000 || state.walletCents < query.bountyCents)) return null;
+    if (query.isNew && (isQueryExpired(query) || state.walletCents < query.bountyCents)) return null;
     const place = state.places.find((item) => item.id === query.placeId);
-    if (place?.communitySpot) return null;
+    if (place?.communitySpot || place?.status === 'blocked') return null;
     const result = resultFor(query.placeId, query.queryType);
     const charged = result.confidence >= CONFIDENCE_THRESHOLD;
     const answerId = `answer-${query.id}-${Date.now()}`;
@@ -412,7 +415,9 @@ export const createYonderState: StateCreator<YonderStore> = (set, get) => ({
     set((current) => ({
       places: current.places.map((place) => (place.id === query.placeId ? { ...place, status: 'blocked' as const } : place)),
       queries: current.queries.map((item) =>
-        item.id === query.id ? { ...item, state: 'BLOCKED' as const, refundReason: 'Staff asked the observer to stop', isNew: false } : item,
+        item.placeId === query.placeId && !['ANSWERED', 'REFUNDED', 'BLOCKED'].includes(item.state)
+          ? { ...item, state: 'BLOCKED' as const, refundReason: 'Staff asked the observer to stop', isNew: false }
+          : item,
       ),
     }));
   },
@@ -422,4 +427,3 @@ export const createYonderState: StateCreator<YonderStore> = (set, get) => ({
   finishModeReveal: () => set({ modeReveal: null, isModeSwitching: false }),
   resetDemo: () => set(makeInitialState()),
 });
-

@@ -12,6 +12,7 @@ import { MapSurface, detailRegion } from "@/components/MapSurface";
 import { MotionPressable } from "@/components/MotionPressable";
 import { Scout } from "@/components/Brand";
 import { useYonderStore } from "@/lib/store";
+import { isQueryExpired } from "@/lib/state";
 import { useLiveLocation } from "@/lib/location";
 import { validateLocation } from "@/lib/geo";
 import { observe, font, type } from "@/lib/theme";
@@ -34,7 +35,9 @@ export default function ApproachScreen() {
   if (
     !query ||
     !place ||
-    ["ANSWERED", "REFUNDED", "BLOCKED"].includes(query.state)
+    place.status === "blocked" ||
+    ["ANSWERED", "REFUNDED", "BLOCKED"].includes(query.state) ||
+    isQueryExpired(query)
   )
     return <MissingDataState title="No check is ready here." />;
   const target = { latitude: place.lat, longitude: place.lng };
@@ -48,6 +51,7 @@ export default function ApproachScreen() {
   const matchesSpot = !place.communitySpot || confirmed === query.id;
   const open = () => {
     if (!matchesSpot) return;
+    if (isQueryExpired(query)) return;
     if (!demo && !validateLocation(location.fix, target, place.geofenceM).valid)
       return;
     const state = useYonderStore.getState();
@@ -63,7 +67,7 @@ export default function ApproachScreen() {
   return (
     <AppScreen>
       <ScreenHeader
-        eyebrow={demo ? "LOCATION" : "DEVICE / LOCATION CHECK"}
+        eyebrow={demo ? "EXAMPLE LOCATION · NO GPS CHECK" : "DEVICE / LOCATION CHECK"}
         title={place.name}
       />
       <CommunitySpotDetails place={place} />
@@ -88,7 +92,7 @@ export default function ApproachScreen() {
         </Text>
         <Text style={styles.body}>
           {demo
-            ? "An example scene is ready. GPS and your camera stay off."
+            ? "An example scene is ready. No GPS or camera permission is requested."
             : validation.reason}
         </Text>
       </View>

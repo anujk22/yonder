@@ -87,19 +87,19 @@ export default function CompileScreen() {
         <View style={[styles.loadingMark, { backgroundColor: theme.surface, borderColor: theme.border, shadowColor: theme.shadow }]}>
           <BrandObject kind="map" size={150} />
         </View>
-        <Text style={[type.micro, { color: theme.inkSoft }]}>COMPILING QUERY</Text>
-        <Text style={[type.heading, styles.loadingTitle, { color: theme.ink }]}>Making your question machine-checkable</Text>
+        <Text style={[type.micro, { color: theme.inkSoft }]}>PREPARING DEMO REQUEST</Text>
+        <Text style={[type.heading, styles.loadingTitle, { color: theme.ink }]}>Organizing your sample question</Text>
       </AppScreen>
     );
   }
 
   return (
     <AppScreen>
-      <ScreenHeader eyebrow="READY TO CHECK" title="Here's what we'll look for" />
+      <ScreenHeader eyebrow="DEMO REQUEST" title="Here's the example check" />
       <Entrance style={[styles.specCard, { backgroundColor: theme.surface, borderColor: theme.border, shadowColor: theme.shadow }]}>
         <View style={styles.cardIntro}>
           <View style={[styles.liveDot, { backgroundColor: theme.fresh }]} />
-          <Text style={[type.micro, { color: theme.fresh }]}>LIVE PLACE CHECK</Text>
+          <Text style={[type.micro, { color: theme.fresh }]}>SAMPLE PLACE CHECK</Text>
         </View>
         <View style={styles.placeBlock}>
           <Text style={[type.micro, styles.specLabel, { color: theme.inkSoft }]}>PLACE</Text>

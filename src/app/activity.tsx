@@ -28,8 +28,15 @@ export default function ActivityScreen() {
     <AppScreen>
       <Text style={styles.eyebrow}>YOUR LITTLE LOOKS AROUND</Text>
       <Text accessibilityRole="header" style={styles.title}>
-        Your requests
+        Your demo requests
       </Text>
+      <View style={{ marginBottom: 20 }}>
+        <PrimaryButton
+          label="Your invited live checks"
+          variant="secondary"
+          onPress={() => router.push("/live")}
+        />
+      </View>
       <View style={styles.balances}>
         <View>
           <Text style={styles.amount}>{money(wallet)}</Text>
@@ -75,7 +82,7 @@ export default function ActivityScreen() {
           <View style={styles.row}>
             <Text style={styles.status}>
               {q.state === "ANSWERED"
-                ? "ANSWER READY"
+                ? "EXAMPLE ANSWER"
                 : q.state === "REFUNDED"
                   ? "CANCELLED"
                   : q.state === "BLOCKED"

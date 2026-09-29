@@ -31,8 +31,11 @@ export default function VerifyingScreen() {
   const [decline, setDecline] = useState(false);
   const completed = useRef(false);
   useEffect(() => {
-    if (!activeTaskId || mode !== "demo") return;
+    if (!activeTaskId || mode !== "demo" || query?.state !== "CAPTURING") return;
     update(activeTaskId, "VERIFYING", "Preparing example answer");
+  }, [activeTaskId, mode, query, update]);
+  useEffect(() => {
+    if (!activeTaskId || mode !== "demo" || query?.state !== "VERIFYING" || decline) return;
     const timers = TIMING.verifySteps.map((delay, index) =>
       setTimeout(() => setStep(index), delay),
     );
@@ -46,15 +49,15 @@ export default function VerifyingScreen() {
       timers.forEach(clearTimeout);
       clearTimeout(finish);
     };
-  }, [activeTaskId, mode, complete, update, router]);
-  if (!query || mode !== "demo")
+  }, [activeTaskId, mode, query?.state, decline, complete, router]);
+  if ((!query || mode !== "demo") && !decline)
     return <MissingDataState title="Choose an observation first." />;
   return (
     <AppScreen>
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
           <Text style={[styles.eyebrow, { color: theme.inkSoft }]}>
-            A LITTLE CLARITY, COMING UP
+            PREPARING AN EXAMPLE ANSWER
           </Text>
           <Text style={[styles.title, { color: theme.ink }]}>
             Good things.{`\n`}Worth a little look.

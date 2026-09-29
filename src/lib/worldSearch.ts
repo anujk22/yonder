@@ -25,9 +25,3 @@ export function searchWorldPlaces(input: string) {
     12000,
   );
 }
-export function searchNearbyPlaces(latitude: number, longitude: number) {
-  return fetchPlaces(
-    `/api/nearby?lat=${latitude.toFixed(3)}&lng=${longitude.toFixed(3)}`,
-    23000,
-  );
-}

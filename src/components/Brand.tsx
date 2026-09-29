@@ -138,7 +138,7 @@ export function AppHeader() {
               ? "Explore places ↗"
               : wide
                 ? "Go scouting ↗"
-                : "Help & earn ↗"}
+                : "Try scouting ↗"}
           </Text>
         </Pressable>
       </View>

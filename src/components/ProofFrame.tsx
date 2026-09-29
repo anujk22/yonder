@@ -29,7 +29,7 @@ export function ProofFrame({ uri, observedAt }: ProofFrameProps) {
         source={uri ? { uri } : PIER_TWO_PROOF}
         resizeMode="cover"
         style={styles.image}
-        accessibilityLabel="Live wide-angle proof image"
+        accessibilityLabel={uri ? 'Captured device image' : 'Illustrative basketball artwork'}
       />
 
       <View style={[styles.caption, { backgroundColor: theme.scrim }]}>
@@ -59,4 +59,3 @@ const styles = StyleSheet.create({
   captionLabel: { fontSize: 9, lineHeight: 12, letterSpacing: 0.65 },
   captionText: { flex: 1, textAlign: 'right', fontSize: 10, lineHeight: 14 },
 });
-

@@ -32,6 +32,10 @@ export function DeclineSheet({ visible, onClose, onComplete }: DeclineSheetProps
   const [confirmation, setConfirmation] = useState<'blocked' | 'unsafe' | null>(null);
 
   const dismiss = () => {
+    if (confirmation) {
+      closeConfirmation();
+      return;
+    }
     setConfirmation(null);
     onClose();
   };

@@ -1,0 +1,22 @@
+# App Review information request — draft, not sent
+
+**Submitted item:** iOS 1.0, build 1.0.0 (7), app ID `6815955359`. App Store Connect showed **Rejected** on September 29, citing Guideline 2.1.0 Performance — App Completeness / Information Needed. Apple's September 26, 9:11 p.m. message asks for the six items below. The visible request does not identify a crash or state that local demos are prohibited. This draft describes **build 7**, which has no RevenueCat purchase, Supabase pilot, account, or shared user content; newer working-tree features must not be attributed to it.
+
+**Before replying:** make one unedited screen recording on a **physical iPhone with the latest available iOS**, beginning at launch and showing a typical Explore → search → save or custom-pin flow and the clearly labeled local Ask/Observe demo. Add its link or attach the recording, device model, exact iOS version, recording date, and any permission prompts observed. Verify the U.S. regional behavior and the rights/provenance of any protected third-party material. Replace every bracketed field below; do not send placeholders. Reply in [App Store Connect](https://appstoreconnect.apple.com/apps/6815955359) **and** copy the same access/setup information into Notes for Review. [Apple's reply instructions](https://developer.apple.com/help/app-store-connect/manage-submissions-to-app-review/reply-to-app-review-messages/).
+
+## Proposed reply to Apple
+
+Hello App Review team,
+
+Thank you for reviewing Yonder 1.0, build 7. We are providing the requested information for the submitted binary.
+
+1. **Physical-device recording:** [Link or attachment], recorded on [iPhone model] running [exact iOS version] on [date]. It starts with app launch and shows [list the actual Explore/search/save/custom-pin and labeled demo steps shown]. This build has no account registration, login or deletion, no user-shared content or report/block flow, and no paid-access feature; those flows therefore do not appear in the recording. [If camera/location permission flows are shown, describe exactly what was recorded.]
+2. **Purpose, audience and value:** Yonder is for people deciding whether to visit a public place. In this build, they can search mapped U.S. places, view them on a map, save places and add personal pins on their device. Ask and Observe are labeled, on-device demonstrations of a future person-to-person check. They do not contact another user, deliver a live observation or provide payment or earnings. The present value is personal place discovery and organization.
+3. **Access and setup:** No account, password, invitation, subscription, purchase, sample file or special hardware is required. Install and launch the app, then use Explore to search a U.S. place or city, save a place, or drop a personal pin. Ask and Observe can be opened as labeled demonstrations. Foreground location is optional for map centering; search works without granting it. The optional device-check path requests camera and location permissions. Place search needs network access to the Yonder API at `https://yonder.expo.app/api/places`. [Confirm these steps and the endpoint in build 7 immediately before sending.]
+4. **External services and tools:** The iOS app is built with Expo SDK and React Native. It uses Apple's native map provider through `react-native-maps`, our hosted place-search API at `https://yonder.expo.app`, and OpenStreetMap Nominatim place data through that API. The submitted build does not use RevenueCat, Supabase, third-party account login or a payment processor. [Owner: confirm any other services present in the submitted binary and the applicable attribution/terms.]
+5. **Regional behavior:** The App Store listing is configured for the United States and place search is U.S.-filtered. [Owner: confirm whether behavior is otherwise consistent throughout the U.S.; describe any state, language, content or availability differences if present.]
+6. **Regulated or protected material:** Yonder is a general place-discovery utility, not a medical, financial or other regulated service. [Owner: confirm whether build 7 uses any protected third-party images, names, music, trademarks or data requiring authorization; identify them and attach permission or licensing documents if applicable. Do not assert rights clearance until checked.]
+
+Please let us know if another review path or file would help. We will also place the access and setup details above in Notes for Review.
+
+— Yonder team

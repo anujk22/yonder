@@ -6,6 +6,8 @@ This is an Expo 57 / React Native product preview for iOS, Android, and web. Mob
 
 ## Run locally
 
+Use Node.js 22.13 or newer, as required by Expo SDK 57.
+
 ```sh
 npm ci
 npm run web
@@ -39,16 +41,16 @@ The default public Nominatim service is for modest prototype use. Requests are s
 
 ## Preview boundaries
 
-Requests, balances, sample availability, rewards, and answers are local demo state. There is no production authentication, cross-device dispatch, payment settlement, or evidence review service yet. More users will not make this preview networked automatically. Those services, abuse controls, notifications, and physical-device acceptance tests are required before a public pilot.
+The main Ask/Observe walkthrough, demo balances, rewards, and sample answers are local state. They do not pay observers or dispatch a check to another person. A separate, optional Supabase-backed **invited live pilot** is present in source: two allowlisted accounts can share a free place check and a self-reported text answer. It requires owner configuration and has not been verified against a hosted project or two devices. Follow the [invited-pilot setup and acceptance steps](docs/setup/INVITED_PILOT.md); the app keeps the local demo available when the pilot is unconfigured.
 
-Start the pilot with one neighborhood and a narrow set of answerable questions. Measure fulfilled requests, time to a useful answer, repeat use, and cost per successful check before expanding coverage.
+The invited pilot has structured questions, short expiry, cancellation, reports, blocks and account deletion. It does not review photo evidence, guarantee someone is nearby or available, pay a reward, or send push notifications. Before expanding beyond a small invited group, verify cross-device behavior and physical-device paths, define server-data retention, and add operational abuse review. Start with one neighborhood and measure fulfilled requests, time to a useful answer and repeat use before expanding coverage.
 
 
 ## Location discovery and dimensional artwork
 
-Explore now starts without selecting NYC. Use the foreground location button to discover nearby places, submit a US place/city search, or move the map and choose Search this area. The NYC sample tour is optional. Discovery sends coordinates rounded to three decimals to the nearby proxy and Overpass; the GPS marker remains on the device and the location watcher stops when the screen loses focus. These are real places, not live reports or available observers.
+Explore now starts without selecting NYC. Use the foreground location button to center the map, submit a US place/city search, or drop a custom pin. The NYC sample tour is optional. The GPS marker remains on the device and the location watcher stops when the screen loses focus. Search results are real mapped places, not live reports or available observers.
 
-The nearby route queries a 2.5 km area, caches responses for an hour, bounds response size, filters private/invalid/duplicate entries, and sorts returned places by distance. It is a selection of mapped places, not an exhaustive directory. Public Overpass is a prototype dependency; configure OVERPASS_URL for a managed or self-hosted provider and use shared rate limiting before a public rollout. Search failures keep an explicit retry/search path.
+The unused nearby API route is a prototype: it queries a 2.5 km area through public Overpass, which fails from production hosting. Reintroduce nearby discovery only after a suitable provider and shared rate limiter are configured and verified. Place-search failures retain an explicit retry path.
 
 Six optimized transparent 3D objects now live in assets/brand/objects. Category images are illustrations, not venue photos. Larger compositions animate; result-list artwork stays static for readability and performance. The complete built-in image prompts are in ART_DIRECTION.md.
 
@@ -56,3 +58,11 @@ Six optimized transparent 3D objects now live in assets/brand/objects. Category 
 Explore → Drop a pin lets people search an area, tap an exact coordinate, choose a category, and save a name plus identifying landmarks. Pins are stored locally and appear in Saved, with a 50 m capture boundary. They are public-access assertions, not independently verified listings.
 
 Community requests preserve the landmark instructions. Scouts must confirm a landmark match and pass fresh GPS/accuracy checks before in-app capture. The sample answer/settlement path explicitly refuses community pins. Photos remain local and unverified; there is no shared publication, identity verification, moderation queue or independent scene matching yet. A production launch needs authenticated ownership, immutable request/location versions, server-side capture attestations, abuse reporting/review and payment integration.
+
+## Yonder Plus and Shipaton handoff
+
+Saved → Organize into collections provides one free local collection. A one-time Yonder Plus entitlement unlocks additional collections through RevenueCat. The purchase UI includes restore, cancellation/error handling and a price loaded from the current Lifetime package. Purchases stay unavailable until a native build has a correctly configured public SDK key; web and Expo Go are not purchase demonstrations.
+
+Follow [RevenueCat setup and native acceptance tests](docs/shipaton/REVENUECAT_SETUP.md). Copy `.env.example` to `.env.local`, configure the dashboard and rebuild natively with `npx expo run:ios` or `npx expo run:android`. Do not put secret API keys in client variables. RevenueCat stores purchase entitlement information; it does not synchronize local collections or make the Ask/Observe demo networked.
+
+[Delivery checklist](SHIPATON_CHECKLIST.md), [submission draft](docs/shipaton/SUBMISSION_DRAFT.md), and [market positioning](docs/shipaton/POSITIONING.md) track the remaining evidence. The PC film pack is distributed separately from the app source. The public repository and submitted App Store binary must be updated separately; local changes do not update either automatically.

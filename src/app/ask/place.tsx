@@ -67,7 +67,15 @@ export default function PlaceScreen() {
         />
       }
     >
-      <ScreenHeader eyebrow="NEW REQUEST" title={place.name} />
+      <ScreenHeader eyebrow="LOCAL DEMO REQUEST" title={place.name} />
+      <PrimaryButton
+        label="Request an invited live check"
+        variant="secondary"
+        onPress={() => router.push("/live/new")}
+      />
+      <Text style={[styles.note, { marginBottom: 16 }]}>
+        Free pilot · invitation required · no guaranteed response.
+      </Text>
       <View style={styles.map}>
         <MapSurface
           style={StyleSheet.absoluteFill}
@@ -109,7 +117,7 @@ export default function PlaceScreen() {
             What would you like to know?
           </Text>
           <Text style={styles.body}>
-            One specific, right-now question. Someone there can take a look.
+            Try a specific place question. No one is dispatched in this demo.
           </Text>
         </View>
         <CategoryObject place={place} category={categoryFor(place)} size={90} animated />
@@ -153,7 +161,7 @@ export default function PlaceScreen() {
           </Pressable>
         ))}
       </View>
-      <Text style={styles.label}>HOW SOON DO YOU NEED IT?</Text>
+      <Text style={styles.label}>SIMULATED DEADLINE</Text>
       <View style={styles.deadlines}>
         {[5, 10, 15, 30].map((n) => (
           <Pressable
@@ -186,7 +194,7 @@ export default function PlaceScreen() {
           <Glyph name="eye" color={ask.fresh} size={30} />
         </View>
         <Text style={styles.body}>
-          An existing answer may cost less. You’ll choose on the next screen.
+          Example answers and a sample check are on the next screen.
         </Text>
         <Pressable
           accessibilityRole="button"
@@ -199,15 +207,13 @@ export default function PlaceScreen() {
         </Pressable>
         {details && (
           <Text style={styles.body}>
-            {money(cost.observerRewardCents)} for the person checking ·{" "}
-            {money(cost.platformFeeCents)} platform fee. Requests use simulated
-            credits only.
+            Sample split: {money(cost.observerRewardCents)} observer reward ·{" "}
+            {money(cost.platformFeeCents)} platform fee. No money moves.
           </Text>
         )}
       </View>
       <Text style={styles.note}>
-        Nothing is charged at this step. Requests currently stay on your
-        device.
+        Requests stay on this device. No live check or payment is created.
       </Text>
     </AppScreen>
   );

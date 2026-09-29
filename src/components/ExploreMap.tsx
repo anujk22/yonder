@@ -1,9 +1,11 @@
 import { useScoutNavigation } from "@/lib/useScoutNavigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Keyboard,
+  Linking,
   PanResponder,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -41,7 +43,7 @@ import { TactileIcon, categoryPalette } from "./TactileIcon";
 import { openPlaceDraft } from "./PlaceTile";
 import { useYonderStore } from "@/lib/store";
 import { useLiveLocation } from "@/lib/location";
-import { searchNearbyPlaces, searchWorldPlaces } from "@/lib/worldSearch";
+import { searchWorldPlaces } from "@/lib/worldSearch";
 import { categoryFor, questionFor, Category } from "@/lib/discovery";
 import { Place } from "@/lib/places";
 import { distanceMeters } from "@/lib/geo";
@@ -72,7 +74,7 @@ export default function ExploreMap() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<Category>("All places");
   const [places, setPlaces] = useState<Place[]>([]);
-  const [source, setSource] = useState<"start" | "search" | "nearby" | "tour">(
+  const [source, setSource] = useState<"start" | "search" | "location" | "tour">(
     "start",
   );
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -80,7 +82,6 @@ export default function ExploreMap() {
   const [error, setError] = useState("");
   const [expanded, setExpanded] = useState(false);
   const [availableHeight, setAvailableHeight] = useState(700);
-  const [mapMoved, setMapMoved] = useState(false);
   const [locationRequested, setLocationRequested] = useState(false);
   const map = useRef<MapSurfaceHandle>(null);
   const input = useRef<TextInput>(null);
@@ -151,36 +152,7 @@ export default function ExploreMap() {
       },
       reduced ? 0 : 650,
     );
-    setMapMoved(false);
   };
-  const loadNearby = useCallback(
-    async (latitude: number, longitude: number) => {
-      const current = ++version.current;
-      setBusy(true);
-      setError("");
-      setSource("nearby");
-      setSelectedId(null);
-      setPlaces([]);
-      setSearch("");
-      setCategory("All places");
-      setExpanded(true);
-      setMapMoved(false);
-      try {
-        const found = await searchNearbyPlaces(latitude, longitude);
-        if (current === version.current) setPlaces(found);
-      } catch (e) {
-        if (current === version.current)
-          setError(
-            e instanceof Error
-              ? e.message
-              : "Could not find nearby places. Try a place and city.",
-          );
-      } finally {
-        if (current === version.current) setBusy(false);
-      }
-    },
-    [],
-  );
   useEffect(() => {
     if (!locationRequested || !location.fix) return;
     const fix = location.fix;
@@ -188,14 +160,22 @@ export default function ExploreMap() {
       return;
     const timer = setTimeout(() => {
       setLocationRequested(false);
+      version.current++;
+      setBusy(false);
+      setError("");
+      setSource("location");
+      setSelectedId(null);
+      setPlaces([]);
+      setSearch("");
+      setCategory("All places");
+      setExpanded(true);
       map.current?.animateToRegion(
         { ...fix, latitudeDelta: 0.04, longitudeDelta: 0.04 },
         reduced ? 0 : 650,
       );
-      void loadNearby(fix.latitude, fix.longitude);
     }, 0);
     return () => clearTimeout(timer);
-  }, [location.fix, locationRequested, loadNearby, reduced]);
+  }, [location.fix, locationRequested, reduced]);
   const locate = () => {
     setError("");
     setLocationRequested(true);
@@ -368,7 +348,7 @@ export default function ExploreMap() {
             <Text style={styles.primaryText}>
               {location.loading
                 ? "Finding your little corner…"
-                : "Find places near me"}
+                : "Show my location"}
             </Text>
             {location.loading ? (
               <ActivityIndicator color={ask.ink} />
@@ -377,7 +357,7 @@ export default function ExploreMap() {
             )}
           </MotionPressable>
           <Text style={styles.privacy}>
-            Uses your location to find places. Or search any US city.
+            Centers the map on your location. Or search any US city.
           </Text>
           <View style={styles.startLinks}>
             <MotionPressable
@@ -403,7 +383,7 @@ export default function ExploreMap() {
                 ["01", "Pick a place", "The court, the café, the corner shop."],
                 [
                   "02",
-                  "Ask a little question",
+                  "Try a demo request",
                   "The line? The crowd? The thing you need?",
                 ],
                 [
@@ -423,6 +403,14 @@ export default function ExploreMap() {
             </View>
           )}
         </>
+      ) : source === "location" ? (
+        <View style={styles.empty}>
+          <BrandObject kind="map" size={140} />
+          <Text style={styles.stepTitle}>You&apos;re here.</Text>
+          <Text style={[styles.small, { textAlign: "center" }]}>
+            Search a place and city, or drop a pin on the map.
+          </Text>
+        </View>
       ) : selected && (!expanded || desktop) ? (
         <>
           <MotionPressable
@@ -478,7 +466,7 @@ export default function ExploreMap() {
             onPress={() => openPlaceDraft(selected, router)}
             style={styles.primary}
           >
-            <Text style={styles.primaryText}>Ask about this place</Text>
+            <Text style={styles.primaryText}>Try a demo request</Text>
             <ArrowUpRight size={21} color={ask.ink} />
           </MotionPressable>
           <Text style={styles.privacy}>
@@ -494,16 +482,12 @@ export default function ExploreMap() {
               <Text style={styles.eyebrow}>
                 {source === "tour"
                   ? "THE NYC SAMPLE TOUR"
-                  : source === "nearby"
-                    ? "YOUR LITTLE CORNER"
-                    : "A LITTLE FURTHER AFIELD"}
+                  : "A LITTLE FURTHER AFIELD"}
               </Text>
               <Text style={styles.resultTitle}>
                 {busy
                   ? "Looking around…"
-                  : source === "nearby"
-                    ? "Around here"
-                    : source === "tour"
+                  : source === "tour"
                       ? "Try a little look"
                       : "Found your next stop?"}
               </Text>
@@ -514,11 +498,19 @@ export default function ExploreMap() {
               </Text>
             </View>
           </View>
-          <Text style={styles.small}>
-            {source === "tour"
-              ? "Example places and sample answers."
-              : "Places from OpenStreetMap. Live answers arrive when the network launches."}
-          </Text>
+          {source === "tour" ? (
+            <Text style={styles.small}>Example places and sample answers.</Text>
+          ) : (
+            <>
+              <Pressable
+                accessibilityRole="link"
+                onPress={() => void Linking.openURL("https://www.openstreetmap.org/copyright")}
+              >
+                <Text style={styles.small}>Place data © OpenStreetMap contributors · ODbL ↗</Text>
+              </Pressable>
+              <Text style={styles.small}>Live answers are not available yet.</Text>
+            </>
+          )}
           {busy ? (
             <View style={styles.loading}>
               <BrandObject kind="map" size={155} />
@@ -555,8 +547,7 @@ export default function ExploreMap() {
                 {error ? "A small detour." : "A little further out?"}
               </Text>
               <Text style={[styles.small, { textAlign: "center" }]}>
-                Try another category, search a place and city, or move the map
-                and search that area.
+                Try another category or search a place and city.
               </Text>
             </View>
           )}
@@ -588,7 +579,6 @@ export default function ExploreMap() {
           }}
           onRegionChangeComplete={(region) => {
             center.current = region;
-            setMapMoved(true);
           }}
         />
         {desktop && source === "start" && (
@@ -704,26 +694,6 @@ export default function ExploreMap() {
           ) : (
             <LocateFixed size={23} color={ask.ink} />
           )}
-        </MotionPressable>
-      )}
-      {source !== "start" && mapMoved && (
-        <MotionPressable
-          accessibilityRole="button"
-          onPress={() =>
-            void loadNearby(center.current.latitude, center.current.longitude)
-          }
-          disabled={busy}
-          style={[
-            styles.searchArea,
-            {
-              top: desktop ? 105 : insets.top + 181,
-              left: desktop ? undefined : undefined,
-              right: desktop ? 40 : 75,
-            },
-          ]}
-        >
-          <Search size={15} color={ask.ink} />
-          <Text style={styles.link}>Search this area</Text>
         </MotionPressable>
       )}
       {desktop ? (
@@ -1066,16 +1036,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     boxShadow: "0 4px 0 #CCD2BD, 0 8px 16px #34483422",
-  },
-  searchArea: {
-    position: "absolute",
-    flexDirection: "row",
-    gap: 7,
-    alignItems: "center",
-    backgroundColor: "#FFFEF7",
-    padding: 13,
-    borderRadius: 19,
-    boxShadow: "0 4px 10px #34483420",
   },
   placeCard: {
     borderRadius: 23,

@@ -49,20 +49,20 @@ export default function OptionsScreen() {
     <AppScreen>
       <ScreenHeader eyebrow="02 / CHOOSE YOUR LOOK" />
       <Text accessibilityRole="header" style={styles.title}>
-        Choose your answer
+        Choose a demo path
       </Text>
       <Text style={styles.question}>{query.question}</Text>
       <Text style={styles.body}>
-        Old observations are free. Recent ones save a trip. A new check starts
-        from scratch.
+        Explore example answers or save a sample request on this device.
+        These examples do not describe current conditions.
       </Text>
       <View style={styles.cards}>
         <AnswerTierCard
           kind="dispatch"
           testID="options-dispatch"
-          headline="Ask for a fresh look"
+          headline="Try a check request"
           priceCents={query.bountyCents}
-          subtitle={`Request within ${query.deadlineMinutes} minutes · demo credits`}
+          subtitle={`Local demo · ${query.deadlineMinutes}-minute sample deadline`}
           onPress={() => {
             useYonderStore.getState().postActiveQuery();
             if (
@@ -99,7 +99,7 @@ export default function OptionsScreen() {
         )}
         {!recent && !old && (
           <Text style={styles.body}>
-            No matching observation yet. Your question could be the first.
+            No matching example answer yet. You can still try a sample request.
           </Text>
         )}
         {Boolean(error) && (

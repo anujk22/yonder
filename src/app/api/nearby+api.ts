@@ -20,7 +20,7 @@ export async function GET(request: Request) {
       { error: "A valid map location is required." },
       { status: 400 },
     );
-  // Coarse coordinates are sufficient for discovery; precise GPS stays in the capture flow.
+  // Round coordinates to three decimals for discovery; capture uses full-precision GPS.
   const latitude = Number(lat.toFixed(3));
   const longitude = Number(lng.toFixed(3));
   const key = `${latitude},${longitude}`;
@@ -40,12 +40,12 @@ export async function GET(request: Request) {
       `${process.env.OVERPASS_URL || "https://overpass-api.de/api/interpreter"}?data=${encodeURIComponent(query)}`,
       {
         headers: {
-          "User-Agent": "Yonder/2.0 (+https://github.com/anujk22/yonder)",
+          "User-Agent": "Yonder/1.0 (+https://yonder.expo.app/support)",
         },
         signal: AbortSignal.timeout(20000),
       },
     );
-    if (!response.ok) throw new Error("Nearby unavailable");
+    if (!response.ok) throw new Error(`Overpass HTTP ${response.status}`);
     const data = (await response.json()) as {
       elements?: OSMElement[];
       remark?: string;
@@ -59,7 +59,8 @@ export async function GET(request: Request) {
       { places },
       { headers: { "Cache-Control": "private, max-age=3600" } },
     );
-  } catch {
+  } catch (error) {
+    console.error("Nearby lookup failed:", error instanceof Error ? error.message : "unknown error");
     return Response.json(
       {
         error:

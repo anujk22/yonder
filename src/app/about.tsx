@@ -1,4 +1,5 @@
 import {
+  Linking,
   Pressable,
   StyleSheet,
   Text,
@@ -38,17 +39,17 @@ export default function AboutScreen() {
           [
             "01",
             "Pick your place.",
-            "Find a park, a pizza spot, or anywhere you’re headed. Ask one specific question about what’s happening now.",
+            "Find a park, a pizza spot, or anywhere you’re headed. Try a specific place question in the local demo.",
           ],
           [
             "02",
-            "Get a pair of eyes.",
-            "Read an existing observation or request a fresh check. See the price and freshness before you decide.",
+            "Explore the sample flow.",
+            "Read an example answer or save a sample request. See demo credits before you decide.",
           ],
           [
             "03",
-            "Go with a little more certainty.",
-            "Get a time-stamped answer with its evidence and limitations. Conditions change, so every answer has an expiry.",
+            "See an example result.",
+            "Explore a time-stamped sample answer and its limitations. Samples do not report current conditions.",
           ],
         ].map(([n, title, body]) => (
           <View key={n} style={styles.step}>
@@ -86,11 +87,17 @@ export default function AboutScreen() {
         </Text>
         <Text style={styles.stepBody}>
           USA place search sends the place name you enter to OpenStreetMap
-          through Yonder’s server. Nearby discovery sends your map location,
-          rounded to three decimal places, through our server to Overpass to
-          find places. Map tiles are fetched from OpenStreetMap for the area you
-          view. Saved places and request history are stored on this device.
+          through Yonder’s server. Your location centers the map; Yonder does
+          not send it to its search server. iPhone maps use Apple Maps; web
+          maps use OpenStreetMap tiles. Saved places and request history are
+          stored on this device.
         </Text>
+        <Pressable
+          accessibilityRole="link"
+          onPress={() => void Linking.openURL("https://www.openstreetmap.org/copyright")}
+        >
+          <Text style={styles.link}>Place data © OpenStreetMap contributors · ODbL ↗</Text>
+        </Pressable>
       </View>
       <View style={styles.actions}>
         <PrimaryButton
