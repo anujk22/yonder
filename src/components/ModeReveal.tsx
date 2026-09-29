@@ -56,6 +56,7 @@ export function ModeReveal() {
   const phase = useSharedValue(0);
   const opacity = useSharedValue(1);
   const mark = useSharedValue(0);
+  const spin = useSharedValue(0);
   useEffect(() => {
     if (!reveal) return;
     const reduced = reveal.reduceMotion;
@@ -63,7 +64,16 @@ export function ModeReveal() {
     phase.set(0);
     opacity.set(1);
     mark.set(0);
+    spin.set(0);
     if (!reduced) {
+      if (reveal.to === "observe") {
+        spin.set(
+          withDelay(
+            210,
+            withTiming(360, { duration: 650, easing: Easing.out(Easing.cubic) }),
+          ),
+        );
+      }
       progress.set(
         withSequence(
           withTiming(1, { duration: 650, easing: Easing.inOut(Easing.cubic) }),
@@ -114,7 +124,7 @@ export function ModeReveal() {
     return () => {
       clearTimeout(swap);
       clearTimeout(done);
-      [progress, phase, opacity, mark].forEach(cancelAnimation);
+      [progress, phase, opacity, mark, spin].forEach(cancelAnimation);
       abort();
     };
   }, [
@@ -127,6 +137,7 @@ export function ModeReveal() {
     phase,
     opacity,
     mark,
+    spin,
   ]);
   const backWave = useAnimatedProps(() => ({
     d: waveBand(width, height, progress.get(), phase.get() + 0.6, 32),
@@ -140,7 +151,10 @@ export function ModeReveal() {
     transform: [{ translateY: (1 - mark.get()) * 16 }],
   }));
   const mascot = useAnimatedStyle(() => ({
-    transform: [{ scale: 0.88 + 0.12 * mark.get() }],
+    transform: [
+      { scale: 0.88 + 0.12 * mark.get() },
+      { rotate: `${spin.get()}deg` },
+    ],
   }));
   if (!reveal) return null;
   return (

@@ -18,7 +18,7 @@ const tabs = [
   { route: "/", label: "Explore", icon: "compass" },
   { route: "/activity", label: "Requests", icon: "chat" },
   { route: "/saved", label: "Saved", icon: "heart" },
-  { route: "/observe", label: "Scout", icon: "scout" },
+  { route: "/observe", label: "Scout", icon: "scoutFront" },
 ] as const;
 
 function TabItem({
@@ -50,7 +50,7 @@ function TabItem({
     transform: [
       { translateY: -3 * progress.get() },
       { scale: 0.92 + 0.12 * progress.get() },
-      { rotate: `${-6 * progress.get()}deg` },
+      { rotate: `${icon === "scoutFront" ? 0 : -6 * progress.get()}deg` },
     ],
   }));
   return (
@@ -70,9 +70,7 @@ function TabItem({
           ]}
         />
         <Animated.View style={[{ zIndex: 1 }, objectMotion]}>
-          <View style={icon === "scout" ? styles.scoutFacingLeft : undefined}>
-            <BrandImage kind={icon} size={44} />
-          </View>
+          <BrandImage kind={icon} size={44} />
         </Animated.View>
       </View>
       <Text
@@ -123,7 +121,7 @@ export function BottomNavigation() {
         styles.bar,
         {
           backgroundColor: theme.bg,
-          borderTopColor: theme.border,
+          borderColor: theme.border,
           paddingBottom: Math.max(insets.bottom, 12),
         },
       ]}
@@ -145,11 +143,9 @@ export function BottomNavigation() {
   );
 }
 const styles = StyleSheet.create({
-  scoutFacingLeft: { transform: [{ scaleX: -1 }] },
   bar: {
     flexDirection: "row",
     borderWidth: 1,
-    borderColor: "#FFFFFF",
     borderRadius: 25,
     marginHorizontal: 10,
     marginBottom: 8,

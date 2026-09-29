@@ -9,6 +9,7 @@ export const brandArtwork = {
   outside: require("../../assets/brand/objects/outside-vinyl.webp"),
   shopping: require("../../assets/brand/objects/shopping-vinyl.webp"),
   scout: require("../../assets/brand/objects/scout-vinyl.webp"),
+  scoutFront: require("../../assets/brand/objects/scout-transition.webp"),
   map: require("../../assets/brand/objects/folded-map.webp"),
   done: require("../../assets/brand/objects/answer-bubble.webp"),
   basketball: require("../../assets/brand/objects/basketball-vinyl.webp"),
