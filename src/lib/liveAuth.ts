@@ -38,17 +38,54 @@ export function observeLiveAuth() {
   };
 }
 
-export async function sendSignInCode(email: string) {
+function normalizeEmail(email: string) {
   const normalized = email.trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized) || normalized.length > 254) throw new Error("Enter a valid email address.");
+  return normalized;
+}
+
+function authErrorMessage(error: { code?: string; message: string }) {
+  if (error.code === "invalid_credentials") return "The email or password is incorrect.";
+  if (error.code === "email_not_confirmed") return "Confirm your email before signing in. Check your inbox for the confirmation link.";
+  if (error.code === "weak_password") return error.message;
+  if (error.code === "user_already_exists" || error.code === "email_exists") return "An account already uses this email. Sign in instead.";
+  if (error.code === "signup_disabled") return "New accounts are temporarily unavailable. Please try again later.";
+  if (error.code === "email_address_not_authorized") return "Account email delivery is unavailable. Please try again later or contact support.";
+  if (/rate_limit|over_.*limit/.test(error.code ?? "")) return "Too many attempts. Please wait before trying again.";
+  if (/fetch|network|timeout|connection/i.test(error.message)) return "Couldn’t connect. Check your connection and try again.";
+  return "Couldn’t complete sign-in. Please try again; if it continues, contact support.";
+}
+
+export async function signInLive(email: string, password: string) {
+  const normalized = normalizeEmail(email);
+  if (!password) throw new Error("Enter your password.");
+  const { data, error } = await getLiveClient().auth.signInWithPassword({ email: normalized, password });
+  if (error) throw new Error(authErrorMessage(error));
+  if (!data.session || !data.user) throw new Error("Couldn’t complete sign-in. Please try again.");
+  useLiveAuth.setState({ user: data.user, ready: true, error: "" });
+}
+
+export async function createLiveAccount(email: string, password: string, confirmation: string) {
+  const normalized = normalizeEmail(email);
+  if (password.length < 8) throw new Error("Use a password with at least 8 characters.");
+  if (password !== confirmation) throw new Error("The passwords don’t match.");
+  const { data, error } = await getLiveClient().auth.signUp({ email: normalized, password });
+  if (error) throw new Error(authErrorMessage(error));
+  if (data.session && data.user) useLiveAuth.setState({ user: data.user, ready: true, error: "" });
+  return !data.session;
+}
+
+export async function sendSignInCode(email: string) {
+  const normalized = normalizeEmail(email);
   const { error } = await getLiveClient().auth.signInWithOtp({ email: normalized, options: { shouldCreateUser: false } });
-  if (error) throw new Error("Couldn’t send a code. Use your invited email and wait a minute before trying again.");
+  if (error) throw new Error(authErrorMessage(error));
 }
 
 export async function verifySignInCode(email: string, code: string) {
+  const normalized = normalizeEmail(email);
   if (!/^\d{6,10}$/.test(code.trim())) throw new Error("Enter the code from your email.");
-  const { data, error } = await getLiveClient().auth.verifyOtp({ email: email.trim().toLowerCase(), token: code.trim(), type: "email" });
-  if (error || !data.user) throw new Error("That code is invalid or has expired. Request a new code and try again.");
+  const { data, error } = await getLiveClient().auth.verifyOtp({ email: normalized, token: code.trim(), type: "email" });
+  if (error || !data.session || !data.user) throw new Error("That code is invalid or has expired. Request a new code and try again.");
   useLiveAuth.setState({ user: data.user, ready: true, error: "" });
 }
 
