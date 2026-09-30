@@ -10,6 +10,7 @@ import { useRouter } from "expo-router";
 import { AppScreen, Entrance, PrimaryButton } from "@/components/ui";
 import { BrandScene } from "@/components/BrandObject";
 import { DEMO_FEATURES_ENABLED } from "@/lib/previewFeatures";
+import { liveConfigured } from "@/lib/liveClient";
 import { ask, font, type } from "@/lib/theme";
 
 export default function AboutScreen() {
@@ -27,28 +28,28 @@ export default function AboutScreen() {
             width < 600 && { fontSize: 43, lineHeight: 45 },
           ]}
         >
-          {DEMO_FEATURES_ENABLED ? <>The world changes.{`\n`}Your information should, too.</> : <>Your places.{`\n`}All together.</>}
+          {liveConfigured ? <>Ask someone{`\n`}already there.</> : <>Your places.{`\n`}All together.</>}
         </Text>
         <Text style={styles.body}>
-          {DEMO_FEATURES_ENABLED ? "A review from last summer can’t tell you how long the line is today. Yonder is for the small, right-now questions that make a real difference to your day." : "Search places, save the ones that matter, and organize them into your own collections. Your lists and personal pins stay on this device."}
+          {liveConfigured ? "Is it open? How long is the line? Is there room? Yonder lets you ask the community about a public place before you go." : "Search places, save the ones that matter, and organize them into your own collections. Your lists and personal pins stay on this device."}
         </Text>
       </Entrance>
       <View style={[styles.steps, width < 800 && { flexDirection: "column" }]}>
-        {(DEMO_FEATURES_ENABLED ? [
+        {(liveConfigured ? [
           [
             "01",
             "Pick your place.",
-            "Find a park, a pizza spot, or anywhere you’re headed. Try a specific place question in the local demo.",
+            "Search a U.S. public place, check its map pin, and choose a question about opening, the wait, or available room.",
           ],
           [
             "02",
-            "Explore the sample flow.",
-            "Read a free older sample answer or post a demo bounty. No card is charged and no Scout is dispatched in this preview.",
+            "Ask the community.",
+            "Sign in to send a free check with an expiry time. Someone already there can choose to answer. No Scout is dispatched and no payment or reward is offered.",
           ],
           [
             "03",
-            "See an example result.",
-            "Explore a time-stamped sample answer and its limitations. Samples do not report current conditions.",
+            "Read their observation.",
+            "See a time-stamped, self-reported answer. A response is not guaranteed, and Yonder does not verify it through photos or GPS.",
           ],
         ] : [
           ["01", "Find a place.", "Search for a U.S. place or city, then see it on the map. Location access is optional."],
@@ -62,33 +63,51 @@ export default function AboutScreen() {
           </View>
         ))}
       </View>
-      {DEMO_FEATURES_ENABLED && <View style={styles.ethos}>
+      <View style={styles.ethos}>
         <Text style={styles.stepTitle}>
           Curious about places. Respectful of people.
         </Text>
         <Text style={styles.stepBody}>
-          Check public spaces and observable conditions. Don’t track a person,
-          enter restricted areas, or keep filming when someone asks you to stop.
-          A location reading supports a check; it does not prove the contents of
-          a photo.
+          Check public places and observable conditions. Don’t track people,
+          enter restricted areas, or share private, illegal, threatening or
+          abusive content. Use Report on a check or block a participant after
+          an interaction. Contact Yonder support if you need help.
         </Text>
-      </View>}
+      </View>
       <View style={styles.preview}>
         <Text style={styles.eyebrow}>WHAT YOU CAN DO TODAY</Text>
         <Text style={styles.stepTitle}>What’s available today.</Text>
         <Text style={styles.stepBody}>
-          {DEMO_FEATURES_ENABLED ? "Explore the real world map, search real places, save your favorites, and follow your location with permission. The NYC tour, bounties and earnings are sample data. Requests stay on this device and no one is dispatched." : "Explore the map, search U.S. places, save your favorites and create personal pins and collections. No account or payment is required. Your saved lists do not sync between devices."}
+          Explore the map, search U.S. places, save your favorites and create
+          free unlimited collections. Explore and Saved need no account.
+          Your saved places, personal pins and collections stay on this device
+          and do not sync between devices.
         </Text>
+        {liveConfigured && <Text style={styles.stepBody}>
+          Community checks are free and require an email account. New accounts
+          need email confirmation before signing in. Your open checks share
+          the selected public place and question with signed-in members; the
+          requester and responding Scout can see the answer. Your email is
+          not shown to other members. Open Requests or Scout to sign out or
+          delete your account and its shared checks.
+        </Text>}
         {DEMO_FEATURES_ENABLED && <Text style={styles.stepBody}>
-          The device-check flow uses actual GPS accuracy, distance and reading
-          age to unlock your camera. Photos remain on your device and are not
-          independently verified. The demo flow lets you try the full answer
-          journey without sharing location or camera access.
+          This build also includes a separate local demo. The NYC tour,
+          bounties, earnings and sample answers are illustrative. Demo
+          requests stay on this device; no one is dispatched or paid.
+        </Text>}
+        {DEMO_FEATURES_ENABLED && <Text style={styles.stepBody}>
+          The optional demo device-check path uses actual GPS accuracy,
+          distance and reading age to unlock a three-frame camera capture.
+          Photos stay on your device and are not uploaded or independently
+          verified. The sample path works without location or camera access.
         </Text>}
         <Text style={styles.stepBody}>
           USA place search sends the place name you enter to OpenStreetMap
           through Yonder’s server. Your location centers the map; Yonder does
-          not send it to its search server. iPhone maps use Apple Maps; web
+          not send it to its search server. Sending a community check shares
+          the selected place’s coordinates, not a live device-location feed.
+          iPhone maps use Apple Maps; web
           maps use OpenStreetMap tiles. Saved places, pins and collections are
           stored on this device.
         </Text>
@@ -118,10 +137,10 @@ export default function AboutScreen() {
         />
         {DEMO_FEATURES_ENABLED && <Pressable
           accessibilityRole="button"
-          onPress={() => router.push("/observe")}
+          onPress={() => router.push("/observe?demo=1")}
         >
           <Text style={styles.link}>
-            Already out and about? See how helping works ↗
+            Explore the local Scout demo ↗
           </Text>
         </Pressable>}
       </View>
