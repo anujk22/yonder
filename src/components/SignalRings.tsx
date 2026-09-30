@@ -23,7 +23,7 @@ function Ring({ index, size, color }: { index: number; size: number; color: stri
   const progress = useSharedValue(reduced ? 0.35 + index * 0.25 : 0);
   useEffect(() => {
     if (reduced) return;
-    progress.set(withDelay(index * 900, withRepeat(withTiming(1, { duration: 2700, easing: Easing.out(Easing.quad) }), -1, false)));
+    progress.set(withDelay(index * 1800, withRepeat(withTiming(1, { duration: 5400, easing: Easing.out(Easing.quad) }), -1, false)));
     return () => cancelAnimation(progress);
   }, [index, progress, reduced]);
   const style = useAnimatedStyle(() => ({

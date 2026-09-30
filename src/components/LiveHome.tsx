@@ -87,8 +87,8 @@ function LiveHomeSession({ view }: { view: "requests" | "scout" }) {
   return <AppScreen>
     <ScreenHeader eyebrow={scout ? "SCOUT" : "YOUR CHECKS"} right={current?.access ? <Pressable accessibilityRole="button" accessibilityLabel="Refresh" onPress={() => refreshRef.current()} disabled={loading} hitSlop={10}><Text style={styles.link}>{loading ? "Refreshing…" : "Refresh"}</Text></Pressable> : undefined} />
     <View style={styles.hero}>
-      <Text accessibilityRole="header" style={[styles.title, { flex: 1 }]}>{scout ? "Be someone’s eyes." : "Ask someone already there."}</Text>
-      <BrandObject kind={scout ? "scout" : "chat"} size={86} playful />
+      <Text accessibilityRole="header" numberOfLines={scout ? undefined : 1} adjustsFontSizeToFit={!scout} minimumFontScale={0.75} style={[styles.title, { flex: 1 }]}>{scout ? "Be someone’s eyes." : "Ask someone already there."}</Text>
+      {scout && <BrandObject kind="scout" size={86} playful />}
     </View>
     {!liveConfigured ? <View style={styles.card}>
       <Text style={styles.cardTitle}>Community checks aren’t connected in this build.</Text>
