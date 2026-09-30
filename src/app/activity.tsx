@@ -42,7 +42,7 @@ function DemoActivityScreen() {
       {liveConfigured && (
         <View style={{ marginBottom: 20 }}>
           <PrimaryButton
-            label="Your invited live checks"
+            label="Your live checks"
             variant="secondary"
             onPress={() => router.push("/live")}
           />

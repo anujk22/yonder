@@ -58,7 +58,7 @@ function DemoObserveHome() {
       </View>
       {liveConfigured && (
         <PrimaryButton
-          label="See invited live checks"
+          label="See live checks"
           variant="secondary"
           onPress={() => router.push("/live")}
         />

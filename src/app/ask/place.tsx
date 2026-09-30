@@ -76,12 +76,12 @@ export default function PlaceScreen() {
       {liveConfigured && (
         <>
           <PrimaryButton
-            label="Request an invited live check"
+            label="Ask for a free place check"
             variant="secondary"
             onPress={() => router.push("/live/new")}
           />
           <Text style={[styles.note, { marginBottom: 16 }]}>
-            Free pilot · invitation required · no guaranteed response.
+            Free community check · another person may answer. No guaranteed response.
           </Text>
         </>
       )}

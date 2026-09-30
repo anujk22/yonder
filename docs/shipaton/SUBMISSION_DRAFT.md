@@ -20,9 +20,7 @@ The main Ask and Observe path demonstrates the proposed request-and-answer exper
 
 ## RevenueCat
 
-The implemented client is designed to load the configured Lifetime package and price, purchase through the SDK, read `yonder_plus`, listen for entitlement updates, and restore purchases. The Yonder Test Store project (`4850e856`) has entitlement `yonder_plus`, non-consumable product `yonder_plus_lifetime` at US $2.99, and the current `default` offering with `$rc_lifetime`. Native transactions remain unverified. Plus buys additional local collections, not answers or observer labor.
-
-Before submitting this paragraph as a completed integration, replace this sentence with the exact native test environment, date, successful purchase/restore results and evidence link. Never describe Test Store purchases as revenue.
+Yonder Plus is an auto-renewing monthly or yearly subscription on entitlement `yonder_plus`, with a 1 week free trial. The app reads the offering and prices from RevenueCat, purchases through the SDK, listens for entitlement changes, restores purchases, and opens subscription management. A RevenueCat webhook syncs Plus to the database, which enforces the longer check windows and higher open-check limit. See `REVENUECAT_SETUP.md`. Native Test Store purchase, restore and webhook sync are **unverified** until recorded; replace this note with date, environment and evidence link. Never describe Test Store purchases as revenue.
 
 ## Design
 
