@@ -49,15 +49,19 @@ Yonder answers a question maps can't: is it worth the trip right now? The design
 
 ## Written description: Monetization strategy (HAMM)
 
-Yonder is free to ask and to answer. We don't charge for answers or pay for them. Payment sits on top of the core loop, not inside it.
+Yonder earns on each fresh answer, for every user, and sells a subscription to people who plan ahead.
 
-- **Free tier is the growth engine.** Asking, scouting, one collection, three open checks at once, and check windows up to 30 minutes cost nothing. Every answer a person gives is a reason for someone else to ask.
-- **Yonder Plus, a monthly subscription** (yearly option, prices read from the RevenueCat offering, never hardcoded): 1 and 2 hour check windows, ten open checks at once, unlimited collections. These are for people who plan ahead, such as leagues, event organizers and frequent travellers.
-- **1 week free trial** on both plans, so the first paid moment follows a felt benefit.
-- **Enforced on the server.** A RevenueCat webhook writes `plus_members`. The database decides deadlines and limits, so a modified client can't grant itself Plus. Webhook handling reads the current subscriber state on every event, so retries and out-of-order events converge.
-- **Account-linked.** The RevenueCat app user id is the Yonder account id; anonymous purchases merge at sign-in. Restore and manage-subscription are in Settings.
-- **What we'll measure:** trial start rate after a second check, trial to paid, and how many people hit the free open-check limit. We have no revenue or users to report yet; Test Store purchases are sandbox data.
-- **What we won't do:** sell answers, inflate limits to force upgrades, or show ads in the answering flow.
+- **Pay per request (bounties), for everyone.** Need to know right now? Post a bounty, from $2. The Scout who goes and looks gets paid, and Yonder keeps $1 of the $2 minimum plus 3% of anything above it, which covers card processing on larger bounties. The asker is only billed if someone answers. Pricing and splits are in code (`src/lib/pricing.ts`, `docs/PAYMENTS.md`). In this build bounties are simulated: no card is charged and no Scout is paid.
+- **Free where it builds the network.** An answer that's a day or more old is free. Live community checks are free today while the network grows. Free answers bring askers, and askers bring paid bounties.
+- **Yonder Plus, a monthly subscription** (yearly option, prices read from the RevenueCat offering, never hardcoded): 1 and 2 hour check windows, ten open checks at once, unlimited collections, with a 1 week free trial. It's for people who plan ahead, such as leagues, event organizers and frequent travellers. It doesn't gate asking.
+- **Enforced on the server.** A RevenueCat webhook writes `plus_members`, and the database decides deadlines and limits, so a modified client can't grant itself Plus. The webhook reads the current subscriber state on every event, so retries and out-of-order events converge. The RevenueCat app user id is the Yonder account id; restore and manage-subscription are in Settings.
+- **What we'll measure:**
+  - bounty post rate;
+  - answer rate within the deadline;
+  - repeat askers;
+  - Plus trial starts and trial-to-paid.
+
+  We have no revenue or users to report yet. Test Store purchases are sandbox data.
 
 ## Written description: Peace Prize
 

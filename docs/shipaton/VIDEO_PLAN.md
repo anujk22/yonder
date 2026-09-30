@@ -38,10 +38,10 @@ Generated shots, music only, labelled "concept animation". Text: "Is a hoop free
 
 | Film | Phone | Anuj says |
 | --- | --- | --- |
-| 1:27 | Settings gear, then Settings | Asking and answering stay free, so the network can grow. |
+| 1:27 | Settings gear, then Settings | Right now, asking is free while the network grows. |
 | 1:31 | "Explore Yonder Plus", monthly and yearly plans with "1 week free" | Yonder Plus is a monthly or yearly subscription on RevenueCat, with a one-week free trial, for people who plan ahead. |
 | 1:38 | "Start 1 week free", Test Store sheet, confirm, "Welcome to Plus." | That's a Test Store purchase, and our server, not the app, decides who has Plus. |
-| 1:44 | Explore, "Ask for a free place check": "KEEP IT OPEN FOR" now shows "1 hr" and "2 hr" | Plus keeps checks open for up to two hours. Next come paid bounties, where Yonder keeps a dollar plus three percent. |
+| 1:44 | Explore, "Ask for a free place check": "KEEP IT OPEN FOR" now shows "1 hr" and "2 hr" | Plus keeps checks open for two hours. Next, paid bounties for everyone: the Scout gets paid, Yonder keeps a dollar plus three percent. |
 | 1:51 | Explore map, then the end card (added in edit): yonder. · Ask someone already there. · github.com/anujk22/yonder | **Anuj:** Waze made roads live by asking drivers. We're doing it for every place. **Saf** (bubble cuts back): Yonder. Ask someone already there. |
 
 Push line: only if OneSignal is configured before submitting, Anuj may add "and you get a push the moment it's answered" at 0:57. Otherwise leave it out.
