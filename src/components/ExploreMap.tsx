@@ -1,3 +1,4 @@
+import { DEMO_FEATURES_ENABLED } from "@/lib/previewFeatures";
 import { useScoutNavigation } from "@/lib/useScoutNavigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -343,12 +344,12 @@ export default function ExploreMap() {
           >
             <View style={styles.halo} />
             <View style={styles.haloSmall} />
-            <Text style={styles.eyebrow}>{__DEV__ ? "LESS GUESSING. MORE GOING." : "FIND PLACES. MAKE PLANS."}</Text>
+            <Text style={styles.eyebrow}>{DEMO_FEATURES_ENABLED ? "LESS GUESSING. MORE GOING." : "FIND PLACES. MAKE PLANS."}</Text>
             <Text style={styles.welcomeTitle}>
-              {__DEV__ ? "Good plans.\nBetter intel." : "Good places.\nYour next plan."}
+              {DEMO_FEATURES_ENABLED ? "Good plans.\nBetter intel." : "Good places.\nYour next plan."}
             </Text>
             <Text style={styles.welcomeBody}>
-              {__DEV__ ? "A little look before\nyou head out." : "Find a place.\nSave a little adventure."}
+              {DEMO_FEATURES_ENABLED ? "A little look before\nyou head out." : "Find a place.\nSave a little adventure."}
             </Text>
             <View style={styles.heroScout}>
               <BrandObject size={132} playful />
@@ -375,7 +376,7 @@ export default function ExploreMap() {
             Centers the map on your location. Or search any US city.
           </Text>
           <View style={styles.startLinks}>
-            {__DEV__ && <MotionPressable
+            {DEMO_FEATURES_ENABLED && <MotionPressable
               accessibilityRole="button"
               onPress={tour}
               style={styles.textButton}
@@ -391,7 +392,7 @@ export default function ExploreMap() {
               <Text style={styles.link}>How it works</Text>
             </MotionPressable>
           </View>
-          {desktop && __DEV__ && (
+          {desktop && DEMO_FEATURES_ENABLED && (
             <View style={styles.steps}>
               <Text style={styles.eyebrow}>YOUR NEXT GOOD DECISION</Text>
               {[
@@ -472,7 +473,7 @@ export default function ExploreMap() {
               {selected.area}
             </Text>
             <CommunitySpotDetails place={selected} />
-            {__DEV__ && <View style={styles.question}>
+            {DEMO_FEATURES_ENABLED && <View style={styles.question}>
               <Text style={styles.questionText}>{questionFor(selected)}</Text>
               <Sparkles size={16} color="#9A79B1" />
             </View>}
@@ -483,7 +484,7 @@ export default function ExploreMap() {
           >
             <Text style={styles.small}>Place data © OpenStreetMap contributors · ODbL ↗</Text>
           </Pressable>}
-          {__DEV__ && <><MotionPressable
+          {DEMO_FEATURES_ENABLED && <><MotionPressable
             accessibilityRole="button"
             onPress={() => openPlaceDraft(selected, router)}
             style={styles.primary}
@@ -530,7 +531,7 @@ export default function ExploreMap() {
               >
                 <Text style={styles.small}>Place data © OpenStreetMap contributors · ODbL ↗</Text>
               </Pressable>
-              {__DEV__ && <Text style={styles.small}>Live answers are not available yet.</Text>}
+              {DEMO_FEATURES_ENABLED && <Text style={styles.small}>Live answers are not available yet.</Text>}
             </>
           )}
           {busy ? (
@@ -666,7 +667,7 @@ export default function ExploreMap() {
                   ["/saved", "Saved"],
                   ["/observe", "Scout"],
                 ] as const
-              ).filter(([route]) => __DEV__ || route === "/" || route === "/saved").map(([route, label]) => (
+              ).filter(([route]) => DEMO_FEATURES_ENABLED || route === "/" || route === "/saved").map(([route, label]) => (
                 <MotionPressable
                   key={route}
                   accessibilityRole="button"

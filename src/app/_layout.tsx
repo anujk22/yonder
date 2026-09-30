@@ -1,3 +1,4 @@
+import { DEMO_FEATURES_ENABLED } from "@/lib/previewFeatures";
 import { useCallback, useEffect, useRef } from "react";
 import {
   GestureResponderEvent,
@@ -67,14 +68,14 @@ export default function RootLayout() {
     JetBrainsMono_400Regular,
     JetBrainsMono_500Medium,
   });
-  const hideModeToggle = !__DEV__ || !DEMO_FLAGS.autopilotEnabled;
+  const hideModeToggle = !DEMO_FEATURES_ENABLED || !DEMO_FLAGS.autopilotEnabled;
 
-  useEffect(() => (__DEV__ ? observeLiveAuth() : undefined), []);
+  useEffect(() => (DEMO_FEATURES_ENABLED ? observeLiveAuth() : undefined), []);
 
   useEffect(() => {
     useYonderStore
       .getState()
-      .swapMode(__DEV__ && pathname.startsWith("/observe") ? "observe" : "ask");
+      .swapMode(DEMO_FEATURES_ENABLED && pathname.startsWith("/observe") ? "observe" : "ask");
   }, [pathname]);
 
   useEffect(() => {
@@ -141,7 +142,7 @@ export default function RootLayout() {
               <Stack.Screen name="index" options={{ animation: "fade" }} />
               <Stack.Screen name="map" options={{ animation: "fade" }} />
               <Stack.Screen name="saved" options={{ animation: "fade" }} />
-              <Stack.Protected guard={__DEV__}>
+              <Stack.Protected guard={DEMO_FEATURES_ENABLED}>
                 {DEMO_SCREEN_NAMES.map((name) => (
                   <Stack.Screen key={name} name={name} options={
                     name === "activity" || name === "observe/index" ? { animation: "fade" } : undefined
@@ -152,7 +153,7 @@ export default function RootLayout() {
           </KeyboardAvoidingView>
           {!isImmersive && width < 900 && <BottomNavigation />}
           {!hideModeToggle ? <ModeToggle /> : null}
-          {__DEV__ ? <ModeReveal /> : null}
+          {DEMO_FEATURES_ENABLED ? <ModeReveal /> : null}
           {__DEV__ && DEMO_FLAGS.autopilotEnabled ? <AutopilotLayer /> : null}
         </View>
       </SafeAreaProvider>

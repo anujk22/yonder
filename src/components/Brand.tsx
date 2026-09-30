@@ -1,3 +1,4 @@
+import { DEMO_FEATURES_ENABLED } from "@/lib/previewFeatures";
 import { useScoutNavigation } from "@/lib/useScoutNavigation";
 import {
   Pressable,
@@ -110,7 +111,7 @@ export function AppHeader() {
                 ["/activity", "Your activity"],
                 ["/about", "How it works"],
               ] as const
-            ).filter(([route]) => __DEV__ || route !== "/activity").map(([route, label]) => (
+            ).filter(([route]) => DEMO_FEATURES_ENABLED || route !== "/activity").map(([route, label]) => (
               <Pressable
                 key={route}
                 accessibilityRole="button"
@@ -128,7 +129,7 @@ export function AppHeader() {
             ))}
           </View>
         )}
-        {__DEV__ && <Pressable
+        {DEMO_FEATURES_ENABLED && <Pressable
           accessibilityRole="button"
           onPress={() => go(pathname.startsWith("/observe") ? "/" : "/observe")}
           style={[styles.earn, { borderColor: theme.border }]}
@@ -150,7 +151,7 @@ export function AppHeader() {
               ["/activity", "Activity"],
               ["/about", "How it works"],
             ] as const
-          ).filter(([route]) => __DEV__ || route !== "/activity").map(([route, label]) => (
+          ).filter(([route]) => DEMO_FEATURES_ENABLED || route !== "/activity").map(([route, label]) => (
             <Pressable
               key={route}
               accessibilityRole="button"

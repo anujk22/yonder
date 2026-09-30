@@ -1,3 +1,4 @@
+import { DEMO_FEATURES_ENABLED } from "@/lib/previewFeatures";
 import { useEffect, useState } from "react";
 import { Keyboard, Platform, StyleSheet, Text, View } from "react-native";
 import { usePathname } from "expo-router";
@@ -126,7 +127,7 @@ export function BottomNavigation() {
         },
       ]}
     >
-      {tabs.filter((tab) => __DEV__ || tab.route === "/" || tab.route === "/saved").map((tab) => (
+      {tabs.filter((tab) => DEMO_FEATURES_ENABLED || tab.route === "/" || tab.route === "/saved").map((tab) => (
         <TabItem
           key={tab.route}
           {...tab}

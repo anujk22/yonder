@@ -1,3 +1,4 @@
+import { DEMO_FEATURES_ENABLED } from "@/lib/previewFeatures";
 import { StyleSheet, Text, View } from "react-native";
 import { ArrowUpRight, Heart } from "lucide-react-native";
 import { useRouter } from "expo-router";
@@ -15,7 +16,7 @@ export function openPlaceDraft(
 ) {
   const state = useYonderStore.getState();
   state.addPlace(place);
-  if (!__DEV__) {
+  if (!DEMO_FEATURES_ENABLED) {
     router.push(placeMapRoute(place.id));
     return;
   }
@@ -41,7 +42,7 @@ export function PlaceTile({
     <View style={[styles.card, { width }, compact && { flexDirection: "row" }]}>
       <MotionPressable
         accessibilityRole="button"
-        accessibilityLabel={`${__DEV__ ? "Ask about" : "Show"} ${place.name}`}
+        accessibilityLabel={`${DEMO_FEATURES_ENABLED ? "Ask about" : "Show"} ${place.name}`}
         onPress={() => openPlaceDraft(place, router)}
         style={[
           { flex: 1 },
@@ -79,7 +80,7 @@ export function PlaceTile({
           {!compact && (
             <View style={styles.bottom}>
               <Text style={styles.question} numberOfLines={2}>
-                {__DEV__ ? questionFor(place) : "Show on map"}
+                {DEMO_FEATURES_ENABLED ? questionFor(place) : "Show on map"}
               </Text>
               <View style={styles.arrow}>
                 <ArrowUpRight size={17} color={ask.ink} />

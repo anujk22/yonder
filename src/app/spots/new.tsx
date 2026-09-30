@@ -1,3 +1,4 @@
+import { DEMO_FEATURES_ENABLED } from "@/lib/previewFeatures";
 import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -124,7 +125,7 @@ export default function NewSpotScreen() {
     const state = useYonderStore.getState();
     state.addPlace(place);
     state.toggleSavedPlace(place.id);
-    if (!__DEV__) {
+    if (!DEMO_FEATURES_ENABLED) {
       router.replace(placeMapRoute(place.id));
       return;
     }
@@ -143,7 +144,7 @@ export default function NewSpotScreen() {
               {error}
             </Text>
           )}
-          <PrimaryButton label={__DEV__ ? "Save spot & ask here" : "Save spot"} onPress={save} />
+          <PrimaryButton label={DEMO_FEATURES_ENABLED ? "Save spot & ask here" : "Save spot"} onPress={save} />
         </View>
       }
     >

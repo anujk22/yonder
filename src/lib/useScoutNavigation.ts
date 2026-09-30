@@ -1,3 +1,4 @@
+import { DEMO_FEATURES_ENABLED } from "@/lib/previewFeatures";
 import { useWindowDimensions } from "react-native";
 import { usePathname, useRouter, type Href } from "expo-router";
 import { useReducedMotion } from "react-native-reanimated";
@@ -13,7 +14,7 @@ export function useScoutNavigation() {
     const state = useYonderStore.getState();
     if (state.isModeSwitching || pathname === route) return;
     if (
-      __DEV__ &&
+      DEMO_FEATURES_ENABLED &&
       typeof route === "string" &&
       ((route === "/observe" && !pathname.startsWith("/observe")) ||
         (pathname.startsWith("/observe") && !route.startsWith("/observe")))

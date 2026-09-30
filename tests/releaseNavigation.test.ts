@@ -10,8 +10,19 @@ import { createYonderState } from "../src/lib/state";
 import { DEMO_SCREEN_NAMES } from "../src/lib/demoRoutes";
 import { placeMapRoute } from "../src/lib/placeNavigation";
 import { createCommunitySpot } from "../src/lib/communitySpots";
+import { featurePreviewEnabled } from "../src/lib/previewPolicy";
 
-test("every demo and pilot screen is excluded by the fixed development guard", () => {
+test("full features require development or the explicit preview flag", () => {
+  assert.equal(featurePreviewEnabled(false, undefined), false);
+  assert.equal(featurePreviewEnabled(false, "0"), false);
+  assert.equal(featurePreviewEnabled(false, "true"), false);
+  assert.equal(featurePreviewEnabled(false, "1"), true);
+  assert.equal(featurePreviewEnabled(true, undefined), true);
+  const helper = readFileSync(new URL("../src/lib/previewFeatures.ts", import.meta.url), "utf8");
+  assert.match(helper, /featurePreviewEnabled\(\s*__DEV__,\s*process\.env\.EXPO_PUBLIC_YONDER_PREVIEW/);
+});
+
+test("every demo and pilot screen shares the explicit preview guard", () => {
   const files = readdirSync(new URL("../src/app/", import.meta.url), { recursive: true })
     .filter((name): name is string => typeof name === "string")
     .filter((name) => /\.tsx?$/.test(name)).map((name) => `./${name}`);
@@ -35,8 +46,28 @@ test("every demo and pilot screen is excluded by the fixed development guard", (
   };
   visit(source);
   assert.equal(guards.length, 1);
-  assert.match(guards[0].openingElement.getText(source), /guard=\{__DEV__\}/);
+  assert.match(guards[0].openingElement.getText(source), /guard=\{DEMO_FEATURES_ENABLED\}/);
   assert.match(guards[0].getText(source), /DEMO_SCREEN_NAMES\.map/);
+});
+
+test("the full preview has four navigation tabs and the normal release has two", () => {
+  const text = readFileSync(new URL("../src/components/BottomNavigation.tsx", import.meta.url), "utf8");
+  const source = ts.createSourceFile("BottomNavigation.tsx", text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const tabs = source.statements.find((node) => ts.isVariableStatement(node) && node.declarationList.declarations.some((declaration) => declaration.name.getText(source) === "tabs"));
+  assert.ok(tabs);
+  let filter: ts.CallExpression | undefined;
+  const visit = (node: ts.Node) => {
+    if (ts.isCallExpression(node) && node.expression.getText(source) === "tabs.filter") filter = node;
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  assert.ok(filter);
+  for (const preview of [false, true]) {
+    const result = runInNewContext(ts.transpileModule(`${tabs.getText(source)}\n${filter.getText(source)}.map((tab) => tab.route);`, {
+      compilerOptions: { target: ts.ScriptTarget.ES2022 },
+    }).outputText, { DEMO_FEATURES_ENABLED: preview });
+    assert.deepEqual(Array.from(result), preview ? ["/", "/activity", "/saved", "/observe"] : ["/", "/saved"]);
+  }
 });
 
 test("opening a saved personal pin in production preserves its location and creates no demo request", () => {
@@ -56,7 +87,7 @@ test("opening a saved personal pin in production preserves its location and crea
   const exports: { openPlaceDraft?: (place: typeof pin, router: { push: (route: ReturnType<typeof placeMapRoute>) => void }) => void } = {};
   runInNewContext(ts.transpileModule(action.getText(source), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
-  }).outputText, { exports, __DEV__: false, useYonderStore: { getState: store.getState }, placeMapRoute });
+  }).outputText, { exports, DEMO_FEATURES_ENABLED: false, useYonderStore: { getState: store.getState }, placeMapRoute });
   let opened: ReturnType<typeof placeMapRoute> | undefined;
   exports.openPlaceDraft!(pin, { push: (route) => { opened = route; } });
   assert.equal(opened?.pathname, "/map");
