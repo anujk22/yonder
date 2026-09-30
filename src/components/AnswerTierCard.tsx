@@ -24,6 +24,8 @@ type AnswerTierCardProps = {
   subtitle?: string;
   observersNearby?: number;
   testID?: string;
+  disabled?: boolean;
+  priceLabel?: string;
 };
 
 const EYEBROWS: Record<AnswerTierKind, string> = {
@@ -43,6 +45,8 @@ export function AnswerTierCard({
   subtitle,
   observersNearby,
   testID,
+  disabled = false,
+  priceLabel,
 }: AnswerTierCardProps) {
   const theme = useActiveTheme();
   const ref = useRef<View>(null);
@@ -50,6 +54,7 @@ export function AnswerTierCard({
   const isDispatch = kind === "dispatch";
   const foreground = theme.ink;
   const handlePress = () => {
+    if (disabled) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onPress();
   };
@@ -60,8 +65,10 @@ export function AnswerTierCard({
       <Pressable
         ref={ref}
         testID={testID}
+        disabled={disabled}
+        accessibilityState={{ disabled }}
         accessibilityRole="button"
-        accessibilityLabel={`${EYEBROWS[kind]}, ${priceCents === 0 ? "free" : `$${(priceCents / 100).toFixed(2)}`}, ${headline}`}
+        accessibilityLabel={`${EYEBROWS[kind]}, ${priceLabel ?? (priceCents === 0 ? "free" : `$${(priceCents / 100).toFixed(2)}`)}, ${headline}`}
         onPress={handlePress}
         style={({ pressed }) => [
           styles.card,
@@ -81,7 +88,9 @@ export function AnswerTierCard({
             {EYEBROWS[kind]}
           </Text>
           {isDispatch && <BrandObject kind="done" size={62} />}
-          {priceCents === 0 ? (
+          {priceLabel ? (
+            <Text style={[type.mono, styles.price, { color: foreground, fontSize: 10 }]}>{priceLabel}</Text>
+          ) : priceCents === 0 ? (
             <Text style={[type.mono, styles.price, { color: foreground }]}>
               FREE
             </Text>

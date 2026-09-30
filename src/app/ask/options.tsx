@@ -54,7 +54,7 @@ export default function OptionsScreen() {
   const buyRecent = async (id: string) => {
     if (buying) return;
     if (!purchasesAvailable) {
-      setError("Buying the latest answer needs the Yonder app on iPhone or Android.");
+      setError("Purchases are not enabled in this preview. Try the free sample answer or a demo bounty.");
       return;
     }
     if (!recentPackage) {
@@ -81,9 +81,7 @@ export default function OptionsScreen() {
       </Text>
       <Text style={styles.question}>{query.question}</Text>
       <Text style={styles.body}>
-        Post a new bounty for a fresh look, buy the latest answer, or read one
-        from a day or more ago for free. Example answers do not describe current
-        conditions.
+        {purchasesAvailable ? "Post a demo bounty, test buying the latest sample answer, or read an older sample for free." : "Post a demo bounty or read an older sample answer for free. Paid answers are unavailable in this preview."} Example answers do not describe current conditions.
       </Text>
       {testPurchases && (
         <Text accessibilityRole="alert" style={styles.notice}>
@@ -116,7 +114,10 @@ export default function OptionsScreen() {
             testID="options-recent"
             headline={buying ? "Connecting to the store…" : recent.headline}
             priceCents={storePriceCents}
-            observedAt={recent.observedAt}
+            disabled={!purchasesAvailable || !recentPackage || buying}
+            priceLabel={!purchasesAvailable || !recentPackage ? "UNAVAILABLE" : recentPackage.product.priceString}
+            observedAt={purchasesAvailable && recentPackage ? recent.observedAt : undefined}
+            subtitle={!purchasesAvailable || !recentPackage ? "Purchases are not enabled here. Try the free answer or a demo bounty." : undefined}
             ttlSeconds={recent.ttlSeconds}
             onPress={() => void buyRecent(recent.id)}
           />
@@ -148,7 +149,7 @@ export default function OptionsScreen() {
       </View>
       <Text style={styles.note}>
         Bounties are simulated in this build: no card is charged and no one is
-        dispatched. Buying the latest answer is an in-app purchase.
+        dispatched. {purchasesAvailable ? "Buying the latest answer uses the configured store." : "Paid answers are unavailable in this preview."}
       </Text>
     </AppScreen>
   );

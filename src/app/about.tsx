@@ -9,6 +9,7 @@ import {
 import { useRouter } from "expo-router";
 import { AppScreen, Entrance, PrimaryButton } from "@/components/ui";
 import { BrandScene } from "@/components/BrandObject";
+import { DEMO_FEATURES_ENABLED } from "@/lib/previewFeatures";
 import { ask, font, type } from "@/lib/theme";
 
 export default function AboutScreen() {
@@ -26,14 +27,14 @@ export default function AboutScreen() {
             width < 600 && { fontSize: 43, lineHeight: 45 },
           ]}
         >
-          {__DEV__ ? <>The world changes.{`\n`}Your information should, too.</> : <>Your places.{`\n`}All together.</>}
+          {DEMO_FEATURES_ENABLED ? <>The world changes.{`\n`}Your information should, too.</> : <>Your places.{`\n`}All together.</>}
         </Text>
         <Text style={styles.body}>
-          {__DEV__ ? "A review from last summer can’t tell you how long the line is today. Yonder is for the small, right-now questions that make a real difference to your day." : "Search places, save the ones that matter, and organize them into your own collections. Your lists and personal pins stay on this device."}
+          {DEMO_FEATURES_ENABLED ? "A review from last summer can’t tell you how long the line is today. Yonder is for the small, right-now questions that make a real difference to your day." : "Search places, save the ones that matter, and organize them into your own collections. Your lists and personal pins stay on this device."}
         </Text>
       </Entrance>
       <View style={[styles.steps, width < 800 && { flexDirection: "column" }]}>
-        {(__DEV__ ? [
+        {(DEMO_FEATURES_ENABLED ? [
           [
             "01",
             "Pick your place.",
@@ -42,7 +43,7 @@ export default function AboutScreen() {
           [
             "02",
             "Explore the sample flow.",
-            "Read a free older answer, buy the latest one, or post a bounty. You see the price and the Scout's share before you decide.",
+            "Read a free older sample answer or post a demo bounty. No card is charged and no Scout is dispatched in this preview.",
           ],
           [
             "03",
@@ -61,7 +62,7 @@ export default function AboutScreen() {
           </View>
         ))}
       </View>
-      {__DEV__ && <View style={styles.ethos}>
+      {DEMO_FEATURES_ENABLED && <View style={styles.ethos}>
         <Text style={styles.stepTitle}>
           Curious about places. Respectful of people.
         </Text>
@@ -76,9 +77,9 @@ export default function AboutScreen() {
         <Text style={styles.eyebrow}>WHAT YOU CAN DO TODAY</Text>
         <Text style={styles.stepTitle}>What’s available today.</Text>
         <Text style={styles.stepBody}>
-          {__DEV__ ? "Explore the real world map, search real places, save your favorites, and follow your location with permission. The NYC tour, bounties and earnings are sample data. Requests stay on this device and no one is dispatched." : "Explore the map, search U.S. places, save your favorites and create personal pins and collections. No account or payment is required. Your saved lists do not sync between devices."}
+          {DEMO_FEATURES_ENABLED ? "Explore the real world map, search real places, save your favorites, and follow your location with permission. The NYC tour, bounties and earnings are sample data. Requests stay on this device and no one is dispatched." : "Explore the map, search U.S. places, save your favorites and create personal pins and collections. No account or payment is required. Your saved lists do not sync between devices."}
         </Text>
-        {__DEV__ && <Text style={styles.stepBody}>
+        {DEMO_FEATURES_ENABLED && <Text style={styles.stepBody}>
           The device-check flow uses actual GPS accuracy, distance and reading
           age to unlock your camera. Photos remain on your device and are not
           independently verified. The demo flow lets you try the full answer
@@ -115,7 +116,7 @@ export default function AboutScreen() {
           label="Explore places"
           onPress={() => router.push("/")}
         />
-        {__DEV__ && <Pressable
+        {DEMO_FEATURES_ENABLED && <Pressable
           accessibilityRole="button"
           onPress={() => router.push("/observe")}
         >
