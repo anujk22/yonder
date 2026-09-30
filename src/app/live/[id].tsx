@@ -5,10 +5,12 @@ import { AppScreen, PrimaryButton, ScreenHeader } from "@/components/ui";
 import { MapSurface, detailRegion } from "@/components/MapSurface";
 import { cancelLiveRequest, claimLiveRequest, getLiveRequest, getPilotAccess, releaseLiveRequest, answerLiveRequest, reportLiveRequest, blockLiveUser } from "@/lib/liveApi";
 import { useLiveAuth } from "@/lib/liveAuth";
+import { useActiveTheme } from "@/lib/store";
+import { LiveSignIn } from "@/components/LiveSignIn";
 import { liveConfigured } from "@/lib/liveClient";
 import { validLiveAnswer } from "@/lib/livePolicy";
 import { LIVE_QUESTIONS, liveAnswerLabel, liveExpired, type LiveReportReason, type LiveRequest } from "@/lib/liveTypes";
-import { ask, font, type } from "@/lib/theme";
+import { font, type, type AppTheme } from "@/lib/theme";
 
 type Detail = { userId: string; id: string; access: boolean; request: LiveRequest | null };
 
@@ -19,6 +21,8 @@ export default function LiveDetailScreen() {
 }
 
 function LiveDetailSession({ id }: { id: string }) {
+  const theme = useActiveTheme();
+  const styles = detailStyles(theme);
   const router = useRouter();
   const focused = useIsFocused();
   const user = useLiveAuth((state) => state.user);
@@ -104,12 +108,12 @@ function LiveDetailSession({ id }: { id: string }) {
   };
 
   return <AppScreen>
-    <ScreenHeader eyebrow="INVITED LIVE CHECK" />
-    {!liveConfigured ? <View style={styles.card}><Text style={styles.body}>Live checks are not connected in this build.</Text><PrimaryButton label="Explore local demo" onPress={() => router.replace("/observe")} /></View>
+    <ScreenHeader eyebrow="FREE SHARED PLACE CHECK" />
+    {!liveConfigured ? <View style={styles.card}><Text style={styles.body}>Live checks are not connected in this build.</Text><PrimaryButton label="Explore places" onPress={() => router.replace("/")} /></View>
       : !ready ? <Text style={styles.body}>Checking account…</Text>
-      : !user ? <View style={styles.card}><Text style={styles.body}>Sign in with your invited email to view this check.</Text><PrimaryButton label="Sign in" onPress={() => router.push("/live")} /></View>
+      : !user ? <View style={styles.card}><Text style={styles.body}>Sign in or create a free account to view this shared check.</Text><LiveSignIn /></View>
       : !current ? <Text style={styles.body}>Loading live check…</Text>
-      : !current.access ? <View style={styles.card}><Text style={styles.body}>Your invitation is not active.</Text><PrimaryButton label="Live pilot home" onPress={() => router.push("/live")} /></View>
+      : !current.access ? <View style={styles.card}><Text style={styles.body}>Community checks are unavailable for your account.</Text><PrimaryButton label="Your requests" onPress={() => router.push("/live")} /></View>
       : !request ? <View style={styles.card}><Text style={styles.body}>This check is unavailable. It may have been removed or hidden.</Text><PrimaryButton label="See live checks" onPress={() => router.push("/live")} /></View>
       : <>
         <Text accessibilityRole="header" style={styles.title}>{request.place_name}</Text>
@@ -143,17 +147,17 @@ function LiveDetailSession({ id }: { id: string }) {
           <Text style={styles.cardTitle}>Share what you can see</Text>
           <Text style={styles.body}>Answer only if you are at this public place now. This is your own report; location is not verified.</Text>
           {request.question_kind === "queue" ? <>
-            <TextInput accessibilityLabel="Estimated wait in minutes" keyboardType="number-pad" placeholder="Wait in minutes (0–240)" placeholderTextColor={ask.inkFaint} value={answer === "unsure" ? "" : answer} onChangeText={setAnswer} maxLength={3} style={styles.input} />
+            <TextInput accessibilityLabel="Estimated wait in minutes" keyboardType="number-pad" placeholder="Wait in minutes (0–240)" placeholderTextColor={theme.inkFaint} value={answer === "unsure" ? "" : answer} onChangeText={setAnswer} maxLength={3} style={styles.input} />
             <Choice label="Couldn’t tell" selected={answer === "unsure"} onPress={() => setAnswer("unsure")} />
           </> : <View style={styles.choices}>{(["yes", "no", "unsure"] as const).map((value) => <Choice key={value} label={value === "unsure" ? "Couldn’t tell" : value === "yes" ? "Yes" : "No"} selected={answer === value} onPress={() => setAnswer(value)} />)}</View>}
-          <TextInput accessibilityLabel="Optional observation note" placeholder="Optional detail, no personal information" placeholderTextColor={ask.inkFaint} value={note} onChangeText={setNote} maxLength={280} multiline style={[styles.input, { minHeight: 85 }]} />
+          <TextInput accessibilityLabel="Optional observation note" placeholder="Optional detail, no personal information" placeholderTextColor={theme.inkFaint} value={note} onChangeText={setNote} maxLength={280} multiline style={[styles.input, { minHeight: 85 }]} />
           <Text style={styles.meta}>{note.length}/280</Text>
           <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: onSite }} onPress={() => setOnSite(!onSite)} style={styles.confirm}><Text style={styles.body}>{onSite ? "☑" : "□"} I am at this public place now. My answer is self-reported, not GPS verified.</Text></Pressable>
           <PrimaryButton label={busy ? "Sending…" : "Send observation"} disabled={busy} onPress={submitAnswer} />
           <PrimaryButton label="Release this check" variant="secondary" disabled={busy} onPress={() => void act(() => releaseLiveRequest(request.id), "Check released for another person.")} />
         </View>}
         {(!mine || otherUserId) && <View style={styles.card}>
-          <Text style={styles.cardTitle}>Keep the pilot helpful</Text>
+          <Text style={styles.cardTitle}>Keep the community helpful</Text>
           {showReport ? <>
             {(["unsafe", "spam", ...(request.status === "answered" ? ["inaccurate"] : [])] as LiveReportReason[]).map((reason) => <Pressable key={reason} accessibilityRole="button" onPress={() => void act(() => reportLiveRequest(request.id, reason), "Report recorded.")} disabled={busy}><Text style={styles.link}>Report {reason}</Text></Pressable>)}
             <Pressable accessibilityRole="button" onPress={() => setShowReport(false)}><Text style={styles.link}>Close report options</Text></Pressable>
@@ -172,25 +176,26 @@ function LiveDetailSession({ id }: { id: string }) {
 }
 
 function Choice({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
+  const styles = detailStyles(useActiveTheme());
   return <Pressable accessibilityRole="radio" accessibilityState={{ checked: selected }} onPress={onPress} style={[styles.choice, selected && styles.selected]}><Text style={styles.choiceText}>{label}</Text></Pressable>;
 }
 
-const styles = StyleSheet.create({
-  title: { fontFamily: font.ui700, fontSize: 30, lineHeight: 37, color: ask.ink, marginBottom: 10 },
-  question: { ...type.heading, color: ask.ink, marginBottom: 16 },
-  map: { height: 170, overflow: "hidden", borderRadius: 16, backgroundColor: ask.surfaceAlt, marginBottom: 12 },
-  body: { ...type.body, color: ask.inkSoft, marginBottom: 8 },
-  label: { ...type.micro, color: ask.fresh },
-  meta: { ...type.label, color: ask.inkSoft },
-  card: { backgroundColor: ask.surface, borderColor: ask.border, borderWidth: 1, borderRadius: 18, padding: 20, gap: 10, marginVertical: 12 },
-  cardTitle: { ...type.heading, color: ask.ink },
-  input: { ...type.body, color: ask.ink, borderColor: ask.border, borderWidth: 1, borderRadius: 12, padding: 14, minHeight: 52, textAlignVertical: "top" },
+const detailStyles = (theme: AppTheme) => StyleSheet.create({
+  title: { fontFamily: font.ui700, fontSize: 30, lineHeight: 37, color: theme.ink, marginBottom: 10 },
+  question: { ...type.heading, color: theme.ink, marginBottom: 16 },
+  map: { height: 170, overflow: "hidden", borderRadius: 16, backgroundColor: theme.surfaceAlt, marginBottom: 12 },
+  body: { ...type.body, color: theme.inkSoft, marginBottom: 8 },
+  label: { ...type.micro, color: theme.fresh },
+  meta: { ...type.label, color: theme.inkSoft },
+  card: { backgroundColor: theme.surface, borderColor: theme.border, borderWidth: 1, borderRadius: 18, padding: 20, gap: 10, marginVertical: 12 },
+  cardTitle: { ...type.heading, color: theme.ink },
+  input: { ...type.body, color: theme.ink, borderColor: theme.border, borderWidth: 1, borderRadius: 12, padding: 14, minHeight: 52, textAlignVertical: "top" },
   choices: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  choice: { borderColor: ask.border, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12 },
-  selected: { borderColor: ask.ink, backgroundColor: ask.surfaceAlt },
-  choiceText: { ...type.label, color: ask.ink },
+  choice: { borderColor: theme.border, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12 },
+  selected: { borderColor: theme.ink, backgroundColor: theme.surfaceAlt },
+  choiceText: { ...type.label, color: theme.ink },
   confirm: { paddingVertical: 10 },
-  link: { ...type.label, color: ask.fresh, paddingVertical: 10 },
-  notice: { ...type.body, color: ask.fresh, marginVertical: 10 },
-  error: { ...type.body, color: ask.danger, marginVertical: 10 },
+  link: { ...type.label, color: theme.fresh, paddingVertical: 10 },
+  notice: { ...type.body, color: theme.fresh, marginVertical: 10 },
+  error: { ...type.body, color: theme.danger, marginVertical: 10 },
 });

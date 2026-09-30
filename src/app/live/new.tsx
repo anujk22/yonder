@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useIsFocused, useRouter } from "expo-router";
 import { AppScreen, PrimaryButton, ScreenHeader } from "@/components/ui";
+import { LiveSignIn } from "@/components/LiveSignIn";
 import { liveConfigured } from "@/lib/liveClient";
 import { useLiveAuth } from "@/lib/liveAuth";
 import { createLiveRequest, getPilotAccess } from "@/lib/liveApi";
@@ -64,23 +65,23 @@ function NewLiveRequestSession() {
 
   const allowed = access && access.userId === userId && access.allowed;
   return <AppScreen>
-    <ScreenHeader eyebrow="NEW LIVE CHECK · INVITED PILOT" />
+    <ScreenHeader eyebrow="NEW FREE PLACE CHECK" />
     <Text accessibilityRole="header" style={styles.title}>Ask for a fresh place check.</Text>
     {!liveConfigured ? <View style={styles.card}>
-      <Text style={styles.body}>Live checks are not connected in this build. Your local demo is still available.</Text>
-      <PrimaryButton label="Back to local demo" onPress={() => router.replace("/")} />
+      <Text style={styles.body}>Live checks are not connected in this build. You can still search and save places.</Text>
+      <PrimaryButton label="Back to Explore" onPress={() => router.replace("/")} />
     </View> : !ready ? <Text style={styles.body}>Checking account…</Text> : !user ? <View style={styles.card}>
-      <Text style={styles.body}>Sign in with your invited email before requesting a live check.</Text>
-      <PrimaryButton label="Sign in to live pilot" onPress={() => router.push("/live")} />
+      <Text style={styles.body}>Sign in or create a free account to request a shared place check.</Text>
+      <LiveSignIn />
     </View> : !allowed ? <View style={styles.card}>
-      <Text style={styles.body}>{access?.userId === user.id ? "Your invitation is not active yet." : "Checking your invitation…"}</Text>
-      <PrimaryButton label="Check invitation again" variant="secondary" onPress={() => setAccessRetry((count) => count + 1)} />
-      <PrimaryButton label="Live pilot home" variant="secondary" onPress={() => router.push("/live")} />
+      <Text style={styles.body}>{access?.userId === user.id ? "Community checks are unavailable for your account." : "Checking your account…"}</Text>
+      <PrimaryButton label="Check access again" variant="secondary" onPress={() => setAccessRetry((count) => count + 1)} />
+      <PrimaryButton label="Your requests" variant="secondary" onPress={() => router.push("/live")} />
     </View> : !place || place.blocked ? <View style={styles.card}>
       <Text style={styles.body}>Choose an available public place from Explore first.</Text>
       <PrimaryButton label="Choose a place" onPress={() => router.push("/")} />
     </View> : <>
-      <Text style={styles.body}>Free pilot. Another invited person may answer, but nobody is guaranteed to respond. Answers are self-reported, not independently verified.</Text>
+      <Text style={styles.body}>Free community check. Another person may answer, but nobody is guaranteed to respond. Answers are self-reported, not independently verified.</Text>
       <View style={styles.card}>
         <Text style={styles.label}>SELECTED PLACE AND PIN</Text>
         <Text style={styles.cardTitle}>{place.name}</Text>
@@ -96,7 +97,7 @@ function NewLiveRequestSession() {
       <Text style={styles.label}>EXPIRES AFTER</Text>
       <View style={styles.deadlines}>{[5, 10, 15, 30].map((minutes) => <Pressable key={minutes} accessibilityRole="radio" accessibilityState={{ checked: deadlineMinutes === minutes }} onPress={() => setDeadlineMinutes(minutes)} style={[styles.deadline, deadlineMinutes === minutes && styles.selected]}><Text style={styles.optionText}>{minutes} min</Text></Pressable>)}</View>
       <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: publicConfirmed }} onPress={() => { setPublicConfirmed(!publicConfirmed); setError(""); }} style={styles.confirm}><Text style={styles.optionText}>{publicConfirmed ? "☑" : "□"} I confirm this is a public place, the pin is correct, and the landmark is safe to share.</Text></Pressable>
-      <PrimaryButton label={busy ? "Sending check…" : "Send free live check"} onPress={() => void submit()} disabled={busy} />
+      <PrimaryButton label={busy ? "Sending check…" : "Send free place check"} onPress={() => void submit()} disabled={busy} />
       <Text style={styles.meta}>No payment or reward. The request expires after the selected time if nobody responds.</Text>
     </>}
     {!!error && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}

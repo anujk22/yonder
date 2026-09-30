@@ -1,4 +1,4 @@
-import { DEMO_FEATURES_ENABLED } from "@/lib/previewFeatures";
+import { DEMO_FEATURES_ENABLED, LIVE_FEATURES_ENABLED } from "@/lib/previewFeatures";
 import { useScoutNavigation } from "@/lib/useScoutNavigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -344,12 +344,12 @@ export default function ExploreMap() {
           >
             <View style={styles.halo} />
             <View style={styles.haloSmall} />
-            <Text style={styles.eyebrow}>{DEMO_FEATURES_ENABLED ? "LESS GUESSING. MORE GOING." : "FIND PLACES. MAKE PLANS."}</Text>
+            <Text style={styles.eyebrow}>{DEMO_FEATURES_ENABLED || LIVE_FEATURES_ENABLED ? "LESS GUESSING. MORE GOING." : "FIND PLACES. MAKE PLANS."}</Text>
             <Text style={styles.welcomeTitle}>
-              {DEMO_FEATURES_ENABLED ? "Good plans.\nBetter intel." : "Good places.\nYour next plan."}
+              {DEMO_FEATURES_ENABLED || LIVE_FEATURES_ENABLED ? "Good plans.\nBetter intel." : "Good places.\nYour next plan."}
             </Text>
             <Text style={styles.welcomeBody}>
-              {DEMO_FEATURES_ENABLED ? "A little look before\nyou head out." : "Find a place.\nSave a little adventure."}
+              {DEMO_FEATURES_ENABLED || LIVE_FEATURES_ENABLED ? "A little look before\nyou head out." : "Find a place.\nSave a little adventure."}
             </Text>
             <View style={styles.heroScout}>
               <BrandObject size={132} playful />
@@ -484,19 +484,23 @@ export default function ExploreMap() {
           >
             <Text style={styles.small}>Place data © OpenStreetMap contributors · ODbL ↗</Text>
           </Pressable>}
-          {DEMO_FEATURES_ENABLED && <><MotionPressable
+          {(LIVE_FEATURES_ENABLED || DEMO_FEATURES_ENABLED) && <><MotionPressable
             accessibilityRole="button"
             onPress={() => openPlaceDraft(selected, router)}
             style={styles.primary}
           >
-            <Text style={styles.primaryText}>Try a demo request</Text>
+            <Text style={styles.primaryText}>{LIVE_FEATURES_ENABLED ? "Ask for a free place check" : "Try a demo request"}</Text>
             <ArrowUpRight size={21} color={ask.ink} />
           </MotionPressable>
           <Text style={styles.privacy}>
-            {source === "tour"
+            {LIVE_FEATURES_ENABLED
+              ? "Free community check · another person may answer. No guaranteed response."
+              : source === "tour"
               ? "Sample tour · try a demo request, no card charged."
               : "Real place · requests currently run as a local demo."}
-          </Text></>}
+          </Text>
+          {DEMO_FEATURES_ENABLED && LIVE_FEATURES_ENABLED && <MotionPressable accessibilityRole="button" onPress={() => openPlaceDraft(selected, router, true)} style={styles.textButton}><Text style={styles.link}>Try the local demo</Text></MotionPressable>}
+          </>}
         </>
       ) : (
         <>
@@ -531,7 +535,7 @@ export default function ExploreMap() {
               >
                 <Text style={styles.small}>Place data © OpenStreetMap contributors · ODbL ↗</Text>
               </Pressable>
-              {DEMO_FEATURES_ENABLED && <Text style={styles.small}>Live answers are not available yet.</Text>}
+              {DEMO_FEATURES_ENABLED && !LIVE_FEATURES_ENABLED && <Text style={styles.small}>Live answers are not available yet.</Text>}
             </>
           )}
           {busy ? (
@@ -667,7 +671,7 @@ export default function ExploreMap() {
                   ["/saved", "Saved"],
                   ["/observe", "Scout"],
                 ] as const
-              ).filter(([route]) => DEMO_FEATURES_ENABLED || route === "/" || route === "/saved").map(([route, label]) => (
+              ).filter(([route]) => DEMO_FEATURES_ENABLED || LIVE_FEATURES_ENABLED || route === "/" || route === "/saved").map(([route, label]) => (
                 <MotionPressable
                   key={route}
                   accessibilityRole="button"

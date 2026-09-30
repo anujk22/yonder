@@ -1,4 +1,4 @@
-import { DEMO_FEATURES_ENABLED } from "@/lib/previewFeatures";
+import { DEMO_FEATURES_ENABLED, LIVE_FEATURES_ENABLED } from "@/lib/previewFeatures";
 import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -125,11 +125,15 @@ export default function NewSpotScreen() {
     const state = useYonderStore.getState();
     state.addPlace(place);
     state.toggleSavedPlace(place.id);
-    if (!DEMO_FEATURES_ENABLED) {
+    if (!DEMO_FEATURES_ENABLED && !LIVE_FEATURES_ENABLED) {
       router.replace(placeMapRoute(place.id));
       return;
     }
     state.setResolvedPlace(place.id);
+    if (LIVE_FEATURES_ENABLED) {
+      router.replace("/live/new");
+      return;
+    }
     state.setDraftQuestion("");
     state.setDeadline(10);
     state.setTargetHint("");
@@ -144,7 +148,7 @@ export default function NewSpotScreen() {
               {error}
             </Text>
           )}
-          <PrimaryButton label={DEMO_FEATURES_ENABLED ? "Save spot & ask here" : "Save spot"} onPress={save} />
+          <PrimaryButton label={DEMO_FEATURES_ENABLED || LIVE_FEATURES_ENABLED ? "Save spot & ask here" : "Save spot"} onPress={save} />
         </View>
       }
     >
@@ -285,9 +289,9 @@ export default function NewSpotScreen() {
         </Text>
       </MotionPressable>
       <Text style={styles.small}>
-        Saved on this device as an unverified community pin. Scouts must match
-        the landmarks and capture fresh photos nearby. This does not publish a
-        shared map listing.
+        {LIVE_FEATURES_ENABLED
+          ? "Saved on this device as an unverified community pin. A shared check includes this pin and description; answers are self-reported. This does not publish a shared map listing."
+          : "Saved on this device as an unverified community pin. Scouts must match the landmarks and capture fresh photos nearby. This does not publish a shared map listing."}
       </Text>
     </AppScreen>
   );

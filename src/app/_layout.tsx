@@ -1,4 +1,4 @@
-import { DEMO_FEATURES_ENABLED } from "@/lib/previewFeatures";
+import { DEMO_FEATURES_ENABLED, LIVE_FEATURES_ENABLED } from "@/lib/previewFeatures";
 import { useCallback, useEffect, useRef } from "react";
 import {
   GestureResponderEvent,
@@ -8,7 +8,7 @@ import {
   View,
   useWindowDimensions,
 } from "react-native";
-import { Stack, usePathname, useRouter } from "expo-router";
+import { Stack, useGlobalSearchParams, usePathname, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import {
@@ -42,12 +42,13 @@ import { DEMO_FLAGS } from "@/lib/demoFlags";
 import { abortAutopilot } from "@/lib/autopilot";
 import { AppHeader } from "@/components/Brand";
 import { observeLiveAuth } from "@/lib/liveAuth";
-import { DEMO_SCREEN_NAMES } from "@/lib/demoRoutes";
+import { CORE_SCREEN_NAMES, DEMO_SCREEN_NAMES, LIVE_SCREEN_NAMES } from "@/lib/demoRoutes";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const pathname = usePathname();
+  const { from } = useGlobalSearchParams<{ from?: string }>();
   const router = useRouter();
   const reloadHandled = useRef(false);
   const theme = useActiveTheme();
@@ -70,13 +71,13 @@ export default function RootLayout() {
   });
   const hideModeToggle = !DEMO_FEATURES_ENABLED || !DEMO_FLAGS.autopilotEnabled;
 
-  useEffect(() => (DEMO_FEATURES_ENABLED ? observeLiveAuth() : undefined), []);
+  useEffect(() => observeLiveAuth(), []);
 
   useEffect(() => {
     useYonderStore
       .getState()
-      .swapMode(DEMO_FEATURES_ENABLED && pathname.startsWith("/observe") ? "observe" : "ask");
-  }, [pathname]);
+      .swapMode((DEMO_FEATURES_ENABLED || LIVE_FEATURES_ENABLED) && (pathname.startsWith("/observe") || (pathname.startsWith("/live") && from === "scout")) ? "observe" : "ask");
+  }, [pathname, from]);
 
   useEffect(() => {
     if (fontsLoaded || fontError) SplashScreen.hideAsync();
@@ -142,18 +143,24 @@ export default function RootLayout() {
               <Stack.Screen name="index" options={{ animation: "fade" }} />
               <Stack.Screen name="map" options={{ animation: "fade" }} />
               <Stack.Screen name="saved" options={{ animation: "fade" }} />
+              <Stack.Protected guard={DEMO_FEATURES_ENABLED || LIVE_FEATURES_ENABLED}>
+                {CORE_SCREEN_NAMES.map((name) => (
+                  <Stack.Screen key={name} name={name} options={{ animation: "fade" }} />
+                ))}
+              </Stack.Protected>
+              <Stack.Protected guard={LIVE_FEATURES_ENABLED}>
+                {LIVE_SCREEN_NAMES.map((name) => <Stack.Screen key={name} name={name} />)}
+              </Stack.Protected>
               <Stack.Protected guard={DEMO_FEATURES_ENABLED}>
                 {DEMO_SCREEN_NAMES.map((name) => (
-                  <Stack.Screen key={name} name={name} options={
-                    name === "activity" || name === "observe/index" ? { animation: "fade" } : undefined
-                  } />
+                  <Stack.Screen key={name} name={name} />
                 ))}
               </Stack.Protected>
             </Stack>
           </KeyboardAvoidingView>
           {!isImmersive && width < 900 && <BottomNavigation />}
           {!hideModeToggle ? <ModeToggle /> : null}
-          {DEMO_FEATURES_ENABLED ? <ModeReveal /> : null}
+          {DEMO_FEATURES_ENABLED || LIVE_FEATURES_ENABLED ? <ModeReveal /> : null}
           {__DEV__ && DEMO_FLAGS.autopilotEnabled ? <AutopilotLayer /> : null}
         </View>
       </SafeAreaProvider>

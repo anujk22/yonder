@@ -1,4 +1,4 @@
-import { DEMO_FEATURES_ENABLED } from "@/lib/previewFeatures";
+import { DEMO_FEATURES_ENABLED, LIVE_FEATURES_ENABLED } from "@/lib/previewFeatures";
 import { useScoutNavigation } from "@/lib/useScoutNavigation";
 import {
   Pressable,
@@ -7,7 +7,7 @@ import {
   View,
   useWindowDimensions,
 } from "react-native";
-import { usePathname, useRouter } from "expo-router";
+import { useGlobalSearchParams, usePathname, useRouter } from "expo-router";
 import Svg, { Circle, Path } from "react-native-svg";
 import { useActiveTheme } from "@/lib/store";
 import { brand, font, type } from "@/lib/theme";
@@ -49,6 +49,9 @@ export function Scout({
 export function AppHeader() {
   const router = useRouter();
   const pathname = usePathname();
+  const { from } = useGlobalSearchParams<{ from?: string }>();
+  const scouting = pathname.startsWith("/observe") || (pathname.startsWith("/live") && from === "scout");
+  const current = pathname.startsWith("/live") ? pathname === "/live/new" ? "/" : scouting ? "/observe" : "/activity" : pathname;
   const theme = useActiveTheme();
   const { width } = useWindowDimensions();
   const wide = width >= 900;
@@ -108,18 +111,19 @@ export function AppHeader() {
             {(
               [
                 ["/", "Explore"],
-                ["/activity", "Your activity"],
+                ["/activity", "Requests"],
+                ["/saved", "Saved"],
                 ["/about", "How it works"],
               ] as const
-            ).filter(([route]) => DEMO_FEATURES_ENABLED || route !== "/activity").map(([route, label]) => (
+            ).filter(([route]) => DEMO_FEATURES_ENABLED || LIVE_FEATURES_ENABLED || route !== "/activity").map(([route, label]) => (
               <Pressable
                 key={route}
                 accessibilityRole="button"
-                accessibilityState={{ selected: pathname === route }}
+                accessibilityState={{ selected: current === route }}
                 onPress={() => go(route)}
                 style={[
                   styles.navItem,
-                  pathname === route && { borderBottomColor: theme.ink },
+                  current === route && { borderBottomColor: theme.ink },
                 ]}
               >
                 <Text style={[type.label, { color: theme.ink, fontSize: 13 }]}>
@@ -129,13 +133,13 @@ export function AppHeader() {
             ))}
           </View>
         )}
-        {DEMO_FEATURES_ENABLED && <Pressable
+        {(DEMO_FEATURES_ENABLED || LIVE_FEATURES_ENABLED) && <Pressable
           accessibilityRole="button"
-          onPress={() => go(pathname.startsWith("/observe") ? "/" : "/observe")}
+          onPress={() => go(scouting ? "/" : "/observe")}
           style={[styles.earn, { borderColor: theme.border }]}
         >
           <Text style={[type.label, { color: theme.ink }]}>
-            {pathname.startsWith("/observe")
+            {scouting
               ? "Explore places ↗"
               : wide
                 ? "Go scouting ↗"
@@ -151,7 +155,7 @@ export function AppHeader() {
               ["/activity", "Activity"],
               ["/about", "How it works"],
             ] as const
-          ).filter(([route]) => DEMO_FEATURES_ENABLED || route !== "/activity").map(([route, label]) => (
+          ).filter(([route]) => DEMO_FEATURES_ENABLED || LIVE_FEATURES_ENABLED || route !== "/activity").map(([route, label]) => (
             <Pressable
               key={route}
               accessibilityRole="button"
@@ -164,7 +168,7 @@ export function AppHeader() {
                   {
                     color: theme.ink,
                     textDecorationLine:
-                      pathname === route ? "underline" : "none",
+                      current === route ? "underline" : "none",
                   },
                 ]}
               >

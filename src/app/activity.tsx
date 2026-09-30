@@ -1,6 +1,8 @@
+import { DEMO_FEATURES_ENABLED, LIVE_FEATURES_ENABLED } from "@/lib/previewFeatures";
+import LiveHome from "@/components/LiveHome";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { AppScreen, PrimaryButton } from "@/components/ui";
 import { BrandScene } from "@/components/BrandObject";
 import { useYonderStore } from "@/lib/store";
@@ -9,6 +11,11 @@ import { money } from "@/lib/pricing";
 import { liveConfigured } from "@/lib/liveClient";
 
 export default function ActivityScreen() {
+  const { demo } = useLocalSearchParams<{ demo?: string }>();
+  return LIVE_FEATURES_ENABLED && !(DEMO_FEATURES_ENABLED && demo === "1") ? <LiveHome view="requests" /> : <DemoActivityScreen />;
+}
+
+function DemoActivityScreen() {
   const router = useRouter();
   const [filter, setFilter] = useState<"All" | "Waiting" | "Answered">("All");
   const queries = useYonderStore((s) => s.queries);

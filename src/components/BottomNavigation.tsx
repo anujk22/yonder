@@ -1,7 +1,7 @@
-import { DEMO_FEATURES_ENABLED } from "@/lib/previewFeatures";
+import { DEMO_FEATURES_ENABLED, LIVE_FEATURES_ENABLED } from "@/lib/previewFeatures";
 import { useEffect, useState } from "react";
 import { Keyboard, Platform, StyleSheet, Text, View } from "react-native";
-import { usePathname } from "expo-router";
+import { useGlobalSearchParams, usePathname } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BrandImage, type ArtworkKind } from "./BrandImage";
 import { useScoutNavigation } from "@/lib/useScoutNavigation";
@@ -91,6 +91,7 @@ function TabItem({
 
 export function BottomNavigation() {
   const pathname = usePathname();
+  const { from } = useGlobalSearchParams<{ from?: string }>();
   const navigate = useScoutNavigation();
   const insets = useSafeAreaInsets();
   const theme = useActiveTheme();
@@ -112,7 +113,9 @@ export function BottomNavigation() {
   if (keyboard) return null;
   const current = pathname.startsWith("/observe")
     ? "/observe"
-    : pathname.startsWith("/ask") || pathname.startsWith("/spots") || pathname === "/map"
+    : pathname.startsWith("/live")
+      ? pathname === "/live/new" ? "/" : from === "scout" ? "/observe" : "/activity"
+      : pathname.startsWith("/ask") || pathname.startsWith("/spots") || pathname === "/map"
       ? "/"
       : pathname;
   return (
@@ -127,7 +130,7 @@ export function BottomNavigation() {
         },
       ]}
     >
-      {tabs.filter((tab) => DEMO_FEATURES_ENABLED || tab.route === "/" || tab.route === "/saved").map((tab) => (
+      {tabs.filter((tab) => DEMO_FEATURES_ENABLED || LIVE_FEATURES_ENABLED || tab.route === "/" || tab.route === "/saved").map((tab) => (
         <TabItem
           key={tab.route}
           {...tab}

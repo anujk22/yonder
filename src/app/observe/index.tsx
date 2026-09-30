@@ -1,6 +1,8 @@
+import { DEMO_FEATURES_ENABLED, LIVE_FEATURES_ENABLED } from "@/lib/previewFeatures";
+import LiveHome from "@/components/LiveHome";
 import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { AppScreen, Entrance, PrimaryButton } from "@/components/ui";
 import { BrandObject } from "@/components/BrandObject";
 import { CategoryObject } from "@/components/CategoryObject";
@@ -13,6 +15,11 @@ import { observe, font, type } from "@/lib/theme";
 import { money } from "@/lib/pricing";
 import { liveConfigured } from "@/lib/liveClient";
 export default function ObserveHome() {
+  const { demo } = useLocalSearchParams<{ demo?: string }>();
+  return LIVE_FEATURES_ENABLED && !(DEMO_FEATURES_ENABLED && demo === "1") ? <LiveHome view="scout" /> : <DemoObserveHome />;
+}
+
+function DemoObserveHome() {
   const router = useRouter();
   const queries = useYonderStore((s) => s.queries);
   const places = useYonderStore((s) => s.places);

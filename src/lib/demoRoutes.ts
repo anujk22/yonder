@@ -1,5 +1,4 @@
 export const DEMO_SCREEN_NAMES = [
-  "activity",
   "ask/index",
   "ask/place",
   "ask/options",
@@ -8,14 +7,13 @@ export const DEMO_SCREEN_NAMES = [
   "ask/rejected",
   "ask/vendor",
   "ask/answer/[id]",
-  "observe/index",
   "observe/task/[id]",
   "observe/approach",
   "observe/capture",
   "observe/evidence",
   "observe/verifying",
   "observe/earned",
-  "live/index",
-  "live/new",
-  "live/[id]",
 ] as const;
+
+export const CORE_SCREEN_NAMES = ["activity", "observe/index"] as const;
+export const LIVE_SCREEN_NAMES = ["live/index", "live/new", "live/[id]"] as const;

@@ -1,4 +1,4 @@
-import { DEMO_FEATURES_ENABLED } from "@/lib/previewFeatures";
+import { DEMO_FEATURES_ENABLED, LIVE_FEATURES_ENABLED } from "@/lib/previewFeatures";
 import { StyleSheet, Text, View } from "react-native";
 import { ArrowUpRight, Heart } from "lucide-react-native";
 import { useRouter } from "expo-router";
@@ -13,14 +13,19 @@ import { placeMapRoute } from "@/lib/placeNavigation";
 export function openPlaceDraft(
   place: Place,
   router: ReturnType<typeof useRouter>,
+  demo = false,
 ) {
   const state = useYonderStore.getState();
   state.addPlace(place);
-  if (!DEMO_FEATURES_ENABLED) {
+  if (!DEMO_FEATURES_ENABLED && !LIVE_FEATURES_ENABLED) {
     router.push(placeMapRoute(place.id));
     return;
   }
   state.setResolvedPlace(place.id);
+  if (LIVE_FEATURES_ENABLED && !(DEMO_FEATURES_ENABLED && demo)) {
+    router.push("/live/new");
+    return;
+  }
   state.setDraftQuestion("");
   state.setDeadline(10);
   state.setTargetHint("");
@@ -42,7 +47,7 @@ export function PlaceTile({
     <View style={[styles.card, { width }, compact && { flexDirection: "row" }]}>
       <MotionPressable
         accessibilityRole="button"
-        accessibilityLabel={`${DEMO_FEATURES_ENABLED ? "Ask about" : "Show"} ${place.name}`}
+        accessibilityLabel={`${DEMO_FEATURES_ENABLED || LIVE_FEATURES_ENABLED ? "Ask about" : "Show"} ${place.name}`}
         onPress={() => openPlaceDraft(place, router)}
         style={[
           { flex: 1 },
@@ -80,7 +85,7 @@ export function PlaceTile({
           {!compact && (
             <View style={styles.bottom}>
               <Text style={styles.question} numberOfLines={2}>
-                {DEMO_FEATURES_ENABLED ? questionFor(place) : "Show on map"}
+                {LIVE_FEATURES_ENABLED ? "Ask for a free place check" : DEMO_FEATURES_ENABLED ? questionFor(place) : "Show on map"}
               </Text>
               <View style={styles.arrow}>
                 <ArrowUpRight size={17} color={ask.ink} />
