@@ -72,7 +72,7 @@ function NewLiveRequestSession() {
 
   const allowed = access && access.userId === userId && access.allowed;
   return <AppScreen>
-    <ScreenHeader eyebrow="NEW FREE PLACE CHECK" />
+    <ScreenHeader eyebrow="NEW LIVE CHECK" />
     <Text accessibilityRole="header" style={styles.title}>What do you want to know?</Text>
     {!liveConfigured ? <View style={styles.card}>
       <Text style={styles.body}>Live checks are not connected in this build. You can still search and save places.</Text>

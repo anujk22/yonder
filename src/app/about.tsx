@@ -44,7 +44,7 @@ export default function AboutScreen() {
           [
             "02",
             "Ask the community.",
-            "Sign in to send a check with an expiry time; there’s no charge during early access. Someone already there can choose to answer. No Scout is dispatched and no payment or reward is offered.",
+            "Sign in to send a live check with an expiry time; live checks have no charge during early access. Someone already there can choose to answer. Paid requests are bounties of $2 or more, billed only if someone answers, with the Scout paid out. In this build that payment is a demo.",
           ],
           [
             "03",

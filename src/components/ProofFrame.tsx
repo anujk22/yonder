@@ -29,7 +29,7 @@ export function ProofFrame({ uri, observedAt }: ProofFrameProps) {
         source={uri ? { uri } : PIER_TWO_PROOF}
         resizeMode="cover"
         style={styles.image}
-        accessibilityLabel={uri ? 'Captured device image' : 'Illustrative basketball artwork'}
+        accessibilityLabel={uri ? 'Captured device image' : 'Example scene of basketball courts, not a live photo'}
       />
 
       <View style={[styles.caption, { backgroundColor: theme.scrim }]}>

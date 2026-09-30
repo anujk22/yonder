@@ -11,6 +11,13 @@ export async function getPilotAccess() {
   return data?.active === true;
 }
 
+/** Whether Yonder's server (the RevenueCat webhook's row) has granted this account Plus. */
+export async function getServerPlus() {
+  const { data, error } = await getLiveClient().from("plus_members").select("expires_at").maybeSingle();
+  if (error) throw new Error(liveErrorMessage(error));
+  return !!data && (data.expires_at === null || Date.parse(data.expires_at) > Date.now());
+}
+
 export async function listLiveRequests(): Promise<LiveRequest[]> {
   const { data, error } = await getLiveClient().from("pilot_requests").select(fields).order("created_at", { ascending: false }).limit(100);
   if (error) throw new Error(liveErrorMessage(error));

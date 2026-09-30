@@ -128,6 +128,7 @@ function LiveDetailSession({ id }: { id: string }) {
           <Text style={styles.label}>{request.status === "answered" ? "ANSWERED" : request.status === "cancelled" ? "CANCELLED" : expired ? "CLOSED" : request.status === "claimed" ? "SOMEONE’S CHECKING" : "OPEN"}</Text>
           {request.landmark ? <Text style={styles.body}>Near {request.landmark}</Text> : null}
           <Text style={styles.meta}>Asked {timeAgo(request.created_at)}{!expired && (request.status === "open" || request.status === "claimed") ? ` · ${timeLeft(request)}` : ""}</Text>
+          {!expired && (request.status === "open" || request.status === "claimed") ? <Text style={styles.body}>{request.question_kind === "queue" ? "Someone nearby estimates the wait, or says they couldn’t tell." : "Someone nearby answers Yes, No, or Couldn’t tell."} Answers are self-reported and show how long ago they were seen.</Text> : null}
         </View>
         {request.status === "answered" && <View style={styles.card}>
           <Text style={styles.label}>SELF-REPORTED ANSWER</Text>
@@ -185,7 +186,7 @@ function Choice({ label, selected, onPress }: { label: string; selected: boolean
 const detailStyles = (theme: AppTheme) => StyleSheet.create({
   title: { fontFamily: font.ui700, fontSize: 30, lineHeight: 37, color: theme.ink, marginBottom: 10 },
   question: { ...type.heading, color: theme.ink, marginBottom: 16 },
-  map: { height: 170, overflow: "hidden", borderRadius: 16, backgroundColor: theme.surfaceAlt, marginBottom: 12 },
+  map: { height: 130, overflow: "hidden", borderRadius: 16, backgroundColor: theme.surfaceAlt, marginBottom: 12 },
   body: { ...type.body, color: theme.inkSoft, marginBottom: 8 },
   label: { ...type.micro, color: theme.fresh },
   meta: { ...type.label, color: theme.inkSoft },

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { useRouter } from "expo-router";
+import { useIsFocused, useRouter } from "expo-router";
 import {
   AppScreen,
   MissingDataState,
@@ -15,6 +15,7 @@ import { money } from "@/lib/pricing";
 
 export default function StatusScreen() {
   const router = useRouter();
+  const isFocused = useIsFocused();
   const query = useYonderStore((s) =>
     s.queries.find((q) => q.id === s.activeQueryId),
   );
@@ -27,9 +28,10 @@ export default function StatusScreen() {
     return () => clearInterval(timer);
   }, []);
   useEffect(() => {
-    if (query?.state === "ANSWERED" && query.answerId)
+    // Only while on screen: a Scout demo finishing underneath does its own navigation.
+    if (isFocused && query?.state === "ANSWERED" && query.answerId)
       router.replace(`/ask/answer/${query.answerId}`);
-  }, [query?.state, query?.answerId, router]);
+  }, [isFocused, query?.state, query?.answerId, router]);
   if (!query || !place)
     return <MissingDataState title="No request is waiting here." />;
   const cancelled = ["REFUNDED", "BLOCKED"].includes(query.state);

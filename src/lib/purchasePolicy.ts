@@ -25,7 +25,9 @@ type IntroPrice = { price: number; periodNumberOfUnits: number; periodUnit: stri
 /** "1 week free", "3 days free", or null when the product has no free trial. */
 export function freeTrialLabel(intro: IntroPrice) {
   if (!intro || intro.price !== 0 || intro.periodNumberOfUnits < 1) return null;
-  const unit = intro.periodUnit.toLowerCase();
-  const n = intro.periodNumberOfUnits;
+  let unit = intro.periodUnit.toLowerCase();
+  let n = intro.periodNumberOfUnits;
+  // Stores often express a week-long trial as 7 days.
+  if (unit === "day" && n % 7 === 0) { unit = "week"; n /= 7; }
   return `${n} ${unit}${n === 1 ? "" : "s"} free`;
 }

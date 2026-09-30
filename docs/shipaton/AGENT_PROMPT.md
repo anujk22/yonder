@@ -58,8 +58,7 @@ You are operating a Mac to record a demo of an iPhone app called Yonder. The iPh
 | 0:32 | "Try the example observer journey" | "WHAT TO LOOK FOR" | to 0:42 |
 | 0:42 | "Explore an example" | "Let's take a look." | to 0:43.5 |
 | 0:43.5 | "Open demo camera" | "PRACTICE OBSERVATION" | to 0:45.5 |
-| 0:45.5 | the large capture button at the bottom | "PREPARING AN EXAMPLE ANSWER", about 4 s | until the next screen |
-| ~0:50 | only if "A little help. A better day." shows: "See the example answer" | "One court is available." | to 0:52 |
+| 0:45.5 | the large capture button at the bottom | "PREPARING AN EXAMPLE ANSWER" (about 1.6 s), then the answer opens by itself by about 0:49: "One court is available.", "Example answer · not live" | to 0:52 |
 | 0:52 | "Explore" (bottom bar) | map | to 0:53 (short ok) |
 | 0:53 | only if visible: "Take the NYC sample tour" | tour card | to 0:54 (short ok) |
 | 0:54 | "All 12 places" | "THE NYC SAMPLE TOUR" | to 0:55 (short ok) |
@@ -67,9 +66,8 @@ You are operating a Mac to record a demo of an iPhone app called Yonder. The iPh
 | 1:01 | "Ask for a live check" | "WHAT SHOULD SOMEONE CHECK?" | to 1:02.5 |
 | 1:02.5 | "Is the step-free entrance or elevator working?" | option highlighted | to 1:04 |
 | 1:04 | "15 min" | highlighted | to 1:07 |
-| 1:07 | "Send check" (arm by scrolling down) | the check screen for 14 St - Union Sq Station | to 1:17 |
-| 1:17 | "Explore" (bottom bar) | map | to 1:18 |
-| 1:18 | the gear icon, top right | "Settings" | to 1:21 |
+| 1:07 | "Send check" (arm by scrolling down) | the check screen for 14 St - Union Sq Station | to 1:18 |
+| 1:18 | the gear icon, top right of the check screen (Explore has no gear) | "Settings" | to 1:21 |
 | 1:21 | "Explore Yonder Plus" | plans with "1 week free" | to 1:28 |
 | 1:28 | "Start 1 week free" | purchase sheet | to 1:29.5 |
 | 1:29.5 | the sheet's purchase or confirm button | "Welcome to Plus." | to 1:34 |

@@ -42,20 +42,10 @@ export default function SettingsScreen() {
     <ScreenHeader eyebrow="SETTINGS" />
     <Text accessibilityRole="header" style={styles.title}>Your Yonder</Text>
 
-    {liveConfigured && (ready && !user ? <View style={{ marginTop: 16 }}><LiveSignIn /></View> : <View style={styles.section}>
-      <Text style={styles.label}>ACCOUNT</Text>
-      {!ready || !user ? <Text style={styles.body}>Checking account…</Text> : <>
-        <Text style={styles.value}>{user.email ?? "Community member"}</Text>
-        <Text style={styles.body}>Your email is never shown to other members.</Text>
-        <PrimaryButton label="Sign out" variant="secondary" disabled={busy} onPress={() => void run(async () => { await signOutLive(); })} />
-        {confirmDelete ? <View style={styles.confirm}>
-          <Text style={styles.value}>Delete your account?</Text>
-          <Text style={styles.body}>This removes your account and all of its checks. It cannot be undone. An active Plus subscription is managed separately by your store account.</Text>
-          <PrimaryButton label="Delete my account" variant="danger" disabled={busy} onPress={() => void run(async () => { await deleteLiveAccount(); setConfirmDelete(false); return "Your account was deleted."; })} />
-          <PrimaryButton label="Keep my account" variant="secondary" onPress={() => setConfirmDelete(false)} />
-        </View> : <Pressable accessibilityRole="button" onPress={() => setConfirmDelete(true)} style={styles.row}><Text style={styles.danger}>Delete account</Text></Pressable>}
-      </>}
-    </View>)}
+    <View style={styles.section}>
+      <Text style={styles.label}>HOW PAYMENTS WORK</Text>
+      <Text style={styles.body}>Askers post a bounty of $2 or more and are billed only if someone answers. Scouts who answer are paid out. Payments are a demo in this build.</Text>
+    </View>
 
     <View style={styles.section}>
       <Text style={styles.label}>YONDER PLUS</Text>
@@ -70,6 +60,21 @@ export default function SettingsScreen() {
       {purchasesAvailable && plus && <Pressable accessibilityRole="button" onPress={() => void run(async () => { await manageSubscription(); })} style={styles.row}><Text style={styles.link}>Manage subscription</Text></Pressable>}
       {Boolean(purchaseError) && <Text style={styles.error}>{purchaseError}</Text>}
     </View>
+
+    {liveConfigured && (ready && !user ? <View style={{ marginTop: 16 }}><LiveSignIn /></View> : <View style={styles.section}>
+      <Text style={styles.label}>ACCOUNT</Text>
+      {!ready || !user ? <Text style={styles.body}>Checking account…</Text> : <>
+        <Text style={styles.value}>{user.email ?? "Community member"}</Text>
+        <Text style={styles.body}>Your email is never shown to other members.</Text>
+        <PrimaryButton label="Sign out" variant="secondary" disabled={busy} onPress={() => void run(async () => { await signOutLive(); })} />
+        {confirmDelete ? <View style={styles.confirm}>
+          <Text style={styles.value}>Delete your account?</Text>
+          <Text style={styles.body}>This removes your account and all of its checks. It cannot be undone. An active Plus subscription is managed separately by your store account.</Text>
+          <PrimaryButton label="Delete my account" variant="danger" disabled={busy} onPress={() => void run(async () => { await deleteLiveAccount(); setConfirmDelete(false); return "Your account was deleted."; })} />
+          <PrimaryButton label="Keep my account" variant="secondary" onPress={() => setConfirmDelete(false)} />
+        </View> : <Pressable accessibilityRole="button" onPress={() => setConfirmDelete(true)} style={styles.row}><Text style={styles.danger}>Delete account</Text></Pressable>}
+      </>}
+    </View>)}
 
     <View style={styles.section}>
       <Text style={styles.label}>HELP</Text>

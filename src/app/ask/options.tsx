@@ -3,7 +3,7 @@ import { Modal, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { AnswerTierCard } from "@/components/AnswerTierCard";
 import { AppScreen, MissingDataState, PrimaryButton, ScreenHeader } from "@/components/ui";
-import { answerTier, money, RECENT_ANSWER_CENTS } from "@/lib/pricing";
+import { answerTier, MIN_BOUNTY_CENTS, money, RECENT_ANSWER_CENTS } from "@/lib/pricing";
 import { sameQuestion } from "@/lib/queryMatching";
 import { useYonderStore } from "@/lib/store";
 import { ask, font, type } from "@/lib/theme";
@@ -47,8 +47,7 @@ export default function OptionsScreen() {
       </Text>
       <Text style={styles.question}>{query.question}</Text>
       <Text style={styles.body}>
-        Post a demo bounty or read an older sample answer for free. Example
-        answers do not describe current conditions.
+        Example answers do not describe current conditions.
       </Text>
       <View style={styles.cards}>
         <AnswerTierCard
@@ -56,7 +55,7 @@ export default function OptionsScreen() {
           testID="options-dispatch"
           headline="Post a bounty"
           priceCents={query.bountyCents}
-          subtitle={`Scout gets ${money(query.observerRewardCents)} · ${query.deadlineMinutes}-minute deadline · demo, no card charged`}
+          subtitle={`${money(MIN_BOUNTY_CENTS)} minimum · billed only if answered · Scout gets ${money(query.observerRewardCents)} · demo, no card charged`}
           onPress={() => setPaying(true)}
         />
         {recent && (
@@ -133,13 +132,13 @@ export default function OptionsScreen() {
 const styles = StyleSheet.create({
   title: {
     fontFamily: font.ui700,
-    fontSize: 32,
-    lineHeight: 38,
+    fontSize: 27,
+    lineHeight: 33,
     color: ask.ink,
-    letterSpacing: -2,
-    marginTop: 12,
+    letterSpacing: -1.5,
+    marginTop: 6,
   },
-  question: { ...type.body, color: ask.ink, fontSize: 19, marginTop: 20 },
+  question: { ...type.body, color: ask.ink, fontSize: 19, marginTop: 10 },
   body: {
     ...type.body,
     color: ask.inkSoft,
@@ -147,7 +146,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     marginTop: 10,
   },
-  cards: { gap: 14, marginTop: 24 },
+  cards: { gap: 10, marginTop: 14 },
   scrim: { flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.35)" },
   sheet: { backgroundColor: ask.bg, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40, gap: 12 },
   sheetTitle: { fontFamily: font.ui700, fontSize: 24, color: ask.ink, letterSpacing: -1, marginBottom: 4 },

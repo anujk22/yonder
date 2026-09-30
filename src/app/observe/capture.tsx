@@ -183,7 +183,7 @@ export default function CaptureScreen() {
       {demoCapture ? (
         <View style={[styles.demoFeedBackdrop, { backgroundColor: '#000000' }]}>
           {courtSample ? (
-            <Image source={PIER_TWO_PROOF} accessibilityLabel="Illustrative basketball artwork, not a place photo" resizeMode="contain" style={styles.demoFeedImage} />
+            <Image source={PIER_TWO_PROOF} accessibilityLabel="Example scene of basketball courts, not a live photo" resizeMode="cover" style={styles.demoFeedImage} />
           ) : (
             <View style={styles.demoPreview}>
               <Scout size={120} />
@@ -242,6 +242,11 @@ export default function CaptureScreen() {
         </View>
 
         <View style={styles.captureArea}>
+          {demoCapture ? (
+            <Text style={[type.label, styles.liveOnlyNote, { color: '#FFFFFF', backgroundColor: 'rgba(0, 0, 0, 0.72)' }]}>
+              On a real check, photos are taken live in the app. No camera-roll uploads.
+            </Text>
+          ) : null}
           {capturing ? (
             <Animated.View style={[styles.capturingBanner, { backgroundColor: 'rgba(0, 0, 0, 0.88)', borderColor: 'rgba(255, 255, 255, 0.14)', borderWidth: 1 }]}>
               <Scout size={24} />
@@ -265,7 +270,7 @@ export default function CaptureScreen() {
                       ) : (
                         <Image
                           source={courtSample ? PIER_TWO_PROOF : { uri: frames[index] }}
-                          resizeMode="contain"
+                          resizeMode="cover"
                           style={styles.frameImage}
                         />
                       )}
@@ -332,6 +337,7 @@ const styles = StyleSheet.create({
   captureArea: { alignItems: 'center', gap: space.sm },
   capturingBanner: { minHeight: 42, borderRadius: radii.pill, paddingHorizontal: 15, flexDirection: 'row', alignItems: 'center', gap: space.xs },
   capturingText: { fontSize: 12, lineHeight: 17 },
+  liveOnlyNote: { fontSize: 12, lineHeight: 17, textAlign: 'center', borderRadius: radii.small, paddingHorizontal: 12, paddingVertical: 7, overflow: 'hidden' },
   captureError: { textAlign: 'center' },
   filmstrip: { width: '100%', borderWidth: 1, borderRadius: radii.small, padding: space.xs, flexDirection: 'row', gap: space.xs },
   frameSlot: { flex: 1, aspectRatio: PIER_TWO_PROOF_ASPECT_RATIO },

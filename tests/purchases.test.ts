@@ -29,6 +29,8 @@ test("purchase cancellation is distinguished from payment failures", () => {
 test("free trials are described only when the introductory price is free", () => {
   assert.equal(freeTrialLabel({ price: 0, periodNumberOfUnits: 1, periodUnit: "WEEK" }), "1 week free");
   assert.equal(freeTrialLabel({ price: 0, periodNumberOfUnits: 3, periodUnit: "DAY" }), "3 days free");
+  assert.equal(freeTrialLabel({ price: 0, periodNumberOfUnits: 7, periodUnit: "DAY" }), "1 week free");
+  assert.equal(freeTrialLabel({ price: 0, periodNumberOfUnits: 14, periodUnit: "DAY" }), "2 weeks free");
   assert.equal(freeTrialLabel({ price: 0.99, periodNumberOfUnits: 1, periodUnit: "MONTH" }), null);
   assert.equal(freeTrialLabel(null), null);
 });

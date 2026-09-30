@@ -177,18 +177,18 @@ function RecentFreshness({
 
 const styles = StyleSheet.create({
   card: {
-    minHeight: 116,
+    minHeight: 92,
     borderRadius: 14,
     borderWidth: 1,
     paddingHorizontal: 20,
-    paddingVertical: 17,
+    paddingVertical: 13,
   },
   dispatchCard: {
-    minHeight: 174,
+    minHeight: 112,
     borderRadius: 16,
     borderWidth: 2,
     paddingHorizontal: 22,
-    paddingVertical: 20,
+    paddingVertical: 16,
   },
   dispatchShadow: {
     shadowOpacity: 0.12,

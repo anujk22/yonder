@@ -11,6 +11,7 @@ import { freeTrialLabel, purchaseWasCancelled } from "@/lib/purchasePolicy";
 import { usePurchaseStore } from "@/lib/purchaseStore";
 import { useLiveAuth } from "@/lib/liveAuth";
 import { LIVE_FEATURES_ENABLED } from "@/lib/previewFeatures";
+import { getServerPlus } from "@/lib/liveApi";
 
 const perks = [
   ["Longer check windows", "Keep a question open for 1 or 2 hours, not just 30 minutes."],
@@ -30,6 +31,21 @@ export default function PlusScreen() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [attempt, setAttempt] = useState(0);
+  const [awaitServer, setAwaitServer] = useState(false);
+  const [serverPlus, setServerPlus] = useState(false);
+
+  // After a purchase, wait for the webhook to record Plus on the server before saying so.
+  useEffect(() => {
+    if (!awaitServer) return;
+    let active = true;
+    let tries = 0;
+    const check = () => getServerPlus().then((granted) => {
+      if (!active) return;
+      if (granted) { setServerPlus(true); setAwaitServer(false); } else if (++tries < 15) timer = setTimeout(check, 1000);
+    }, () => { if (active && ++tries < 15) timer = setTimeout(check, 1000); });
+    let timer = setTimeout(check, 0);
+    return () => { active = false; clearTimeout(timer); };
+  }, [awaitServer]);
 
   useEffect(() => {
     if (!purchasesAvailable) return;
@@ -55,6 +71,7 @@ export default function PlusScreen() {
     try {
       const info = restore ? await restorePurchase() : await buyPackage(option!);
       usePurchaseStore.getState().accept(info);
+      if (hasPlus(info) && LIVE_FEATURES_ENABLED && signedIn) setAwaitServer(true);
       setMessage(hasPlus(info) ? (restore ? "Plus restored." : "Welcome to Plus.")
         : restore ? "No Plus subscription was found for this store account." : "Your purchase hasn’t unlocked Plus yet. If payment is pending, check again later or restore purchases.");
     } catch (error) {
@@ -96,7 +113,7 @@ export default function PlusScreen() {
       })}
     </View>}
     {LIVE_FEATURES_ENABLED && !signedIn && <Text style={styles.small}>Sign in from Settings so Plus also applies to your community checks.</Text>}
-    {Boolean(message) && <Text accessibilityRole="alert" style={styles.notice}>{message}</Text>}
+    {Boolean(message) && <Text accessibilityRole="alert" style={styles.notice}>{message}{serverPlus ? "\nPlus confirmed on Yonder’s server." : ""}</Text>}
     <View style={styles.actions}>
       {plus ? <>
         <PrimaryButton label="Organize my places" onPress={() => router.replace("/collections")} />

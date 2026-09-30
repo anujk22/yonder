@@ -42,8 +42,10 @@ export default function VerifyingScreen() {
     const finish = setTimeout(() => {
       if (completed.current) return;
       completed.current = true;
+      // A request the user posted themselves goes straight to their answer; sample board tasks show the Scout's side.
+      const askerPosted = useYonderStore.getState().queries.find((q) => q.id === activeTaskId)?.isNew;
       const id = complete();
-      router.replace(id ? "/observe/earned" : "/observe");
+      router.replace(id ? (askerPosted ? `/ask/answer/${id}` : "/observe/earned") : "/observe");
     }, TIMING.verifyTotalMs);
     return () => {
       timers.forEach(clearTimeout);

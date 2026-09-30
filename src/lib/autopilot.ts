@@ -27,7 +27,7 @@ const DURATION = {
   approachMs: 3700,
   reticleMs: 2200,
   filmstripMs: 800,
-  verifyingAndEarnedMs: 6200,
+  verifyingAndEarnedMs: 3800,
   earnedMs: 2400,
   answerMs: 7200,
   tierOptionsMs: 3000,
