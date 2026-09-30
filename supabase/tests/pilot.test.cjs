@@ -36,7 +36,12 @@ async function main() {
       grant usage on schema public, auth to anon, authenticated, service_role;
       grant execute on function auth.uid() to anon, authenticated, service_role;
     `);
+    const existingVerified = '00000000-0000-4000-8000-000000000009';
+    const existingUnconfirmed = '00000000-0000-4000-8000-000000000010';
+    await query('insert into auth.users(id,email_confirmed_at) values($1,now()),($2,null)', [existingVerified, existingUnconfirmed]);
     for (const migration of migrations) await db.exec(migration);
+    check((await query('select active from public.pilot_members where user_id=$1', [existingVerified])).rows[0].active, true);
+    check((await query('select * from public.pilot_members where user_id=$1', [existingUnconfirmed])).rows.length, 0);
     await query('insert into auth.users(id) select unnest($1::uuid[])', [users]);
     await query('insert into public.pilot_members(user_id) select unnest($1::uuid[])', [users.slice(0, 5)]);
 
@@ -156,9 +161,12 @@ async function main() {
     await as('authenticated', users[5]);
     await rejects(() => query('select public.pilot_block_user($1)', [users[0]]), 'nonmember cannot block');
     await as('authenticated', users[4]);
-    for (const [name, landmark] of [['Watch him', 'Entrance'], ['Cafe', 'private apartment'], ['Fucking cafe', 'Entrance']]) {
+    for (const [name, landmark] of [['Watch him', 'Entrance'], ['Cafe', 'private apartment'], ['Fucking cafe', 'Entrance'], ['Watch', 'him']]) {
       await rejects(() => query('select public.pilot_create_request($1,40,-73,$2,$3,10)', [name, landmark, 'open_now']), 'unsafe request text');
     }
+    const longest = (await query('select public.pilot_create_request($1,40,-73,$2,$3,10) as id', ['A'.repeat(120), 'B'.repeat(180), 'open_now'])).rows[0].id;
+    await query('select public.pilot_cancel_request($1)', [longest]);
+    check(Boolean(longest), true);
     const moderation = await create('Moderated cafe');
     await as('authenticated', users[0]);
     await query('select public.pilot_claim_request($1)', [moderation]);
@@ -200,6 +208,13 @@ async function main() {
     await query('insert into auth.users(id,email_confirmed_at,is_anonymous) values($1,now(),true)', [anonymous]);
     check((await query('select active from public.pilot_members where user_id=$1', [verified])).rows[0].active, true);
     check((await query('select * from public.pilot_members where user_id=$1', [anonymous])).rows.length, 0);
+    await as('authenticated', anonymous);
+    check((await query('select * from public.pilot_requests')).rows.length, 0);
+    await rejects(() => create('Anonymous cafe'), 'anonymous cannot create');
+    await rejects(() => query('select public.pilot_claim_request($1)', [quarantined]), 'anonymous cannot claim');
+    await query('select public.pilot_delete_account()');
+    await query('reset role');
+    check((await query('select * from auth.users where id=$1', [anonymous])).rows.length, 0);
     await query('update auth.users set email_confirmed_at=now() where id=$1', [users[5]]);
     await as('authenticated', users[5]);
     const enrolled = await create('Verified cafe');
