@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { AppScreen, PrimaryButton, ScreenHeader } from "@/components/ui";
 import { PlaceTile } from "@/components/PlaceTile";
 import { useCollectionHydration, useCollectionStore } from "@/lib/collectionStore";
+import { usePurchaseStore } from "@/lib/purchaseStore";
 import { useYonderStore } from "@/lib/store";
 import { ask, font, type } from "@/lib/theme";
 
@@ -11,6 +12,9 @@ export default function CollectionsScreen() {
   const router = useRouter();
   const collections = useCollectionStore((s) => s.collections);
   const hydration = useCollectionHydration((s) => s.status);
+  const plus = usePurchaseStore((s) => s.plus);
+  const ready = usePurchaseStore((s) => s.ready);
+  const purchaseError = usePurchaseStore((s) => s.error);
   const saved = useYonderStore((s) => s.savedPlaceIds);
   const places = useYonderStore((s) => s.places);
   const [selected, setSelected] = useState<string | null>(null);
@@ -28,7 +32,7 @@ export default function CollectionsScreen() {
   return <AppScreen>
     <ScreenHeader eyebrow="YOUR SAVED PLACES" />
     <Text accessibilityRole="header" style={styles.title}>Little lists.{"\n"}Good places.</Text>
-    <Text style={styles.body}>Make as many as you like. Everything stays on this device.</Text>
+    <Text style={styles.body}>One collection is free. Make more with Plus. Everything stays on this device.</Text>
     {hydration !== "ready" ? <View style={styles.section}>
       <Text style={styles.body}>{hydration === "loading" ? "Loading your collections…" : "We couldn’t load your collections. Try again before making changes to your lists."}</Text>
       {hydration === "error" && <PrimaryButton label="Try loading again" onPress={() => {
@@ -59,12 +63,17 @@ export default function CollectionsScreen() {
         <PrimaryButton label="Keep collection" variant="secondary" onPress={() => setDeleting(false)} />
       </View> : <Pressable accessibilityRole="button" onPress={() => setDeleting(true)} style={styles.link}><Text style={styles.linkText}>Remove collection</Text></Pressable>}
     </View>}
-    <View style={styles.section}>
+    {Boolean(purchaseError) && <Text accessibilityRole="alert" style={styles.error}>{purchaseError}</Text>}
+    {collections.length === 0 || plus ? <View style={styles.section}>
       <Text style={styles.heading}>{collections.length ? "Another little list?" : "Make your first collection"}</Text>
       <TextInput accessibilityLabel="Collection name" placeholder="Weekend plans" placeholderTextColor={ask.inkFaint} value={name} maxLength={48} onChangeText={(value) => { setName(value); setError(""); }} style={styles.input} onSubmitEditing={create} />
       {Boolean(error) && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}
       <PrimaryButton label="Create collection" onPress={create} disabled={!name.trim()} />
-    </View>
+    </View> : <View style={styles.section}>
+      <Text style={styles.heading}>A place for every plan.</Text>
+      <Text style={styles.body}>Plus adds unlimited collections, longer check windows and more open checks. Your existing collections stay readable if Plus ends.</Text>
+      <PrimaryButton label={ready ? "Explore Yonder Plus" : "Checking Plus…"} disabled={!ready} onPress={() => router.push("/plus")} />
+    </View>}
     </>}
     <PrimaryButton label="Find more places" variant="secondary" onPress={() => router.navigate("/")} />
   </AppScreen>;

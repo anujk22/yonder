@@ -1,21 +1,21 @@
 import { useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { PrimaryButton } from "./ui";
-import { createLiveAccount, sendSignInCode, signInLive, verifySignInCode } from "@/lib/liveAuth";
+import { Scout } from "./Brand";
+import { sendSignInCode, signInLive, verifySignInCode } from "@/lib/liveAuth";
 import { useActiveTheme } from "@/lib/store";
-import { type } from "@/lib/theme";
+import { font, type } from "@/lib/theme";
 
-type AuthMode = "sign-in" | "create" | "code";
+type Step = "email" | "code" | "password";
 
+/** Email first, then a six-digit code. New emails get an account; passwords remain for existing accounts. */
 export function LiveSignIn() {
   const theme = useActiveTheme();
   const styles = authStyles(theme);
-  const [mode, setMode] = useState<AuthMode>("sign-in");
+  const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmation, setConfirmation] = useState("");
   const [code, setCode] = useState("");
-  const [codeSent, setCodeSent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -25,67 +25,57 @@ export function LiveSignIn() {
     return () => { mounted.current = false; };
   }, []);
 
-  const changeMode = (next: AuthMode) => {
-    setMode(next);
+  const go = (next: Step) => {
+    setStep(next);
     setPassword("");
-    setConfirmation("");
     setCode("");
-    setCodeSent(false);
     setError("");
     setNotice("");
   };
-  const submit = async (resend = false) => {
+  const run = async (action: () => Promise<void>) => {
     if (busy) return;
     setBusy(true);
     setError("");
     setNotice("");
-    try {
-      if (mode === "create") {
-        const needsConfirmation = await createLiveAccount(email, password, confirmation);
-        if (mounted.current && needsConfirmation) {
-          changeMode("sign-in");
-          setNotice("Check your email for a confirmation link, then return here to sign in. If you already have an account, sign in with your password.");
-        }
-      } else if (mode === "sign-in") {
-        await signInLive(email, password);
-      } else if (codeSent && !resend) {
-        await verifySignInCode(email, code);
-      } else {
-        await sendSignInCode(email);
-        if (mounted.current) {
-          setCodeSent(true);
-          setNotice("Check your email for the latest sign-in code. If no message arrives, check spam or sign in with your password.");
-        }
-      }
-    } catch (cause) {
-      if (mounted.current) setError(cause instanceof Error ? cause.message : "Couldn’t sign in. Please try again.");
-    } finally {
-      if (mounted.current) setBusy(false);
-    }
+    try { await action(); }
+    catch (cause) { if (mounted.current) setError(cause instanceof Error ? cause.message : "Couldn’t sign in. Please try again."); }
+    finally { if (mounted.current) setBusy(false); }
   };
+  const sendCode = () => run(async () => {
+    await sendSignInCode(email);
+    if (!mounted.current) return;
+    setStep("code");
+    setCode("");
+    setNotice(`We sent a 6-digit code to ${email.trim().toLowerCase()}. It can take a minute; check spam if it doesn’t arrive.`);
+  });
 
   return <View style={styles.card}>
-    <Text style={styles.title}>{mode === "create" ? "Create your account" : "Sign in to community checks"}</Text>
-    <Text style={styles.body}>{mode === "create" ? "Use your email and a password with at least 8 characters. Confirm your email to join." : "A free account lets you request and answer real checks. Your email is not shown to other members."}</Text>
-    <TextInput accessibilityLabel="Email address" autoCapitalize="none" autoComplete="email" keyboardType="email-address" value={email} onChangeText={setEmail} editable={!busy && !codeSent} placeholder="you@example.com" placeholderTextColor={theme.inkFaint} style={styles.input} />
-    {mode !== "code" && <TextInput accessibilityLabel="Password" autoCapitalize="none" autoComplete={mode === "create" ? "new-password" : "current-password"} secureTextEntry value={password} onChangeText={setPassword} editable={!busy} placeholder="Password" placeholderTextColor={theme.inkFaint} style={styles.input} />}
-    {mode === "create" && <TextInput accessibilityLabel="Confirm password" autoCapitalize="none" autoComplete="new-password" secureTextEntry value={confirmation} onChangeText={setConfirmation} editable={!busy} placeholder="Confirm password" placeholderTextColor={theme.inkFaint} style={styles.input} />}
-    {mode === "code" && codeSent && <TextInput accessibilityLabel="One-time email code" autoComplete="one-time-code" keyboardType="number-pad" value={code} onChangeText={setCode} maxLength={10} editable={!busy} placeholder="Email code" placeholderTextColor={theme.inkFaint} style={styles.input} />}
-    {!!error && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}
+    <View style={styles.brand}><Scout size={30} /><Text style={styles.title}>{step === "code" ? "Check your email" : step === "password" ? "Sign in with password" : "Sign in or join"}</Text></View>
+    {step === "email" && <Text style={styles.body}>Enter your email. We’ll send a code, no password needed. New here? This creates your free account.</Text>}
+    {step !== "code" && <TextInput accessibilityLabel="Email address" autoCapitalize="none" autoComplete="email" textContentType="emailAddress" keyboardType="email-address" returnKeyType="go" value={email} onChangeText={setEmail} onSubmitEditing={() => void (step === "email" ? sendCode() : undefined)} editable={!busy} placeholder="you@example.com" placeholderTextColor={theme.inkFaint} style={styles.input} />}
+    {step === "password" && <TextInput accessibilityLabel="Password" autoCapitalize="none" autoComplete="current-password" textContentType="password" secureTextEntry value={password} onChangeText={setPassword} onSubmitEditing={() => void run(() => signInLive(email, password))} editable={!busy} placeholder="Password" placeholderTextColor={theme.inkFaint} style={styles.input} />}
+    {step === "code" && <TextInput accessibilityLabel="Six-digit code from your email" autoComplete="one-time-code" textContentType="oneTimeCode" keyboardType="number-pad" autoFocus value={code} onChangeText={(value) => setCode(value.replace(/\D/g, "").slice(0, 10))} onSubmitEditing={() => void run(() => verifySignInCode(email, code))} editable={!busy} placeholder="••••••" placeholderTextColor={theme.inkFaint} style={[styles.input, styles.code]} />}
     {!!notice && <Text accessibilityRole="alert" style={styles.body}>{notice}</Text>}
-    <PrimaryButton label={busy ? "Please wait…" : mode === "create" ? "Create account" : mode === "sign-in" ? "Sign in" : codeSent ? "Verify code" : "Send sign-in code"} onPress={() => void submit()} disabled={busy} />
-    {mode === "code" && codeSent && <Pressable accessibilityRole="button" onPress={() => void submit(true)} disabled={busy}><Text style={styles.link}>Resend code</Text></Pressable>}
-    {mode === "code" && codeSent && <Pressable accessibilityRole="button" onPress={() => changeMode("code")} disabled={busy}><Text style={styles.link}>Use another email</Text></Pressable>}
-    <Pressable accessibilityRole="button" onPress={() => changeMode(mode === "create" ? "sign-in" : "create")} disabled={busy}><Text style={styles.link}>{mode === "create" ? "Already have an account? Sign in" : "Create a free account"}</Text></Pressable>
-    <Pressable accessibilityRole="button" onPress={() => changeMode(mode === "code" ? "sign-in" : "code")} disabled={busy}><Text style={styles.link}>{mode === "code" ? "Sign in with a password" : "Sign in with an email code instead"}</Text></Pressable>
+    {!!error && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}
+    {step === "email" && <PrimaryButton label={busy ? "Sending…" : "Email me a code"} onPress={() => void sendCode()} disabled={busy || !email.trim()} />}
+    {step === "code" && <PrimaryButton label={busy ? "Checking…" : "Continue"} onPress={() => void run(() => verifySignInCode(email, code))} disabled={busy || code.length < 6} />}
+    {step === "password" && <PrimaryButton label={busy ? "Signing in…" : "Sign in"} onPress={() => void run(() => signInLive(email, password))} disabled={busy} />}
+    <View style={styles.links}>
+      {step === "code" && <Pressable accessibilityRole="button" onPress={() => void sendCode()} disabled={busy}><Text style={styles.link}>Send a new code</Text></Pressable>}
+      {step !== "email" && <Pressable accessibilityRole="button" onPress={() => go("email")} disabled={busy}><Text style={styles.link}>{step === "code" ? "Use a different email" : "Use an email code instead"}</Text></Pressable>}
+      {step === "email" && <Pressable accessibilityRole="button" onPress={() => go("password")} disabled={busy}><Text style={styles.link}>I have a password</Text></Pressable>}
+    </View>
   </View>;
 }
 
 const authStyles = (theme: ReturnType<typeof useActiveTheme>) => StyleSheet.create({
-  card: { backgroundColor: theme.surface, borderColor: theme.border, borderWidth: 1, borderRadius: 18, padding: 20, gap: 10, marginVertical: 12 },
+  card: { backgroundColor: theme.surface, borderColor: theme.border, borderWidth: 1, borderRadius: 20, padding: 20, gap: 12, marginVertical: 12 },
+  brand: { flexDirection: "row", alignItems: "center", gap: 10 },
   title: { ...type.heading, color: theme.ink },
-  body: { ...type.body, color: theme.inkSoft, marginBottom: 12 },
-  input: { ...type.body, color: theme.ink, borderColor: theme.border, borderWidth: 1, borderRadius: 12, padding: 14, minHeight: 52 },
-  link: { ...type.label, color: theme.fresh, paddingVertical: 10 },
+  body: { ...type.label, color: theme.inkSoft, lineHeight: 19 },
+  input: { ...type.body, color: theme.ink, backgroundColor: theme.bg, borderColor: theme.border, borderWidth: 1, borderRadius: 14, padding: 14, minHeight: 52 },
+  code: { fontFamily: font.mono500, fontSize: 28, letterSpacing: 10, textAlign: "center" },
+  links: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", gap: 8 },
+  link: { ...type.label, color: theme.fresh, paddingVertical: 8 },
   error: { ...type.body, color: theme.danger },
 });

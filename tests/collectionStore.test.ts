@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 test("collection writes wait for storage and a failed read never replaces saved lists", async () => {
   const asyncPath = require.resolve("@react-native-async-storage/async-storage");
+  const purchasePath = require.resolve("../src/lib/purchaseStore");
   let resolveFirstRead!: (value: string) => void;
   let reads = 0;
   let writes = 0;
@@ -18,6 +19,7 @@ test("collection writes wait for storage and a failed read never replaces saved 
     removeItem: () => Promise.resolve(),
   };
   require.cache[asyncPath] = { exports: storage } as NodeModule;
+  require.cache[purchasePath] = { exports: { usePurchaseStore: { getState: () => ({ plus: true }) } } } as NodeModule;
   const { useCollectionHydration, useCollectionStore } = require("../src/lib/collectionStore") as typeof import("../src/lib/collectionStore");
 
   assert.equal(useCollectionHydration.getState().status, "loading");

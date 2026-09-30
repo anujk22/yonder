@@ -31,3 +31,20 @@ export function useLiveLocation() {
   }, [stop]);
   return { fix, error, loading, active, start, stop };
 }
+
+/** The device's last known position, only if location access was already granted. Never prompts. */
+export function useKnownPosition() {
+  const [position, setPosition] = useState<{ latitude: number; longitude: number } | null>(null);
+  useFocusEffect(useCallback(() => {
+    let active = true;
+    void (async () => {
+      try {
+        if (!(await Location.getForegroundPermissionsAsync()).granted) return;
+        const last = await Location.getLastKnownPositionAsync({ maxAge: 10 * 60_000 });
+        if (active && last) setPosition({ latitude: last.coords.latitude, longitude: last.coords.longitude });
+      } catch {}
+    })();
+    return () => { active = false; };
+  }, []));
+  return position;
+}

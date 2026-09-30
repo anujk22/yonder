@@ -1,47 +1,67 @@
-# RevenueCat: the latest-answer purchase
+# RevenueCat: Yonder Plus subscription
 
-Yonder's RevenueCat purchase is a **consumable** that unlocks the most recent answer to a question (answers from the last 24 hours; older ones are free). Collections are free and no longer use RevenueCat. Bounties and Scout payouts are simulated and do not go through RevenueCat; see [pricing and payments](../PAYMENTS.md).
+Asking and answering checks are free. **Yonder Plus** is a monthly or yearly subscription on the `yonder_plus` entitlement. It adds:
 
-On September 29, 2026, project **Yonder** (`4850e856`) was configured for the earlier Yonder Plus model (entitlement `yonder_plus`, non-consumable `yonder_plus_lifetime`). That setup is now unused by the app and must be updated as below.
+- 1 and 2 hour check windows (free: up to 30 minutes)
+- up to 10 open checks at once (free: 3)
+- unlimited collections (free: 1)
+
+The first two are enforced by the database (`has_plus()` in `supabase/migrations/20261001000000_accessibility_and_plus.sql`). The client only shows the options. The server learns about Plus from a RevenueCat webhook, so a modified app can't grant itself Plus.
 
 ## Dashboard configuration
 
-1. In project **Yonder**, open the Test Store and create a **consumable** product `yonder_recent_answer`, priced at US $0.50.
-2. Add it to the **current** offering (`default`) as a custom package, for example `recent_answer`. The app finds the package by product identifier and shows its localized price; it never invents one.
-3. No entitlement is needed: each purchase unlocks one answer and is consumed.
-4. The Test Store **public SDK key** (`test_…`) goes in `EXPO_PUBLIC_REVENUECAT_TEST_KEY` in `.env.local`, using `.env.example` as a starting point. Never use a secret `sk_…` key in the client.
-5. Optional clean-up: remove the `$rc_lifetime` package from the current offering so the old Plus product isn't offered anywhere.
+1. Project **Yonder** (`4850e856`), Test Store app:
+   - Product `yonder_plus_monthly`: auto-renewing, 1 month, $2.99, **1-week free trial**.
+   - Product `yonder_plus_annual`: auto-renewing, 1 year, $19.99, **1-week free trial**.
+2. Attach both to the existing entitlement **`yonder_plus`**. The old `yonder_plus_lifetime` can stay attached so earlier testers keep Plus.
+3. In the **current** offering (`default`), add packages **`$rc_monthly`** and **`$rc_annual`** with those products, and remove `$rc_lifetime`. The paywall reads `packageType` MONTHLY and ANNUAL, prices and trial terms from the offering, and never hardcodes a price.
+4. The Test Store public key (`test_…`) goes in `EXPO_PUBLIC_REVENUECAT_TEST_KEY` in `.env.local`. Never put a secret `sk_…` key in the client.
 
-## Run an actual native development build
+## Server sync (webhook)
+
+The app calls `Purchases.logIn(<Supabase user id>)` after sign-in, so RevenueCat's app user id is the Yonder account id.
+
+1. Deploy the function:
+
+   ```sh
+   supabase functions deploy revenuecat-webhook --no-verify-jwt
+   supabase secrets set REVENUECAT_WEBHOOK_AUTH="<long random string>" REVENUECAT_SECRET_KEY="<v1 secret key>"
+   ```
+
+2. Apply the migrations (`supabase db push`).
+3. In RevenueCat → Integrations → Webhooks:
+   - URL: `https://<project>.supabase.co/functions/v1/revenuecat-webhook`
+   - Authorization header: the same `REVENUECAT_WEBHOOK_AUTH` value.
+
+On every event, the function reads the subscriber's current state from RevenueCat and upserts or deletes `plus_members`. Retries and out-of-order events therefore converge on the same result. Anonymous (not signed-in) purchasers are skipped until they sign in: `logIn` merges their purchase into the account and triggers a new event.
+
+**Privacy note:** tying purchases to the account means purchase history is now linked to the user's identity. Update the privacy page and store privacy answers before a build with this code ships.
+
+## Run a native development build
 
 ```sh
 npm ci
-cp .env.example .env.local
-# Fill the public SDK key, then:
-npx expo run:ios
-# Or, on a configured Android development machine:
-npx expo run:android
+cp .env.example .env.local   # fill the public keys
+npx expo run:ios             # or: npx expo run:android
 ```
 
-The first native build needs the usual Xcode/CocoaPods or Android toolchain. Expo Go and the web preview deliberately cannot purchase. Restart Metro after changing keys; installing the SDK requires rebuilding the native app. On this Mac, select `/Applications/Xcode.app/Contents/Developer` as `DEVELOPER_DIR` if the system points at command-line tools. The app enables Expo SDK 57 scene support for Xcode/iOS 27. If you already have an older generated `ios/` folder, regenerate it with `npx expo prebuild --clean --platform ios` before building; preserve any manual native changes first.
+Expo Go and the web preview cannot purchase. Test Store keys only activate in development native builds.
 
-Test Store keys are accepted only in development native builds. `eas build --profile preview` currently produces a release-mode simulator build: do not expect its Test Store key to activate. Use the debug build above for Test Store. Never ship a Test Store key as the Apple key.
+## Evidence to record (native, Test Store)
 
-## Required evidence, in order
+- **Paywall:** Settings → Explore Yonder Plus shows the monthly and yearly plans, with prices and "1 week free" from the offering.
+- **Cancel:** cancelling the Test Store sheet unlocks nothing and shows no error.
+- **Trial start:**
+  - completing the purchase shows "Welcome to Plus";
+  - Collections now allows a second collection;
+  - the new-check screen offers 1 hr and 2 hr.
+- **Server sync:**
+  - `plus_members` has the user's row with the expiry;
+  - a 1 hr check is accepted;
+  - an 11th open check is refused.
+- **Restore:** Settings → Restore purchases brings Plus back after reinstalling.
+- **Manage subscription:** opens the store's subscription page.
 
-- Fresh installation: Explore → NYC sample tour → basketball courts → Ask. The options screen shows a free answer from yesterday, the latest answer with the store price, and a $2 bounty.
-- Tap the latest answer: the Test Store sheet appears with the configured price. Cancel it: nothing unlocks and no error is shown.
-- Complete a test purchase: the answer opens with a "Latest answer purchased" receipt, and the transaction appears in the RevenueCat dashboard.
-- Buy again for another question: a consumable can be bought repeatedly.
-- Offline or missing package: no fabricated price and no unlocked answer; a clear message asks the user to try again.
-- Save the native recording and dashboard event timestamp. Label test transactions as test transactions; they are not revenue.
+Test Store purchases are sandbox data, not revenue. An organizer [confirmed Test Store is enough for Next Gen](https://revenuecat-shipaton-2026.devpost.com/forum_topics/44695-next-gen-eligibility-is-a-test-store-only-purchase-sufficient).
 
-Do not mark these passed on the strength of unit tests or web screenshots. In a [Shipaton Devpost discussion](https://revenuecat-shipaton-2026.devpost.com/forum_topics/44695-next-gen-eligibility-is-a-test-store-only-purchase-sufficient), an organizer Manager explicitly confirmed that **Test Store is enough for Next Gen**. Test Store purchases are sandbox data, not revenue, and a Test Store key must never ship in a release build.
-
-## Production iOS (needed for a store-based category)
-
-Create a consumable In-App Purchase for the latest answer in App Store Connect (Apple's price points below $10 move in 10¢ steps ending in 9, so the closest price is $0.49), complete its localization, review screenshot and agreements, import it into RevenueCat and add it to the current offering. Put only the `appl_…` public key in the production EAS environment and remove the Test Store key.
-
-Before selling answers in a public build, make sure what is sold is real: in demo mode the answers are samples, and charging real money for them would mislead buyers and risks App Review rejection. The earlier Yonder Plus IAP (`com.anujkakumanu.yonder.plus.lifetime`) no longer matches the app; withdraw or leave it unused rather than submitting it with this binary.
-
-Sources: [Expo installation](https://www.revenuecat.com/docs/getting-started/installation/expo), [Test Store](https://www.revenuecat.com/docs/test-and-launch/sandbox/test-store), [organizer Next Gen answer](https://revenuecat-shipaton-2026.devpost.com/forum_topics/44695-next-gen-eligibility-is-a-test-store-only-purchase-sufficient), [rules](https://revenuecat-shipaton-2026.devpost.com/rules).
+Sources: [Expo installation](https://www.revenuecat.com/docs/getting-started/installation/expo), [Test Store](https://www.revenuecat.com/docs/test-and-launch/sandbox/test-store), [identifying users](https://www.revenuecat.com/docs/customers/identifying-customers), [webhooks](https://www.revenuecat.com/docs/integrations/webhooks).

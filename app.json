@@ -4,11 +4,15 @@
     "slug": "yonder",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/brand/yonder-scout.png",
+    "icon": "./assets/brand/icon/icon-light.png",
     "scheme": "yonder",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/brand/concepts/yonder-scout-green-3d-v2.png",
+      "icon": {
+        "light": "./assets/brand/icon/icon-light.png",
+        "dark": "./assets/brand/icon/icon-dark.png",
+        "tinted": "./assets/brand/icon/icon-tinted.png"
+      },
       "appleTeamId": "9C6DA2SDJ7",
       "bundleIdentifier": "com.anujkakumanu.yonder",
       "supportsTablet": false,
@@ -20,8 +24,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#F7F7F0",
-        "foregroundImage": "./assets/brand/yonder-scout.png"
+        "backgroundColor": "#F7F3DD",
+        "foregroundImage": "./assets/brand/icon/android-foreground.png"
       },
       "predictiveBackGestureEnabled": false,
       "permissions": [
@@ -46,7 +50,7 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#F7F7F0",
-          "image": "./assets/brand/yonder-scout.png",
+          "image": "./assets/brand/icon/splash.png",
           "imageWidth": 148,
           "resizeMode": "contain"
         }

@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
-import type { PurchasesPackage } from "react-native-purchases";
 import { AnswerTierCard } from "@/components/AnswerTierCard";
 import { AppScreen, MissingDataState, ScreenHeader } from "@/components/ui";
 import { answerTier, money, RECENT_ANSWER_CENTS } from "@/lib/pricing";
-import { buyRecentAnswer, loadRecentAnswerPackage, purchasesAvailable, testPurchases } from "@/lib/purchases";
-import { purchaseWasCancelled } from "@/lib/purchasePolicy";
 import { sameQuestion } from "@/lib/queryMatching";
 import { useYonderStore } from "@/lib/store";
 import { ask, font, type } from "@/lib/theme";
@@ -18,19 +15,9 @@ export default function OptionsScreen() {
   const answers = useYonderStore((s) => s.answers);
   const [now, setNow] = useState(() => Date.now());
   const [error, setError] = useState("");
-  const [recentPackage, setRecentPackage] = useState<PurchasesPackage | null>(null);
-  const [buying, setBuying] = useState(false);
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
-  }, []);
-  useEffect(() => {
-    if (!purchasesAvailable) return;
-    let active = true;
-    loadRecentAnswerPackage()
-      .then((option) => { if (active) setRecentPackage(option); })
-      .catch(() => undefined);
-    return () => { active = false; };
   }, []);
   if (!query)
     return <MissingDataState title="Start with a place and a question." />;
@@ -51,28 +38,6 @@ export default function OptionsScreen() {
       router.push(`/ask/answer/${id}`);
     else setError("That answer changed. Choose another option.");
   };
-  const buyRecent = async (id: string) => {
-    if (buying) return;
-    if (!purchasesAvailable) {
-      setError("Purchases are not enabled in this preview. Try the free sample answer or a demo bounty.");
-      return;
-    }
-    if (!recentPackage) {
-      setError("The latest answer isn’t available to buy right now. Try again in a moment.");
-      return;
-    }
-    setBuying(true);
-    setError("");
-    try {
-      await buyRecentAnswer(recentPackage);
-      unlock(id, RECENT_ANSWER_CENTS);
-    } catch (e) {
-      if (!purchaseWasCancelled(e)) setError("The store couldn’t complete this purchase. You weren’t charged. Try again.");
-    } finally {
-      setBuying(false);
-    }
-  };
-  const storePriceCents = recentPackage ? Math.round(recentPackage.product.price * 100) : RECENT_ANSWER_CENTS;
   return (
     <AppScreen>
       <ScreenHeader eyebrow="02 / CHOOSE YOUR LOOK" />
@@ -81,13 +46,9 @@ export default function OptionsScreen() {
       </Text>
       <Text style={styles.question}>{query.question}</Text>
       <Text style={styles.body}>
-        {purchasesAvailable ? "Post a demo bounty, test buying the latest sample answer, or read an older sample for free." : "Post a demo bounty or read an older sample answer for free. Paid answers are unavailable in this preview."} Example answers do not describe current conditions.
+        Post a demo bounty or read an older sample answer for free. Example
+        answers do not describe current conditions.
       </Text>
-      {testPurchases && (
-        <Text accessibilityRole="alert" style={styles.notice}>
-          TEST STORE · Buying an answer uses RevenueCat’s test purchase flow. No real payment.
-        </Text>
-      )}
       <View style={styles.cards}>
         <AnswerTierCard
           kind="dispatch"
@@ -112,14 +73,13 @@ export default function OptionsScreen() {
           <AnswerTierCard
             kind="recent"
             testID="options-recent"
-            headline={buying ? "Connecting to the store…" : recent.headline}
-            priceCents={storePriceCents}
-            disabled={!purchasesAvailable || !recentPackage || buying}
-            priceLabel={!purchasesAvailable || !recentPackage ? "UNAVAILABLE" : recentPackage.product.priceString}
-            observedAt={purchasesAvailable && recentPackage ? recent.observedAt : undefined}
-            subtitle={!purchasesAvailable || !recentPackage ? "Purchases are not enabled here. Try the free answer or a demo bounty." : undefined}
+            headline={recent.headline}
+            priceCents={RECENT_ANSWER_CENTS}
+            disabled
+            priceLabel="LATER"
+            subtitle="Paying for the newest answer is a future idea, not part of this build."
             ttlSeconds={recent.ttlSeconds}
-            onPress={() => void buyRecent(recent.id)}
+            onPress={() => undefined}
           />
         )}
         {old && (
@@ -149,7 +109,7 @@ export default function OptionsScreen() {
       </View>
       <Text style={styles.note}>
         Bounties are simulated in this build: no card is charged and no one is
-        dispatched. {purchasesAvailable ? "Buying the latest answer uses the configured store." : "Paid answers are unavailable in this preview."}
+        dispatched.
       </Text>
     </AppScreen>
   );
@@ -170,15 +130,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 22,
     marginTop: 10,
-  },
-  notice: {
-    ...type.body,
-    color: ask.ink,
-    fontSize: 13,
-    padding: 14,
-    backgroundColor: ask.surfaceAlt,
-    borderRadius: 14,
-    marginTop: 16,
   },
   cards: { gap: 14, marginTop: 24 },
   note: {

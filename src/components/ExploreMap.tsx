@@ -39,6 +39,7 @@ import { MapSurface, MapSurfaceHandle, MapRegion } from "./MapSurface";
 import { MotionPressable } from "./MotionPressable";
 import { Scout } from "./Brand";
 import { BrandObject } from "./BrandObject";
+import { SignalRings } from "./SignalRings";
 import { CategoryObject } from "./CategoryObject";
 import { TactileIcon, categoryPalette } from "./TactileIcon";
 import { openPlaceDraft } from "./PlaceTile";
@@ -210,7 +211,7 @@ export default function ExploreMap() {
     setSource("search");
     setPlaces([]);
     try {
-      const found = await searchWorldPlaces(search);
+      const found = await searchWorldPlaces(search, source === "start" ? undefined : center.current);
       if (current === version.current) {
         setPlaces(found);
         if (found[0])
@@ -339,11 +340,11 @@ export default function ExploreMap() {
       {source === "start" ? (
         <>
           <LinearGradient
-            colors={["#EEE5FF", "#D7C7F3"]}
+            colors={["#FBF8E6", "#DCE8D4"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
             style={styles.welcome}
           >
-            <View style={styles.halo} />
-            <View style={styles.haloSmall} />
             <Text style={styles.eyebrow}>{DEMO_FEATURES_ENABLED || LIVE_FEATURES_ENABLED ? "LESS GUESSING. MORE GOING." : "FIND PLACES. MAKE PLANS."}</Text>
             <Text style={styles.welcomeTitle}>
               {DEMO_FEATURES_ENABLED || LIVE_FEATURES_ENABLED ? "Good plans.\nBetter intel." : "Good places.\nYour next plan."}
@@ -352,7 +353,8 @@ export default function ExploreMap() {
               {DEMO_FEATURES_ENABLED || LIVE_FEATURES_ENABLED ? "A little look before\nyou head out." : "Find a place.\nSave a little adventure."}
             </Text>
             <View style={styles.heroScout}>
-              <BrandObject size={132} playful />
+              <SignalRings size={190} color="#52745C" />
+              <BrandObject kind="scoutFront" size={118} playful />
             </View>
           </LinearGradient>
           <MotionPressable
@@ -917,41 +919,21 @@ const styles = StyleSheet.create({
     minHeight: 170,
     overflow: "hidden",
     borderWidth: 1,
-    borderColor: "#F6EEFF",
+    borderColor: "#FFFFFF",
     marginBottom: 13,
-  },
-  halo: {
-    position: "absolute",
-    right: -15,
-    top: 0,
-    width: 190,
-    height: 190,
-    borderRadius: 100,
-    borderWidth: 1,
-    borderColor: "#FFFFFF70",
-  },
-  haloSmall: {
-    position: "absolute",
-    right: 15,
-    top: 30,
-    width: 130,
-    height: 130,
-    borderRadius: 80,
-    borderWidth: 1,
-    borderColor: "#FFFFFF80",
   },
   eyebrow: {
     fontFamily: font.ui700,
     fontSize: 9,
     letterSpacing: 1,
-    color: "#64704E",
+    color: "#52745C",
   },
   welcomeTitle: {
     fontFamily: font.ui700,
     fontSize: 30,
     lineHeight: 33,
     letterSpacing: -1.3,
-    color: "#354331",
+    color: "#243C32",
     marginTop: 9,
   },
   welcomeBody: {
@@ -969,7 +951,6 @@ const styles = StyleSheet.create({
     height: 190,
     alignItems: "center",
     justifyContent: "center",
-    transform: [{ scaleX: -1 }],
   },
   primary: {
     minHeight: 51,

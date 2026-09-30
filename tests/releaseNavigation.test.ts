@@ -36,7 +36,7 @@ test("live and preview screens have independent route guards", () => {
   assert.deepEqual([...DEMO_SCREEN_NAMES, ...CORE_SCREEN_NAMES, ...LIVE_SCREEN_NAMES].sort(), screens.sort());
   const productionScreens = routes.children.map((node) => node.route)
     .filter((route) => ![...DEMO_SCREEN_NAMES, ...CORE_SCREEN_NAMES, ...LIVE_SCREEN_NAMES].some((name) => name === route));
-  assert.deepEqual(productionScreens.sort(), ["index", "map", "saved", "collections", "about", "spots/new"].sort());
+  assert.deepEqual(productionScreens.sort(), ["index", "map", "saved", "collections", "about", "spots/new", "plus", "settings"].sort());
   const layout = readFileSync(new URL("../src/app/_layout.tsx", import.meta.url), "utf8");
   const source = ts.createSourceFile("_layout.tsx", layout, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const guards: ts.JsxElement[] = [];

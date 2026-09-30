@@ -19,9 +19,11 @@ async function fetchPlaces(path: string, timeout: number): Promise<Place[]> {
     throw new Error(data.error || "Search is unavailable. Please try again.");
   return data.places;
 }
-export function searchWorldPlaces(input: string) {
+/** `near` biases results toward the visible map area without excluding anything else. */
+export function searchWorldPlaces(input: string, near?: { latitude: number; longitude: number; latitudeDelta: number }) {
+  const bias = near && near.latitudeDelta < 3 ? `&near=${near.latitude.toFixed(2)},${near.longitude.toFixed(2)}` : "";
   return fetchPlaces(
-    `/api/places?q=${encodeURIComponent(input.trim())}`,
+    `/api/places?q=${encodeURIComponent(input.trim())}${bias}`,
     12000,
   );
 }

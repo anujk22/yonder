@@ -12,7 +12,7 @@ import Svg, { Circle, Path } from "react-native-svg";
 import { useActiveTheme } from "@/lib/store";
 import { brand, font, type } from "@/lib/theme";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Info } from "lucide-react-native";
+import { Settings } from "lucide-react-native";
 import { MotionPressable } from "./MotionPressable";
 
 export function Scout({
@@ -74,11 +74,11 @@ export function AppHeader() {
           </MotionPressable>
           <MotionPressable
             accessibilityRole="button"
-            accessibilityLabel="How Yonder works"
-            onPress={() => router.push("/about")}
-            style={styles.previewPill}
+            accessibilityLabel="Settings"
+            onPress={() => { if (pathname !== "/settings") router.push("/settings"); }}
+            style={[styles.previewPill, { borderColor: theme.border }]}
           >
-            <Info size={20} color={theme.inkSoft} />
+            <Settings size={20} color={theme.inkSoft} />
           </MotionPressable>
         </View>
       </View>
@@ -114,6 +114,7 @@ export function AppHeader() {
                 ["/activity", "Requests"],
                 ["/saved", "Saved"],
                 ["/about", "How it works"],
+                ["/settings", "Settings"],
               ] as const
             ).filter(([route]) => DEMO_FEATURES_ENABLED || LIVE_FEATURES_ENABLED || route !== "/activity").map(([route, label]) => (
               <Pressable

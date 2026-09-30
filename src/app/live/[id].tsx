@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { AppState, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { AppState, Pressable, Share, StyleSheet, Text, TextInput, View } from "react-native";
+import * as Linking from "expo-linking";
 import { useIsFocused, useLocalSearchParams, useRouter } from "expo-router";
 import { AppScreen, PrimaryButton, ScreenHeader } from "@/components/ui";
 import { MapSurface, detailRegion } from "@/components/MapSurface";
@@ -9,7 +10,8 @@ import { useActiveTheme } from "@/lib/store";
 import { LiveSignIn } from "@/components/LiveSignIn";
 import { liveConfigured } from "@/lib/liveClient";
 import { validLiveAnswer } from "@/lib/livePolicy";
-import { LIVE_QUESTIONS, liveAnswerLabel, liveExpired, type LiveReportReason, type LiveRequest } from "@/lib/liveTypes";
+import { LIVE_QUESTIONS, liveAnswerLabel, liveExpired, timeAgo, timeLeft, type LiveReportReason, type LiveRequest } from "@/lib/liveTypes";
+import { FreshnessLabel } from "@/components/FreshnessLabel";
 import { font, type, type AppTheme } from "@/lib/theme";
 
 type Detail = { userId: string; id: string; access: boolean; request: LiveRequest | null };
@@ -40,6 +42,7 @@ function LiveDetailSession({ id }: { id: string }) {
   const [confirmCancel, setConfirmCancel] = useState(false);
   const [confirmBlock, setConfirmBlock] = useState(false);
   const [showReport, setShowReport] = useState(false);
+  const [showSafety, setShowSafety] = useState(false);
   const refreshRef = useRef<() => void>(() => {});
   const mounted = useRef(true);
 
@@ -104,11 +107,11 @@ function LiveDetailSession({ id }: { id: string }) {
     if (!request) return;
     if (!onSite) { setError("Confirm that you are at this public place now."); return; }
     if (!validLiveAnswer(request.question_kind, answer)) { setError(request.question_kind === "queue" ? "Enter a whole-number wait from 0 to 240 minutes, or choose Couldn’t tell." : "Choose Yes, No, or Couldn’t tell."); return; }
-    void act(() => answerLiveRequest(request.id, answer, note), "Self-reported observation sent.");
+    void act(() => answerLiveRequest(request.id, answer, note), "Sent. Thanks for being someone’s eyes.");
   };
 
   return <AppScreen>
-    <ScreenHeader eyebrow="FREE SHARED PLACE CHECK" />
+    <ScreenHeader eyebrow="PLACE CHECK" right={liveConfigured && ready && user ? <Pressable accessibilityRole="button" onPress={() => refreshRef.current()} disabled={loading} hitSlop={10}><Text style={styles.link}>{loading ? "Refreshing…" : "Refresh"}</Text></Pressable> : undefined} />
     {!liveConfigured ? <View style={styles.card}><Text style={styles.body}>Live checks are not connected in this build.</Text><PrimaryButton label="Explore places" onPress={() => router.replace("/")} /></View>
       : !ready ? <Text style={styles.body}>Checking account…</Text>
       : !user ? <View style={styles.card}><Text style={styles.body}>Sign in or create a free account to view this shared check.</Text><LiveSignIn /></View>
@@ -122,54 +125,53 @@ function LiveDetailSession({ id }: { id: string }) {
           <MapSurface style={StyleSheet.absoluteFill} initialRegion={detailRegion({ latitude: request.latitude, longitude: request.longitude })} markers={[{ id: request.id, coordinate: { latitude: request.latitude, longitude: request.longitude }, label: request.place_name }]} />
         </View>
         <View style={styles.card}>
-          <Text style={styles.label}>{request.status.toUpperCase()}{expired && request.status !== "answered" ? " · EXPIRED" : ""}</Text>
-          <Text style={styles.body}>Public landmark: {request.landmark || "No landmark given"}</Text>
-          <Text style={styles.meta}>Pin: {request.latitude.toFixed(5)}, {request.longitude.toFixed(5)}</Text>
-          <Text style={styles.meta}>Requested {new Date(request.created_at).toLocaleString()}</Text>
-          <Text style={styles.meta}>Expires {new Date(request.expires_at).toLocaleString()}</Text>
-          <Text style={styles.body}>This check is answered by a person. Yonder does not verify that they are at the place or that their answer is correct.</Text>
+          <Text style={styles.label}>{request.status === "answered" ? "ANSWERED" : request.status === "cancelled" ? "CANCELLED" : expired ? "CLOSED" : request.status === "claimed" ? "SOMEONE’S CHECKING" : "OPEN"}</Text>
+          {request.landmark ? <Text style={styles.body}>Near {request.landmark}</Text> : null}
+          <Text style={styles.meta}>Asked {timeAgo(request.created_at)}{!expired && (request.status === "open" || request.status === "claimed") ? ` · ${timeLeft(request)}` : ""}</Text>
         </View>
         {request.status === "answered" && <View style={styles.card}>
           <Text style={styles.label}>SELF-REPORTED ANSWER</Text>
-          <Text style={styles.cardTitle}>{liveAnswerLabel(request)}</Text>
-          {request.note ? <Text style={styles.body}>{request.note}</Text> : null}
-          {request.answered_at ? <Text style={styles.meta}>Reported {new Date(request.answered_at).toLocaleString()}</Text> : null}
-          {expired && <Text style={styles.body}>This observation is past its request window. Conditions may have changed.</Text>}
+          <Text style={styles.answer}>{liveAnswerLabel(request)}</Text>
+          {request.note ? <Text style={styles.body}>“{request.note}”</Text> : null}
+          {request.answered_at ? <FreshnessLabel observedAt={Date.parse(request.answered_at)} ttlSeconds={30 * 60} prefix="Seen " /> : null}
         </View>}
         {mine && !expired && (request.status === "open" || request.status === "claimed") && (confirmCancel ? <View style={styles.card}>
           <Text style={styles.cardTitle}>Cancel this check?</Text>
           <Text style={styles.body}>The open or claimed check will close for everyone.</Text>
           <PrimaryButton label="Cancel live check" variant="danger" disabled={busy} onPress={() => void act(() => cancelLiveRequest(request.id), "Check cancelled.")} />
           <PrimaryButton label="Keep check" variant="secondary" onPress={() => setConfirmCancel(false)} />
-        </View> : <PrimaryButton label="Cancel this check" variant="secondary" onPress={() => setConfirmCancel(true)} />)}
-        {!mine && !expired && request.status === "open" && <PrimaryButton label={busy ? "Claiming…" : "I can check this place"} disabled={busy} onPress={() => void act(() => claimLiveRequest(request.id), "Check claimed. Please answer from the place, or release it.")} />}
+        </View> : <>
+          {request.status === "open" && <PrimaryButton label="Ask a friend who’s nearby" onPress={() => void Share.share({ message: `Are you near ${request.place_name}? ${LIVE_QUESTIONS[request.question_kind]} Answer on Yonder: ${Linking.createURL(`/live/${request.id}`)}` }).catch(() => undefined)} />}
+          <PrimaryButton label="Cancel this check" variant="secondary" onPress={() => setConfirmCancel(true)} />
+        </>)}
+        {!mine && !expired && request.status === "open" && <PrimaryButton label={busy ? "Claiming…" : "I can check this place"} disabled={busy} onPress={() => void act(() => claimLiveRequest(request.id), "It’s yours. Answer from the spot, or release it for someone else.")} />}
         {claimedByMe && !expired && request.status === "claimed" && <View style={styles.card}>
           <Text style={styles.cardTitle}>Share what you can see</Text>
-          <Text style={styles.body}>Answer only if you are at this public place now. This is your own report; location is not verified.</Text>
+          <Text style={styles.body}>Only answer if you’re there right now.</Text>
           {request.question_kind === "queue" ? <>
             <TextInput accessibilityLabel="Estimated wait in minutes" keyboardType="number-pad" placeholder="Wait in minutes (0–240)" placeholderTextColor={theme.inkFaint} value={answer === "unsure" ? "" : answer} onChangeText={setAnswer} maxLength={3} style={styles.input} />
             <Choice label="Couldn’t tell" selected={answer === "unsure"} onPress={() => setAnswer("unsure")} />
           </> : <View style={styles.choices}>{(["yes", "no", "unsure"] as const).map((value) => <Choice key={value} label={value === "unsure" ? "Couldn’t tell" : value === "yes" ? "Yes" : "No"} selected={answer === value} onPress={() => setAnswer(value)} />)}</View>}
           <TextInput accessibilityLabel="Optional observation note" placeholder="Optional detail, no personal information" placeholderTextColor={theme.inkFaint} value={note} onChangeText={setNote} maxLength={280} multiline style={[styles.input, { minHeight: 85 }]} />
           <Text style={styles.meta}>{note.length}/280</Text>
-          <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: onSite }} onPress={() => setOnSite(!onSite)} style={styles.confirm}><Text style={styles.body}>{onSite ? "☑" : "□"} I am at this public place now. My answer is self-reported, not GPS verified.</Text></Pressable>
+          <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: onSite }} onPress={() => setOnSite(!onSite)} style={styles.confirm}><Text style={styles.body}>{onSite ? "☑" : "□"} I’m at this place right now.</Text></Pressable>
           <PrimaryButton label={busy ? "Sending…" : "Send observation"} disabled={busy} onPress={submitAnswer} />
           <PrimaryButton label="Release this check" variant="secondary" disabled={busy} onPress={() => void act(() => releaseLiveRequest(request.id), "Check released for another person.")} />
         </View>}
-        {(!mine || otherUserId) && <View style={styles.card}>
-          <Text style={styles.cardTitle}>Keep the community helpful</Text>
+        {(!mine || otherUserId) && (showSafety ? <View style={styles.card}>
+          <Text style={styles.cardTitle}>Something wrong?</Text>
           {showReport ? <>
-            {(["unsafe", "spam", ...(request.status === "answered" ? ["inaccurate"] : [])] as LiveReportReason[]).map((reason) => <Pressable key={reason} accessibilityRole="button" onPress={() => void act(() => reportLiveRequest(request.id, reason), "Report recorded.")} disabled={busy}><Text style={styles.link}>Report {reason}</Text></Pressable>)}
-            <Pressable accessibilityRole="button" onPress={() => setShowReport(false)}><Text style={styles.link}>Close report options</Text></Pressable>
+            {(["unsafe", "spam", ...(request.status === "answered" ? ["inaccurate"] : [])] as LiveReportReason[]).map((reason) => <Pressable key={reason} accessibilityRole="button" onPress={() => void act(() => reportLiveRequest(request.id, reason), "Thanks. We hid this check while we review it.")} disabled={busy}><Text style={styles.link}>Report as {reason}</Text></Pressable>)}
           </> : <Pressable accessibilityRole="button" onPress={() => setShowReport(true)}><Text style={styles.link}>Report this check</Text></Pressable>}
           {otherUserId && (confirmBlock ? <>
-            <Text style={styles.body}>Block this participant? Their checks will be hidden from you.</Text>
-            <PrimaryButton label="Block participant" variant="danger" disabled={busy} onPress={() => void act(() => blockLiveUser(otherUserId), "Participant blocked.", () => router.replace("/live"))} />
-            <PrimaryButton label="Keep participant" variant="secondary" onPress={() => setConfirmBlock(false)} />
-          </> : <Pressable accessibilityRole="button" onPress={() => setConfirmBlock(true)}><Text style={styles.link}>Block participant</Text></Pressable>)}
-        </View>}
+            <Text style={styles.body}>Block this person? You won’t see each other’s checks.</Text>
+            <PrimaryButton label="Block" variant="danger" disabled={busy} onPress={() => void act(() => blockLiveUser(otherUserId), "Blocked.", () => router.replace("/activity"))} />
+            <PrimaryButton label="Cancel" variant="secondary" onPress={() => setConfirmBlock(false)} />
+          </> : <Pressable accessibilityRole="button" onPress={() => setConfirmBlock(true)}><Text style={styles.link}>Block this person</Text></Pressable>)}
+          <Pressable accessibilityRole="button" onPress={() => { setShowSafety(false); setShowReport(false); setConfirmBlock(false); }}><Text style={styles.muted}>Close</Text></Pressable>
+        </View> : <Pressable accessibilityRole="button" onPress={() => setShowSafety(true)} style={styles.safetyToggle}><Text style={styles.muted}>Report or block</Text></Pressable>)}
+        <Text style={styles.footnote}>Answered by a person on the spot. Yonder doesn’t verify their location or answer.</Text>
       </>}
-    {liveConfigured && ready && user && <PrimaryButton label={loading ? "Refreshing…" : "Refresh check"} variant="secondary" disabled={loading} onPress={() => refreshRef.current()} />}
     {!!notice && <Text accessibilityRole="alert" style={styles.notice}>{notice}</Text>}
     {!!error && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}
   </AppScreen>;
@@ -196,6 +198,10 @@ const detailStyles = (theme: AppTheme) => StyleSheet.create({
   choiceText: { ...type.label, color: theme.ink },
   confirm: { paddingVertical: 10 },
   link: { ...type.label, color: theme.fresh, paddingVertical: 10 },
+  muted: { ...type.label, color: theme.inkSoft, paddingVertical: 10 },
+  safetyToggle: { alignSelf: "center", marginTop: 8 },
+  answer: { fontFamily: font.ui700, fontSize: 30, lineHeight: 36, color: theme.ink },
+  footnote: { ...type.label, fontSize: 11, color: theme.inkFaint, textAlign: "center", marginTop: 18 },
   notice: { ...type.body, color: theme.fresh, marginVertical: 10 },
   error: { ...type.body, color: theme.danger, marginVertical: 10 },
 });

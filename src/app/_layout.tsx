@@ -42,6 +42,10 @@ import { DEMO_FLAGS } from "@/lib/demoFlags";
 import { abortAutopilot } from "@/lib/autopilot";
 import { AppHeader } from "@/components/Brand";
 import { observeLiveAuth } from "@/lib/liveAuth";
+import { observePurchases } from "@/lib/purchaseStore";
+import { observePush } from "@/lib/push";
+import { useOnboarding, useOnboardingHydration } from "@/lib/onboarding";
+import { Onboarding } from "@/components/Onboarding";
 import { CORE_SCREEN_NAMES, DEMO_SCREEN_NAMES, LIVE_SCREEN_NAMES } from "@/lib/demoRoutes";
 
 SplashScreen.preventAutoHideAsync();
@@ -69,9 +73,14 @@ export default function RootLayout() {
     JetBrainsMono_400Regular,
     JetBrainsMono_500Medium,
   });
+  const onboardingHydrated = useOnboardingHydration((s) => s.hydrated);
+  const onboardingDone = useOnboarding((s) => s.done);
+  const showOnboarding = onboardingHydrated && !onboardingDone;
   const hideModeToggle = !DEMO_FEATURES_ENABLED || !DEMO_FLAGS.autopilotEnabled;
 
   useEffect(() => observeLiveAuth(), []);
+  useEffect(() => observePurchases(), []);
+  useEffect(() => observePush(), []);
 
   useEffect(() => {
     useYonderStore
@@ -162,6 +171,7 @@ export default function RootLayout() {
           {!hideModeToggle ? <ModeToggle /> : null}
           {DEMO_FEATURES_ENABLED || LIVE_FEATURES_ENABLED ? <ModeReveal /> : null}
           {__DEV__ && DEMO_FLAGS.autopilotEnabled ? <AutopilotLayer /> : null}
+          {showOnboarding && !DEMO_FLAGS.skipOnboarding ? <Onboarding /> : null}
         </View>
       </SafeAreaProvider>
     </GestureHandlerRootView>

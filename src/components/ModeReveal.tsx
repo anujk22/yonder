@@ -12,6 +12,7 @@ import Animated, {
   withTiming,
   withDelay,
   withSequence,
+  withSpring,
   cancelAnimation,
 } from "react-native-reanimated";
 import { registerAutopilotAbortHandler } from "@/lib/autopilot";
@@ -45,6 +46,12 @@ function waveBand(
   }
   return path + "Z";
 }
+// Each direction takes on the colors of the mode it reveals.
+const palettes = {
+  observe: { back: "#52745C", front: "#242A22", stroke: "#3B4435", title: "#F7F7F0", caption: "#F5D547" },
+  ask: { back: "#A7C9BC", front: "#F7E8AB", stroke: "#FFF8DC", title: "#2C3E33", caption: "#596646" },
+} as const;
+
 export function ModeReveal() {
   const router = useRouter();
   const { width, height } = useWindowDimensions();
@@ -57,6 +64,7 @@ export function ModeReveal() {
   const opacity = useSharedValue(1);
   const mark = useSharedValue(0);
   const spin = useSharedValue(0);
+  const pop = useSharedValue(1);
   useEffect(() => {
     if (!reveal) return;
     const reduced = reveal.reduceMotion;
@@ -65,15 +73,26 @@ export function ModeReveal() {
     opacity.set(1);
     mark.set(0);
     spin.set(0);
+    pop.set(1);
     if (!reduced) {
-      if (reveal.to === "observe") {
-        spin.set(
-          withDelay(
-            210,
-            withTiming(360, { duration: 650, easing: Easing.out(Easing.cubic) }),
+      spin.set(
+        withDelay(
+          210,
+          withTiming(reveal.to === "observe" ? 360 : -360, {
+            duration: 650,
+            easing: Easing.out(Easing.cubic),
+          }),
+        ),
+      );
+      pop.set(
+        withDelay(
+          560,
+          withSequence(
+            withTiming(1.14, { duration: 120 }),
+            withSpring(1, { damping: 7, stiffness: 260 }),
           ),
-        );
-      }
+        ),
+      );
       progress.set(
         withSequence(
           withTiming(1, { duration: 650, easing: Easing.inOut(Easing.cubic) }),
@@ -102,7 +121,7 @@ export function ModeReveal() {
     const swap = setTimeout(
       () => {
         swapMode(reveal.to);
-        void Haptics.selectionAsync().catch(() => {});
+        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
         const destination =
           reveal.destination ??
           (reveal.to === "observe"
@@ -124,7 +143,7 @@ export function ModeReveal() {
     return () => {
       clearTimeout(swap);
       clearTimeout(done);
-      [progress, phase, opacity, mark, spin].forEach(cancelAnimation);
+      [progress, phase, opacity, mark, spin, pop].forEach(cancelAnimation);
       abort();
     };
   }, [
@@ -138,6 +157,7 @@ export function ModeReveal() {
     opacity,
     mark,
     spin,
+    pop,
   ]);
   const backWave = useAnimatedProps(() => ({
     d: waveBand(width, height, progress.get(), phase.get() + 0.6, 32),
@@ -152,16 +172,17 @@ export function ModeReveal() {
   }));
   const mascot = useAnimatedStyle(() => ({
     transform: [
-      { scale: 0.88 + 0.12 * mark.get() },
+      { scale: (0.88 + 0.12 * mark.get()) * pop.get() },
       { rotate: `${spin.get()}deg` },
     ],
   }));
   if (!reveal) return null;
+  const palette = palettes[reveal.to];
   return (
     <Animated.View style={[StyleSheet.absoluteFill, styles.shell, shell]}>
       {reveal.reduceMotion ? (
         <View
-          style={[StyleSheet.absoluteFill, { backgroundColor: "#F7E8AB" }]}
+          style={[StyleSheet.absoluteFill, { backgroundColor: palette.front }]}
         />
       ) : (
         <Svg
@@ -170,11 +191,11 @@ export function ModeReveal() {
           style={StyleSheet.absoluteFill}
           aria-hidden={true}
         >
-          <AnimatedPath animatedProps={backWave} fill="#A7C9BC" />
+          <AnimatedPath animatedProps={backWave} fill={palette.back} />
           <AnimatedPath
             animatedProps={frontWave}
-            fill="#F7E8AB"
-            stroke="#FFF8DC"
+            fill={palette.front}
+            stroke={palette.stroke}
             strokeWidth={2}
           />
         </Svg>
@@ -188,12 +209,12 @@ export function ModeReveal() {
             style={{ width: 164, height: 164 }}
           />
         </Animated.View>
-        <Text style={styles.title}>
+        <Text style={[styles.title, { color: palette.title }]}>
           {reveal.to === "observe"
             ? "A fresh pair of eyes."
             : "A little more clarity."}
         </Text>
-        <Text style={styles.caption}>
+        <Text style={[styles.caption, { color: palette.caption }]}>
           {reveal.to === "observe" ? "LET’S GO SCOUTING" : "BACK TO YOUR WORLD"}
         </Text>
       </Animated.View>
@@ -212,13 +233,11 @@ const styles = StyleSheet.create({
     fontFamily: font.ui700,
     fontSize: 28,
     letterSpacing: -1,
-    color: "#2C3E33",
     textAlign: "center",
   },
   caption: {
     fontFamily: font.ui700,
     fontSize: 10,
     letterSpacing: 2,
-    color: "#596646",
   },
 });

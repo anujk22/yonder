@@ -8,7 +8,6 @@ import { liveErrorMessage } from "../src/lib/livePolicy";
 type State = { user: { id: string } | null; ready: boolean; error: string };
 type AuthModule = {
   signInLive: (email: string, password: string) => Promise<void>;
-  createLiveAccount: (email: string, password: string, confirmation: string) => Promise<boolean>;
   sendSignInCode: (email: string) => Promise<void>;
   verifySignInCode: (email: string, code: string) => Promise<void>;
   deleteLiveAccount: () => Promise<void>;
@@ -60,41 +59,27 @@ test("invalid credentials and unconfirmed email do not grant account access", as
   }
 });
 
-test("account creation validates email, password length and confirmation before contacting auth", async () => {
+test("email and password are validated before contacting auth", async () => {
   let calls = 0;
-  const { auth } = loadAuth({ auth: { signUp: async () => { calls++; return {}; } } });
-  await assert.rejects(auth.createLiveAccount("not an email", "password", "password"), /valid email/);
-  await assert.rejects(auth.createLiveAccount(`${"x".repeat(250)}@example.com`, "password", "password"), /valid email/);
-  await assert.rejects(auth.createLiveAccount("member@example.com", "short", "short"), /at least 8/);
-  await assert.rejects(auth.createLiveAccount("member@example.com", "password", "different"), /don’t match/);
+  const { auth } = loadAuth({ auth: { signInWithOtp: async () => { calls++; return {}; }, signInWithPassword: async () => { calls++; return {}; } } });
+  await assert.rejects(auth.sendSignInCode("not an email"), /valid email/);
+  await assert.rejects(auth.sendSignInCode(`${"x".repeat(250)}@example.com`), /valid email/);
   await assert.rejects(auth.signInLive("member@example.com", ""), /Enter your password/);
   assert.equal(calls, 0);
 });
 
-test("signup without a session requires confirmation and never signs an unconfirmed user in", async () => {
-  let credentials: { email: string; password: string } | undefined;
-  const { auth, state } = loadAuth({ auth: { signUp: async (input: typeof credentials) => {
-    credentials = input;
-    return { data: { user: { id: "unconfirmed" }, session: null }, error: null };
-  } } });
-  assert.equal(await auth.createLiveAccount(" Member@Example.com ", "password", "password"), true);
-  assert.equal(credentials?.email, "member@example.com");
-  assert.equal(state().user, null);
-});
-
-test("signup surfaces password requirements and email service restrictions", async () => {
+test("sending a code surfaces email service restrictions and rate limits", async () => {
   for (const [code, detail, message] of [
-    ["weak_password", "Password should contain at least one symbol.", /at least one symbol/],
     ["email_address_not_authorized", "internal email restriction", /email delivery is unavailable/],
     ["over_email_send_rate_limit", "internal quota", /Too many attempts/],
   ] as const) {
-    const { auth, state } = loadAuth({ auth: { signUp: async () => ({ data: { user: null, session: null }, error: { code, message: detail } }) } });
-    await assert.rejects(auth.createLiveAccount("member@example.com", "password", "password"), message);
+    const { auth, state } = loadAuth({ auth: { signInWithOtp: async () => ({ error: { code, message: detail } }) } });
+    await assert.rejects(auth.sendSignInCode("member@example.com"), message);
     assert.equal(state().user, null);
   }
 });
 
-test("email codes sign existing accounts in only after successful token verification", async () => {
+test("email codes create or sign in accounts only after successful token verification", async () => {
   let options: { email: string; options: { shouldCreateUser: boolean } } | undefined;
   const verifications: { email: string; token: string; type: string }[] = [];
   const { auth, state } = loadAuth({ auth: {
@@ -106,7 +91,7 @@ test("email codes sign existing accounts in only after successful token verifica
   } });
   await auth.sendSignInCode(" Member@Example.com ");
   assert.equal(options?.email, "member@example.com");
-  assert.equal(options?.options.shouldCreateUser, false);
+  assert.equal(options?.options.shouldCreateUser, true);
   assert.equal(state().user, null);
   await assert.rejects(auth.verifySignInCode("member@example.com", "letters"), /code from your email/);
   assert.equal(verifications.length, 0);

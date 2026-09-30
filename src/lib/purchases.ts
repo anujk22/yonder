@@ -1,11 +1,11 @@
 import { Platform } from "react-native";
 import Constants from "expo-constants";
-import type { PurchasesPackage } from "react-native-purchases";
+import type { CustomerInfo, PurchasesPackage } from "react-native-purchases";
 import { purchaseKey } from "./purchasePolicy";
 
-// Consumable product for unlocking the most recent answer to a question.
-// Configure it in RevenueCat and add it to the current offering.
-export const RECENT_ANSWER_PRODUCT = "yonder_recent_answer";
+// Yonder Plus: monthly and annual subscriptions on the `yonder_plus` entitlement,
+// both offered in RevenueCat's current offering.
+export const PLUS_ENTITLEMENT = "yonder_plus";
 const apiKey = purchaseKey({
   platform: Platform.OS,
   development: __DEV__,
@@ -36,16 +36,37 @@ export function purchaseClient() {
   return initialization;
 }
 
-/** The recent-answer package from the current offering, or null if it isn't set up. */
-export async function loadRecentAnswerPackage() {
+export const hasPlus = (info: CustomerInfo) => Boolean(info.entitlements.active[PLUS_ENTITLEMENT]);
+
+export async function loadPlusOffer() {
   const client = await purchaseClient();
-  const offerings = await client.getOfferings();
-  return offerings.current?.availablePackages.find((item) => item.product.identifier === RECENT_ANSWER_PRODUCT) ?? null;
+  const [info, offerings] = await Promise.all([client.getCustomerInfo(), client.getOfferings()]);
+  const packages = offerings.current?.availablePackages ?? [];
+  const order = ["MONTHLY", "ANNUAL"];
+  return {
+    info,
+    packages: packages
+      .filter((item) => order.includes(item.packageType))
+      .sort((a, b) => order.indexOf(a.packageType) - order.indexOf(b.packageType)),
+  };
 }
 
-/** Buys one recent answer. Resolves with the store transaction id once the purchase succeeds. */
-export async function buyRecentAnswer(option: PurchasesPackage) {
+export async function buyPackage(option: PurchasesPackage) {
   const client = await purchaseClient();
-  const { transaction } = await client.purchasePackage(option);
-  return transaction.transactionIdentifier;
+  return (await client.purchasePackage(option)).customerInfo;
+}
+
+export async function restorePurchase() {
+  return (await purchaseClient()).restorePurchases();
+}
+
+export async function manageSubscription() {
+  return (await purchaseClient()).showManageSubscriptions();
+}
+
+/** Ties purchases to the Yonder account so the server can grant Plus benefits. */
+export async function identifyPurchaser(userId: string | null) {
+  const client = await purchaseClient();
+  if (userId) return (await client.logIn(userId)).customerInfo;
+  return (await client.isAnonymous()) ? client.getCustomerInfo() : client.logOut();
 }

@@ -65,19 +65,10 @@ export async function signInLive(email: string, password: string) {
   useLiveAuth.setState({ user: data.user, ready: true, error: "" });
 }
 
-export async function createLiveAccount(email: string, password: string, confirmation: string) {
-  const normalized = normalizeEmail(email);
-  if (password.length < 8) throw new Error("Use a password with at least 8 characters.");
-  if (password !== confirmation) throw new Error("The passwords don’t match.");
-  const { data, error } = await getLiveClient().auth.signUp({ email: normalized, password });
-  if (error) throw new Error(authErrorMessage(error));
-  if (data.session && data.user) useLiveAuth.setState({ user: data.user, ready: true, error: "" });
-  return !data.session;
-}
-
 export async function sendSignInCode(email: string) {
   const normalized = normalizeEmail(email);
-  const { error } = await getLiveClient().auth.signInWithOtp({ email: normalized, options: { shouldCreateUser: false } });
+  // New emails get an account on first verified code; there is no separate sign-up form.
+  const { error } = await getLiveClient().auth.signInWithOtp({ email: normalized, options: { shouldCreateUser: true } });
   if (error) throw new Error(authErrorMessage(error));
 }
 

@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { newCollection, PlaceCollection, toggleCollectionPlace } from "./collections";
+import { usePurchaseStore } from "./purchaseStore";
 
 export const useCollectionHydration = create<{ status: "loading" | "ready" | "error" }>(() => ({ status: "loading" }));
 
@@ -18,7 +19,7 @@ export const useCollectionStore = create<{
   collections: [],
   createCollection: (name) => {
     requireHydration();
-    const collection = newCollection(get().collections, name, `${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    const collection = newCollection(get().collections, name, usePurchaseStore.getState().plus, `${Date.now()}-${Math.random().toString(36).slice(2)}`);
     set({ collections: [...get().collections, collection] });
     return collection.id;
   },

@@ -24,8 +24,8 @@ export async function getLiveRequest(id: string): Promise<LiveRequest | null> {
   return data as LiveRequest | null;
 }
 
-export async function createLiveRequest(input: NewLiveRequest): Promise<string> {
-  validateLiveRequest(input);
+export async function createLiveRequest(input: NewLiveRequest, plus = false): Promise<string> {
+  validateLiveRequest(input, plus);
   const { data, error } = await getLiveClient().rpc("pilot_create_request", {
     p_place_name: input.placeName.trim(), p_latitude: input.latitude, p_longitude: input.longitude,
     p_landmark: input.landmark.trim(), p_question_kind: input.questionKind, p_deadline_minutes: input.deadlineMinutes,

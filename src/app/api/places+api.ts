@@ -5,14 +5,24 @@ type CacheEntry = { at: number; places: unknown[] };
 const cache = new Map<string, CacheEntry>();
 let busy = false;
 let lastRequest = 0;
+/** "lat,lng" rounded by the client → a ~1° Nominatim viewbox that ranks nearby places first. */
+export function viewboxFor(near: string | null) {
+  const match = near?.match(/^(-?\d{1,2}(?:\.\d{1,2})?),(-?\d{1,3}(?:\.\d{1,2})?)$/);
+  if (!match) return null;
+  const [lat, lng] = [Number(match[1]), Number(match[2])];
+  if (Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
+  return `${(lng - 0.5).toFixed(2)},${(lat + 0.5).toFixed(2)},${(lng + 0.5).toFixed(2)},${(lat - 0.5).toFixed(2)}`;
+}
 export async function GET(request: Request) {
-  const q = new URL(request.url).searchParams.get("q")?.trim() || "";
+  const params = new URL(request.url).searchParams;
+  const q = params.get("q")?.trim() || "";
+  const viewbox = viewboxFor(params.get("near"));
   if (q.length < 3 || q.length > 160)
     return Response.json(
       { error: "Enter a place and city, between 3 and 160 characters." },
       { status: 400 },
     );
-  const key = q.toLowerCase();
+  const key = `${q.toLowerCase()}|${viewbox ?? ""}`;
   const cached = cache.get(key);
   if (cached && Date.now() - cached.at < 86400000)
     return Response.json({ places: cached.places });
@@ -33,6 +43,7 @@ export async function GET(request: Request) {
       limit: "6",
       addressdetails: "1",
       countrycodes: "us",
+      ...(viewbox ? { viewbox } : {}),
     }).toString();
     const response = await fetch(url, {
       headers: {

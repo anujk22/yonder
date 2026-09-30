@@ -13,3 +13,9 @@ test('provider tags preserve grocery, court and transit identity, with a neutral
   assert.equal(artFor(place), 'grocery');
   assert.equal(categoryFor(place), 'Shopping');
 });
+
+test("place search bias accepts only rounded coordinates", async () => {
+  const { viewboxFor } = await import("../src/app/api/places+api");
+  assert.equal(viewboxFor("40.71,-74.01"), "-74.51,41.21,-73.51,40.21");
+  for (const near of [null, "", "40.7128,-74.0060", "abc", "91,0", "40,-181"]) assert.equal(viewboxFor(near), null);
+});

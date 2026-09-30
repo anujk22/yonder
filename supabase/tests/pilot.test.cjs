@@ -240,6 +240,33 @@ async function main() {
     check((await query('select * from public.pilot_requests where id=$1', [moderation])).rows.length, 0);
     check((await query('select * from public.pilot_reports where request_id=$1', [moderation])).rows.length, 0);
     check((await query('select * from public.pilot_requests where id=$1', [enrolled])).rows.length, 1);
+
+    await as('authenticated', users[5]);
+    const access = await create('Station elevator', 'accessibility');
+    await as('authenticated', users[2]);
+    await query('select public.pilot_claim_request($1)', [access]);
+    await rejects(() => query('select public.pilot_answer_request($1,$2,$3)', [access, '5', '']), 'accessibility takes yes/no');
+    await query('select public.pilot_answer_request($1,$2,$3)', [access, 'no', 'Elevator is out, ramp is clear']);
+    check((await status(access)).answer, 'no');
+
+    await as('authenticated', users[5]);
+    await rejects(() => query('select public.pilot_create_request($1,40,-73,$2,$3,60)', ['Long wait', '', 'open_now']), 'free members get 30 min max');
+    await rejects(() => query('insert into public.plus_members(user_id) values($1)', [users[5]]), 'clients cannot grant Plus');
+    check((await query('select * from public.plus_members')).rows.length, 0);
+    await as('service_role');
+    await query("insert into public.plus_members(user_id, expires_at) values($1, now()+interval '30 days'),($2, now()-interval '1 day')", [users[5], users[2]]);
+    await as('authenticated', users[5]);
+    check((await query('select user_id from public.plus_members')).rows.map(r => r.user_id), [users[5]]);
+    const longWindow = (await query('select public.pilot_create_request($1,40,-73,$2,$3,120) as id', ['Long wait', '', 'open_now'])).rows[0].id;
+    check(Boolean(longWindow), true);
+    for (let i = 0; i < 8; i++) await create(`Plus check ${i}`);
+    await rejects(() => create('Eleventh'), 'Plus limit is 10 open checks');
+    await as('authenticated', users[2]);
+    await rejects(() => query('select public.pilot_create_request($1,40,-73,$2,$3,60)', ['Lapsed', '', 'open_now']), 'expired Plus has free limits');
+    await as('authenticated', users[5]);
+    await query('select public.pilot_delete_account()');
+    await query('reset role');
+    check((await query('select * from public.plus_members where user_id=$1', [users[5]])).rows.length, 0);
     console.log(`pilot SQL: ${assertions} assertions passed`);
   } finally {
     await db.close();

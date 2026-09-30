@@ -49,8 +49,8 @@ function TabItem({
   }));
   const objectMotion = useAnimatedStyle(() => ({
     transform: [
-      { translateY: -3 * progress.get() },
-      { scale: 0.92 + 0.12 * progress.get() },
+      { translateY: -1.5 * progress.get() },
+      { scale: 0.94 + 0.1 * progress.get() },
       { rotate: `${icon === "scoutFront" ? 0 : -6 * progress.get()}deg` },
     ],
   }));
@@ -71,7 +71,7 @@ function TabItem({
           ]}
         />
         <Animated.View style={[{ zIndex: 1 }, objectMotion]}>
-          <BrandImage kind={icon} size={44} />
+          <BrandImage kind={icon} size={36} />
         </Animated.View>
       </View>
       <Text
@@ -119,6 +119,7 @@ export function BottomNavigation() {
       ? "/"
       : pathname;
   return (
+    <View style={{ backgroundColor: theme.bg, paddingBottom: Math.max(insets.bottom - 12, 8) }}>
     <View
       accessibilityRole="tablist"
       style={[
@@ -126,7 +127,6 @@ export function BottomNavigation() {
         {
           backgroundColor: theme.bg,
           borderColor: theme.border,
-          paddingBottom: Math.max(insets.bottom, 12),
         },
       ]}
     >
@@ -144,6 +144,7 @@ export function BottomNavigation() {
         />
       ))}
     </View>
+    </View>
   );
 }
 const styles = StyleSheet.create({
@@ -152,24 +153,23 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 25,
     marginHorizontal: 10,
-    marginBottom: 8,
     boxShadow: "0 -3px 18px #243C3210, 0 4px 0 #243C3210",
-    paddingTop: 7,
+    paddingVertical: 6,
     paddingHorizontal: 6,
   },
   tab: {
     flex: 1,
-    minHeight: 55,
+    minHeight: 54,
     alignItems: "center",
     justifyContent: "center",
-    gap: 4,
+    gap: 2,
   },
   icon: {
-    width: 48,
-    height: 43,
+    width: 44,
+    height: 38,
     alignItems: "center",
     justifyContent: "center",
   },
-  highlight: { position: "absolute", inset: 0, borderRadius: 24 },
+  highlight: { position: "absolute", inset: 0, borderRadius: 19 },
   label: { fontSize: 11, lineHeight: 16, letterSpacing: 0.1 },
 });

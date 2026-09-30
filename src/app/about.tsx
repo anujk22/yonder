@@ -39,7 +39,7 @@ export default function AboutScreen() {
           [
             "01",
             "Pick your place.",
-            "Search a U.S. public place, check its map pin, and choose a question about opening, the wait, or available room.",
+            "Search a U.S. public place, check its map pin, and choose a question about opening, the wait, available room or step-free access.",
           ],
           [
             "02",
@@ -54,7 +54,7 @@ export default function AboutScreen() {
         ] : [
           ["01", "Find a place.", "Search for a U.S. place or city, then see it on the map. Location access is optional."],
           ["02", "Keep it close.", "Save a place or add a personal pin for somewhere you want to remember."],
-          ["03", "Make your own lists.", "Organize saved places into named collections. Collections are free and unlimited."],
+          ["03", "Make your own lists.", "Organize saved places into named collections. Your first collection is free; Plus adds more."],
         ]).map(([n, title, body]) => (
           <View key={n} style={styles.step}>
             <Text style={styles.number}>{n} ↗</Text>
@@ -79,17 +79,19 @@ export default function AboutScreen() {
         <Text style={styles.stepTitle}>What’s available today.</Text>
         <Text style={styles.stepBody}>
           Explore the map, search U.S. places, save your favorites and create
-          free unlimited collections. Explore and Saved need no account.
+          a free collection. Explore and Saved need no account.
           Your saved places, personal pins and collections stay on this device
           and do not sync between devices.
         </Text>
         {liveConfigured && <Text style={styles.stepBody}>
-          Community checks are free and require an email account. New accounts
-          need email confirmation before signing in. Your open checks share
+          Community checks are free and use an email account; you sign in
+          with a code sent to your email. Your open checks share
           the selected public place and question with signed-in members; the
           requester and responding Scout can see the answer. Your email is
-          not shown to other members. Open Requests or Scout to sign out or
-          delete your account and its shared checks.
+          not shown to other members. Open Settings to sign out or delete
+          your account and its shared checks. Yonder Plus is an optional
+          subscription for longer check windows, more open checks and
+          unlimited collections.
         </Text>}
         {DEMO_FEATURES_ENABLED && <Text style={styles.stepBody}>
           This build also includes a separate local demo. The NYC tour,
