@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Modal, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { AnswerTierCard } from "@/components/AnswerTierCard";
-import { AppScreen, MissingDataState, ScreenHeader } from "@/components/ui";
+import { AppScreen, MissingDataState, PrimaryButton, ScreenHeader } from "@/components/ui";
 import { answerTier, money, RECENT_ANSWER_CENTS } from "@/lib/pricing";
 import { sameQuestion } from "@/lib/queryMatching";
 import { useYonderStore } from "@/lib/store";
@@ -15,6 +15,7 @@ export default function OptionsScreen() {
   const answers = useYonderStore((s) => s.answers);
   const [now, setNow] = useState(() => Date.now());
   const [error, setError] = useState("");
+  const [paying, setPaying] = useState(false);
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
@@ -56,18 +57,7 @@ export default function OptionsScreen() {
           headline="Post a bounty"
           priceCents={query.bountyCents}
           subtitle={`Scout gets ${money(query.observerRewardCents)} · ${query.deadlineMinutes}-minute deadline · demo, no card charged`}
-          onPress={() => {
-            useYonderStore.getState().postActiveQuery();
-            if (
-              useYonderStore.getState().queries.find((q) => q.id === query.id)
-                ?.state === "OPEN"
-            )
-              router.push("/ask/status");
-            else
-              setError(
-                "You’ve reached the $10 limit on unpaid bounties. Wait for your open requests to finish, then try again.",
-              );
-          }}
+          onPress={() => setPaying(true)}
         />
         {recent && (
           <AnswerTierCard
@@ -107,6 +97,32 @@ export default function OptionsScreen() {
           </Text>
         )}
       </View>
+      <Modal visible={paying} transparent animationType="slide" onRequestClose={() => setPaying(false)}>
+        <View style={styles.scrim}>
+          <View style={styles.sheet}>
+            <Text accessibilityRole="header" style={styles.sheetTitle}>Confirm your bounty</Text>
+            <View style={styles.row}><Text style={styles.rowLabel}>Bounty</Text><Text style={styles.rowValue}>{money(query.bountyCents)}</Text></View>
+            <View style={styles.row}><Text style={styles.rowLabel}>Scout gets</Text><Text style={styles.rowValue}>{money(query.observerRewardCents)}</Text></View>
+            <View style={styles.row}><Text style={styles.rowLabel}>Yonder fee</Text><Text style={styles.rowValue}>{money(query.bountyCents - query.observerRewardCents)}</Text></View>
+            <Text style={styles.body}>Billed only if someone answers within {query.deadlineMinutes} minutes.</Text>
+            <PrimaryButton label={`Pay ${money(query.bountyCents)}`} onPress={() => {
+              setPaying(false);
+              useYonderStore.getState().postActiveQuery();
+              if (
+                useYonderStore.getState().queries.find((q) => q.id === query.id)
+                  ?.state === "OPEN"
+              )
+                router.push("/ask/status");
+              else
+                setError(
+                  "You’ve reached the $10 limit on unpaid bounties. Wait for your open requests to finish, then try again.",
+                );
+            }} />
+            <PrimaryButton label="Cancel" variant="secondary" onPress={() => setPaying(false)} />
+            <Text style={styles.note}>Demo · you won’t be charged.</Text>
+          </View>
+        </View>
+      </Modal>
       <Text style={styles.note}>
         Bounties are simulated in this build: no card is charged and no one is
         dispatched.
@@ -132,6 +148,12 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   cards: { gap: 14, marginTop: 24 },
+  scrim: { flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.35)" },
+  sheet: { backgroundColor: ask.bg, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40, gap: 12 },
+  sheetTitle: { fontFamily: font.ui700, fontSize: 24, color: ask.ink, letterSpacing: -1, marginBottom: 4 },
+  row: { flexDirection: "row", justifyContent: "space-between" },
+  rowLabel: { ...type.body, color: ask.inkSoft },
+  rowValue: { fontFamily: font.ui700, fontSize: 17, color: ask.ink },
   note: {
     ...type.label,
     color: ask.inkSoft,

@@ -60,7 +60,7 @@ export default function SettingsScreen() {
     <View style={styles.section}>
       <Text style={styles.label}>YONDER PLUS</Text>
       <Text style={styles.value}>{plus ? "Plus is active" : "Free plan"}</Text>
-      <Text style={styles.body}>{plus ? "Longer check windows, more open checks and unlimited collections." : "Asking and answering are always free. Plus is for people who check a lot."}</Text>
+      <Text style={styles.body}>{plus ? "Longer check windows, more open checks and unlimited collections." : "Plus is for people who check a lot: longer check windows, more open checks and unlimited collections."}</Text>
       <PrimaryButton label={plus ? "See your Plus benefits" : "Explore Yonder Plus"} variant={plus ? "secondary" : "primary"} onPress={() => router.push("/plus")} />
       {purchasesAvailable && <PrimaryButton label="Restore purchases" variant="secondary" disabled={busy} onPress={() => void run(async () => {
         const info = await restorePurchase();

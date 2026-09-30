@@ -14,14 +14,14 @@ Generated shots, music only, labelled "concept animation". Text: "Is a hoop free
 | --- | --- | --- |
 | 0:10 | Onboarding 1, "Ask someone already there." (mascot) | Hi, we're Safwan and Anuj, students at Rutgers. Ever crossed town for a court and found it packed? Maps tell you where a place is, not what's happening there now. |
 | 0:20 | Next, the dark page "Or be the Scout.", Next, "Maybe later", Explore landing "Good plans. Better intel." | So we built Yonder: ask someone who's already there. |
-| 0:25 | "Take the NYC sample tour", Pier 2 card "Are any basketball courts free?", "Try the local demo", tap the court question, "See answer options" | Pick a place, ask one question, |
+| 0:25 | "Take the NYC sample tour", Pier 2 card "Are any basketball courts free?", "Try the local demo", tap the court question, "+ $0.50" (bounty now $2.50), "See answer options" | Pick a place, ask one question, set your bounty, |
 | 0:31 | Options, "How do you want to know?", with "Post a bounty" and the free "Two courts are open · Sample · 1 day ago" | then choose how fresh you need it. A day-old answer is free. Need it right now? Post a bounty. Anuj, who actually answers? |
 
 ## 0:36–1:02 Anuj: the Scout
 
 | Film | Phone | Anuj says |
 | --- | --- | --- |
-| 0:36 | Tap "Post a bounty", then "Your question has a place." with "demo, no card charged" | Someone already there: a Scout. The bounty runs as a demo in this build, so here's their side. |
+| 0:36 | Tap "Post a bounty", the "Confirm your bounty" sheet (Scout gets $1.48, Yonder fee $1.02), "Pay $2.50", then "Your question has a place." | Someone already there: a Scout. You pay only if they answer. Here's their side. |
 | 0:42 | "Try the example observer journey", task "WHAT TO LOOK FOR" 01 to 03, and the line about faces | They get a short checklist of what to look for, and clear rules: keep faces out of frame, skip anything unsafe. |
 | 0:52 | "Explore an example", "Let's take a look.", "Open demo camera", reticle locks, "Capture three sample frames" | Capture happens live, in the app. No camera-roll uploads. |
 | 0:57 | "Preparing an example answer", then "One court is available." with "Example answer · not live" and "Created 0s ago" | And the asker gets an answer that says exactly how old it is. Saf? |
@@ -31,17 +31,17 @@ Generated shots, music only, labelled "concept animation". Text: "Is a hoop free
 | Film | Phone | Saf says |
 | --- | --- | --- |
 | 1:02 | Explore, sample tour, "All 12 places", "14 St - Union Sq Station", card "Is the elevator working right now?" | Some questions matter more than others. Is the elevator working? For a wheelchair user, that decides whether the trip happens at all. |
-| 1:11 | "Ask for a free place check", select "Is the step-free entrance or elevator working?" and "15 min" | So accessibility is a built-in check, and live checks are free. |
+| 1:11 | "Ask for a live check", select "Is the step-free entrance or elevator working?" and "15 min" | So accessibility is a built-in check, with no charge during early access. |
 | 1:17 | "Send check", then the check screen | Someone nearby answers yes or no, labelled self-reported, because trust is the product. Anuj, how does this make money? |
 
 ## 1:27–1:57 Anuj: the business and the vision
 
 | Film | Phone | Anuj says |
 | --- | --- | --- |
-| 1:27 | Settings gear, then Settings | Right now, asking is free while the network grows. |
+| 1:27 | Settings gear, then Settings | Fresh looks are paid bounties, and the asker sets the price. |
 | 1:31 | "Explore Yonder Plus", monthly and yearly plans with "1 week free" | Yonder Plus is a monthly or yearly subscription on RevenueCat, with a one-week free trial, for people who plan ahead. |
 | 1:38 | "Start 1 week free", Test Store sheet, confirm, "Welcome to Plus." | That's a Test Store purchase, and our server, not the app, decides who has Plus. |
-| 1:44 | Explore, "Ask for a free place check": "KEEP IT OPEN FOR" now shows "1 hr" and "2 hr" | Plus keeps checks open for two hours. Next, paid bounties for everyone: the Scout gets paid, Yonder keeps a dollar plus three percent. |
+| 1:44 | Explore, "Ask for a live check": "KEEP IT OPEN FOR" now shows "1 hr" and "2 hr" | Plus keeps checks open for two hours. Next, paid bounties for everyone: the Scout gets paid, Yonder keeps a dollar plus three percent. |
 | 1:51 | Explore map, then the end card (added in edit): yonder. · Ask someone already there. · github.com/anujk22/yonder | **Anuj:** Waze made roads live by asking drivers. We're doing it for every place. **Saf** (bubble cuts back): Yonder. Ask someone already there. |
 
 Push line: only if OneSignal is configured before submitting, Anuj may add "and you get a push the moment it's answered" at 0:57. Otherwise leave it out.
@@ -55,7 +55,7 @@ Fee note: `src/lib/pricing.ts` charges $1 plus 3% of the amount above the $2 min
 | Next Gen: students, a video, open source | Saf's intro line and the caption; end card shows github.com/anujk22/yonder |
 | RevenueCat purchase (Test Store is accepted for Next Gen) | 1:39 purchase, said out loud as a Test Store purchase |
 | Design | Onboarding, mascot, transitions, answer cards on screen throughout |
-| Peace Prize | 1:02 live, free accessibility check |
+| Peace Prize | 1:02 live accessibility check (no charge during early access) |
 | HAMM | 1:27 free core plus a subscription with a trial, enforced on the server |
 | OneSignal | Not shown on camera (push can't be recorded in this build). Cover it in the written submission with the App ID and campaign screenshots. |
 

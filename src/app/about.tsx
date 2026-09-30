@@ -44,7 +44,7 @@ export default function AboutScreen() {
           [
             "02",
             "Ask the community.",
-            "Sign in to send a free check with an expiry time. Someone already there can choose to answer. No Scout is dispatched and no payment or reward is offered.",
+            "Sign in to send a check with an expiry time; there’s no charge during early access. Someone already there can choose to answer. No Scout is dispatched and no payment or reward is offered.",
           ],
           [
             "03",
@@ -84,7 +84,7 @@ export default function AboutScreen() {
           and do not sync between devices.
         </Text>
         {liveConfigured && <Text style={styles.stepBody}>
-          Community checks are free and use an email account; you sign in
+          Community checks use an email account; you sign in
           with a code sent to your email. Your open checks share
           the selected public place and question with signed-in members; the
           requester and responding Scout can see the answer. Your email is

@@ -19,7 +19,7 @@ const pages: { art: ArtworkKind; eyebrow: string; title: string; body: string; d
     art: "scout",
     eyebrow: "WHEN YOU’RE OUT",
     title: "Or be the\nScout.",
-    body: "Answer a check near you in a couple of taps. Asking and answering are free.",
+    body: "Answer a check near you in a couple of taps.",
     dark: true,
   },
   {

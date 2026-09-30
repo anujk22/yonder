@@ -106,7 +106,7 @@ function LiveHomeSession({ view }: { view: "requests" | "scout" }) {
       </View> : null}
       {current?.access && !scout && <>
         <PrimaryButton label="Ask about a place" onPress={() => router.navigate("/")} />
-        <Text style={styles.hint}>Pick any place on the map, then tap “Ask for a free place check.”</Text>
+        <Text style={styles.hint}>Pick any place on the map, then tap “Ask for a live check.”</Text>
         {waiting.length > 0 && <Text style={styles.section}>Waiting for an answer</Text>}
         {waiting.map(row)}
         {past.length > 0 && <Text style={styles.section}>Answered and closed</Text>}

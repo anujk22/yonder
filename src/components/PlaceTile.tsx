@@ -85,7 +85,7 @@ export function PlaceTile({
           {!compact && (
             <View style={styles.bottom}>
               <Text style={styles.question} numberOfLines={2}>
-                {LIVE_FEATURES_ENABLED ? "Ask for a free place check" : DEMO_FEATURES_ENABLED ? questionFor(place) : "Show on map"}
+                {LIVE_FEATURES_ENABLED ? "Ask for a live check" : DEMO_FEATURES_ENABLED ? questionFor(place) : "Show on map"}
               </Text>
               <View style={styles.arrow}>
                 <ArrowUpRight size={17} color={ask.ink} />

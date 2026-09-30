@@ -103,7 +103,7 @@ function NewLiveRequestSession() {
       {!plus && <Pressable accessibilityRole="button" onPress={() => router.push("/plus")}><Text style={styles.plus}>Need longer? Plus keeps checks open for up to 2 hours.</Text></Pressable>}
       <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: publicConfirmed }} onPress={() => { setPublicConfirmed(!publicConfirmed); setError(""); }} style={styles.confirm}><Text style={styles.optionText}>{publicConfirmed ? "☑" : "□"} This is a public place and the details are safe to share.</Text></Pressable>
       <PrimaryButton label={busy ? "Sending…" : "Send check"} onPress={() => void submit()} disabled={busy} />
-      <Text style={styles.meta}>Free. Someone nearby may answer; if nobody does, the check closes on its own.</Text>
+      <Text style={styles.meta}>No charge during early access. Someone nearby may answer; if nobody does, the check closes on its own.</Text>
     </>}
     {!!error && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}
   </AppScreen>;

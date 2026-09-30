@@ -491,12 +491,12 @@ export default function ExploreMap() {
             onPress={() => openPlaceDraft(selected, router)}
             style={styles.primary}
           >
-            <Text style={styles.primaryText}>{LIVE_FEATURES_ENABLED ? "Ask for a free place check" : "Try a demo request"}</Text>
+            <Text style={styles.primaryText}>{LIVE_FEATURES_ENABLED ? "Ask for a live check" : "Try a demo request"}</Text>
             <ArrowUpRight size={21} color={ask.ink} />
           </MotionPressable>
           <Text style={styles.privacy}>
             {LIVE_FEATURES_ENABLED
-              ? "Free community check · another person may answer. No guaranteed response."
+              ? "No charge during early access · someone nearby may answer. No guaranteed response."
               : source === "tour"
               ? "Sample tour · try a demo request, no card charged."
               : "Real place · requests currently run as a local demo."}

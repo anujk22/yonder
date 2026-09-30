@@ -50,9 +50,11 @@ You are operating a Mac to record a demo of an iPhone app called Yonder. The iPh
 | 0:13.5 | "Maybe later" | "Good plans. Better intel." | to 0:15 |
 | 0:15 | "Take the NYC sample tour" | "Pier 2 Basketball Courts", "Are any basketball courts free?" | to 0:17.5 |
 | 0:17.5 | "Try the local demo" (small link under the yellow button) | "What would you like to know?" | to 0:19 |
-| 0:19 | "Are any basketball courts free? ↗" | question filled in | to 0:20.5 |
-| 0:20.5 | "See answer options" (arm by scrolling down) | "How do you want to know?", "Post a bounty", "Two courts are open" | to 0:26 |
-| 0:26 | "Post a bounty" | "Your question has a place." | to 0:32 |
+| 0:19 | "Are any basketball courts free? ↗" | question filled in | to 0:20 |
+| 0:20 | "+ $0.50" (bounty stepper) | "$2.50" | to 0:21.5 |
+| 0:21.5 | "See answer options" (arm by scrolling down) | "How do you want to know?", "Post a bounty" at $2.50 | to 0:26 |
+| 0:26 | "Post a bounty" | sheet slides up: "Confirm your bounty", "Pay $2.50" | to 0:28.5 |
+| 0:28.5 | "Pay $2.50" | "Your question has a place." | to 0:32 |
 | 0:32 | "Try the example observer journey" | "WHAT TO LOOK FOR" | to 0:42 |
 | 0:42 | "Explore an example" | "Let's take a look." | to 0:43.5 |
 | 0:43.5 | "Open demo camera" | "PRACTICE OBSERVATION" | to 0:45.5 |
@@ -62,7 +64,7 @@ You are operating a Mac to record a demo of an iPhone app called Yonder. The iPh
 | 0:53 | only if visible: "Take the NYC sample tour" | tour card | to 0:54 (short ok) |
 | 0:54 | "All 12 places" | "THE NYC SAMPLE TOUR" | to 0:55 (short ok) |
 | 0:55 | "14 St - Union Sq Station" (arm by scrolling the list) | "Is the elevator working right now?" | to 1:01 |
-| 1:01 | "Ask for a free place check" | "WHAT SHOULD SOMEONE CHECK?" | to 1:02.5 |
+| 1:01 | "Ask for a live check" | "WHAT SHOULD SOMEONE CHECK?" | to 1:02.5 |
 | 1:02.5 | "Is the step-free entrance or elevator working?" | option highlighted | to 1:04 |
 | 1:04 | "15 min" | highlighted | to 1:07 |
 | 1:07 | "Send check" (arm by scrolling down) | the check screen for 14 St - Union Sq Station | to 1:17 |
@@ -72,6 +74,6 @@ You are operating a Mac to record a demo of an iPhone app called Yonder. The iPh
 | 1:28 | "Start 1 week free" | purchase sheet | to 1:29.5 |
 | 1:29.5 | the sheet's purchase or confirm button | "Welcome to Plus." | to 1:34 |
 | 1:34 | "Explore" (bottom bar) | Union Sq card "Is the elevator working right now?"; if it's not there, click "All 12 places", then "14 St - Union Sq Station", as fast as naturally possible | to 1:35.5 (short ok) |
-| 1:35.5 | "Ask for a free place check" | "KEEP IT OPEN FOR" with "1 hr" and "2 hr" (scroll them into view right after this screen opens) | to 1:41 |
+| 1:35.5 | "Ask for a live check" | "KEEP IT OPEN FOR" with "1 hr" and "2 hr" (scroll them into view right after this screen opens) | to 1:41 |
 | 1:41 | "Explore" (bottom bar) | map | to 1:47 |
 | 1:47 | (nothing) | report "take complete" | |

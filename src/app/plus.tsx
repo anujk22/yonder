@@ -39,7 +39,7 @@ export default function PlusScreen() {
       usePurchaseStore.getState().accept(info);
       setPackages(packages);
       setSelected((current) => current ?? packages.find((item) => item.packageType === "ANNUAL")?.identifier ?? packages[0]?.identifier ?? null);
-      setMessage(packages.length ? "" : "Plus isn’t available to buy right now. Asking and answering stay free.");
+      setMessage(packages.length ? "" : "Plus isn’t available to buy right now.");
     }).catch(() => { if (active) setMessage("We couldn’t load Plus. Check your connection and try again."); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
@@ -71,7 +71,7 @@ export default function PlusScreen() {
       <BrandObject kind="scoutFront" size={132} playful />
     </View>
     <Text accessibilityRole="header" style={styles.title}>{plus ? "You’re on Plus." : "For people who plan\naround places."}</Text>
-    <Text style={styles.body}>Asking and answering checks stay free for everyone. Plus is for the people who check a lot.</Text>
+    <Text style={styles.body}>Plus is for the people who check a lot.</Text>
     <View style={styles.perks}>
       {perks.map(([title, body]) => <View key={title} style={styles.perk}>
         <Text style={styles.check}>✓</Text>
