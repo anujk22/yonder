@@ -4,7 +4,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { PGlite } = require('@electric-sql/pglite');
 
-const migration = fs.readFileSync(path.join(__dirname, '../migrations/20260927000000_pilot_shared_checks.sql'), 'utf8');
+const migrations = fs.readdirSync(path.join(__dirname, '../migrations')).filter(file => file.endsWith('.sql')).sort()
+  .map(file => fs.readFileSync(path.join(__dirname, '../migrations', file), 'utf8'));
 const users = [1, 2, 3, 4, 5, 6].map(n => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`);
 
 async function main() {
@@ -29,13 +30,13 @@ async function main() {
   try {
     await db.exec(`
       create role anon; create role authenticated; create role service_role bypassrls;
-      create schema auth; create table auth.users (id uuid primary key);
+      create schema auth; create table auth.users (id uuid primary key, email_confirmed_at timestamptz, is_anonymous boolean default false);
       create function auth.uid() returns uuid language sql stable
         as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
       grant usage on schema public, auth to anon, authenticated, service_role;
       grant execute on function auth.uid() to anon, authenticated, service_role;
     `);
-    await db.exec(migration);
+    for (const migration of migrations) await db.exec(migration);
     await query('insert into auth.users(id) select unnest($1::uuid[])', [users]);
     await query('insert into public.pilot_members(user_id) select unnest($1::uuid[])', [users.slice(0, 5)]);
 
@@ -109,8 +110,10 @@ async function main() {
     check((await query('select id from public.pilot_requests where id=$1', [active[1]])).rows.length, 0);
     await rejects(() => query('select public.pilot_claim_request($1)', [active[1]]), 'block bars claim');
     await rejects(() => query('select public.pilot_report_request($1,$2)', [active[1], 'spam']), 'block bars report');
+    check((await query('select answer,note from public.pilot_requests where id=$1', [answered])).rows.length, 0);
     await as('authenticated', users[0]);
-    check((await query('select id from public.pilot_requests where id=$1', [active[1]])).rows.length, 1);
+    check((await query('select id from public.pilot_requests where id=$1', [active[1]])).rows.length, 0);
+    check((await query('select answer, note from public.pilot_requests where id=$1', [answered])).rows.length, 0);
     await rejects(() => query('select public.pilot_claim_request($1)', [fourthClaim]), 'other requester own claim');
     await as('authenticated', users[2]);
     await query('select public.pilot_report_request($1,$2)', [active[1], 'spam']);
@@ -152,6 +155,76 @@ async function main() {
     check((await query('select count(*)::integer as count from public.pilot_requests where id in ($1,$2)', [expired, queue])).rows[0].count, 0);
     await as('authenticated', users[5]);
     await rejects(() => query('select public.pilot_block_user($1)', [users[0]]), 'nonmember cannot block');
+    await as('authenticated', users[4]);
+    for (const [name, landmark] of [['Watch him', 'Entrance'], ['Cafe', 'private apartment'], ['Fucking cafe', 'Entrance']]) {
+      await rejects(() => query('select public.pilot_create_request($1,40,-73,$2,$3,10)', [name, landmark, 'open_now']), 'unsafe request text');
+    }
+    const moderation = await create('Moderated cafe');
+    await as('authenticated', users[0]);
+    await query('select public.pilot_claim_request($1)', [moderation]);
+    await rejects(() => query('select public.pilot_answer_request($1,$2,$3)', [moderation, 'yes', 'watch her at her house']), 'unsafe answer note');
+    await rejects(() => query('select public.pilot_answer_request($1,$2,$3)', [moderation, 'yes', 'kill yourself']), 'abusive answer note');
+    await query('select public.pilot_answer_request($1,$2,$3)', [moderation, 'yes', 'Public entrance is open']);
+    await as('authenticated', users[4]);
+    await query('select public.pilot_report_request($1,$2)', [moderation, 'unsafe']);
+    check((await query('select * from public.pilot_requests where id=$1', [moderation])).rows.length, 0);
+    await as('authenticated', users[0]);
+    check((await query('select * from public.pilot_requests where id=$1', [moderation])).rows.length, 0);
+    await query('select public.pilot_report_request($1,$2)', [moderation, 'inaccurate']);
+    await rejects(() => query('select * from public.pilot_reports'), 'reports are operator-only');
+    await as('service_role');
+    check((await query('select hidden from public.pilot_requests where id=$1', [moderation])).rows[0].hidden, true);
+    await query('update public.pilot_requests set hidden=false where id=$1', [moderation]);
+    await query('update public.pilot_reports set resolved_at=now() where request_id=$1', [moderation]);
+    await as('authenticated', users[4]);
+    check((await query('select answer from public.pilot_requests where id=$1', [moderation])).rows[0].answer, 'yes');
+    await query('select public.pilot_block_user($1)', [users[0]]);
+    check((await query('select answer,note from public.pilot_requests where id=$1', [moderation])).rows.length, 0);
+    await as('authenticated', users[0]);
+    check((await query('select answer,note from public.pilot_requests where id=$1', [moderation])).rows.length, 0);
+
+    await as('authenticated', users[2]);
+    const quarantined = await create('Quarantine cafe');
+    await as('authenticated', users[4]);
+    await query('select public.pilot_claim_request($1)', [quarantined]);
+    await query('select public.pilot_report_request($1,$2)', [quarantined, 'spam']);
+    await rejects(() => query('select public.pilot_answer_request($1,$2,$3)', [quarantined, 'yes', '']), 'quarantined answer');
+    await query('select public.pilot_release_request($1)', [quarantined]);
+    await as('authenticated', users[0]);
+    await rejects(() => query('select public.pilot_claim_request($1)', [quarantined]), 'quarantined claim');
+
+    await query('reset role');
+    const verified = '00000000-0000-4000-8000-000000000007';
+    const anonymous = '00000000-0000-4000-8000-000000000008';
+    await query('insert into auth.users(id,email_confirmed_at) values($1,now())', [verified]);
+    await query('insert into auth.users(id,email_confirmed_at,is_anonymous) values($1,now(),true)', [anonymous]);
+    check((await query('select active from public.pilot_members where user_id=$1', [verified])).rows[0].active, true);
+    check((await query('select * from public.pilot_members where user_id=$1', [anonymous])).rows.length, 0);
+    await query('update auth.users set email_confirmed_at=now() where id=$1', [users[5]]);
+    await as('authenticated', users[5]);
+    const enrolled = await create('Verified cafe');
+    check(Boolean(enrolled), true);
+    await as('service_role');
+    await query('update public.pilot_members set active=false where user_id=$1', [verified]);
+    await query('reset role');
+    await query('update auth.users set email_confirmed_at=now() where id=$1', [verified]);
+    check((await query('select active from public.pilot_members where user_id=$1', [verified])).rows[0].active, false);
+
+    await as('service_role');
+    await query("update public.pilot_requests set created_at=now()-interval '31 days', expires_at=now()-interval '30 days' where id=$1", [quarantined]);
+    await as('authenticated', users[2]);
+    check((await query('select * from public.pilot_requests where id=$1', [quarantined])).rows.length, 0);
+    await rejects(() => query('select public.pilot_cleanup_expired_data()'), 'cleanup is operator-only');
+    await as('service_role');
+    check((await query('select public.pilot_cleanup_expired_data() as count')).rows[0].count, 1);
+    check((await query('select * from public.pilot_reports where request_id=$1', [quarantined])).rows.length, 0);
+    check((await query('select * from public.pilot_requests where id=$1', [enrolled])).rows.length, 1);
+    await as('authenticated', users[4]);
+    await query('select public.pilot_delete_account()');
+    await as('service_role');
+    check((await query('select * from public.pilot_requests where id=$1', [moderation])).rows.length, 0);
+    check((await query('select * from public.pilot_reports where request_id=$1', [moderation])).rows.length, 0);
+    check((await query('select * from public.pilot_requests where id=$1', [enrolled])).rows.length, 1);
     console.log(`pilot SQL: ${assertions} assertions passed`);
   } finally {
     await db.close();
