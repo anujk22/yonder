@@ -13,7 +13,7 @@ Generated shots, music only, labelled "concept animation". Text: "Is a hoop free
 | Film | Phone | Saf says |
 | --- | --- | --- |
 | 0:10 | Onboarding 1, "Ask someone already there." (mascot) | Hi, we're Safwan and Anuj, students at Rutgers. Ever crossed town for a court and found it packed? Maps tell you where a place is, not what's happening there now. |
-| 0:20 | Next, the dark page "Or be the Scout.", Next, "Maybe later", Explore landing "Good plans. Better intel." | Yonder lets you ask someone already there. |
+| 0:20 | Next, the dark page "Or be the Scout.", Next, "Maybe later", Explore landing "Good plans. Better intel." | So we built Yonder: ask someone who's already there. |
 | 0:25 | "Take the NYC sample tour", Pier 2 card "Are any basketball courts free?", "Try the local demo", tap the court question, "See answer options" | Pick a place, ask one question, |
 | 0:31 | Options, "How do you want to know?", with "Post a bounty" and the free "Two courts are open · Sample · 1 day ago" | then choose how fresh you need it. A day-old answer is free. Need it right now? Post a bounty. Anuj, who actually answers? |
 
