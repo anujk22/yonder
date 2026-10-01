@@ -24,8 +24,8 @@ The times below are when each line starts. They were checked against a full time
 | 1:32 | Anuj | Settings, "HOW PAYMENTS WORK" (bounty, Scout paid out, platform fee) | Our business model has two parts. On bounties, the Scout gets paid and Yonder keeps a platform fee. |
 | 1:38 | Anuj | Plus perks and plans, "1 week free" | Second, Yonder Plus: longer check windows, more open checks, and a one-week free trial. |
 | 1:44 | Anuj | Apple's sandbox purchase sheet (Saf confirms with Face ID straight away), "Welcome to Plus.", "Confirming Plus on Yonder's server…" | This purchase runs through RevenueCat in Apple's sandbox. Our server confirms Plus access. |
-| 1:52* | Anuj | Live check form with "1 hr" and "2 hr" | Plus keeps your check open for up to two hours. |
-| 1:56* | Saf | Map; end card added in edit: yonder. · Go with confidence. · github.com/anujk22/yonder | Yonder. Go with confidence. |
+| 1:52* | Saf | Live check form with "1 hr" and "2 hr" | Plus keeps your check open for up to two hours. |
+| 1:56* | Anuj | Map; end card added in edit: yonder. · Go with confidence. · github.com/anujk22/yonder | Yonder. Go with confidence. |
 
 \* After the purchase the app waits for Face ID and for Yonder's server to confirm Plus. The times marked * assume both are done by 1:49.6, which is 5.5 s after the sheet is tapped open. If they take longer, the rest moves back by the difference. Start "Plus keeps your check open…" when the 1 hr and 2 hr options appear, not by the clock. Any extra wait is silence on "Confirming Plus on Yonder's server…", and you can cut it out in the edit.
 

@@ -39,7 +39,7 @@ Start button: in Settings, scroll to the bottom and tap **Play the demo** (the D
 3. Onboarding page 1 is 0:00. Saf starts speaking at 0:10. The first tap is at 0:20.5.
 4. **One tap is yours.** The purchase sheet is native (Test Store in a development build, Apple's sandbox in TestFlight), so the app can't press it. Confirm it when it appears, at about 1:45; in TestFlight, confirm with Face ID or your password as quickly as you can. The take waits up to 3 min for the purchase and then up to 90 s for Yonder's server to confirm Plus, and every later tap moves back by that wait. Keep talking over "Confirming Plus on Yonder's server…" until the map moves on; any wait past 1:49.6 pushes the end past 2:00, so cut that silence in the edit.
 5. A small dot with a ring marks every tap the app makes.
-6. Saf says the tagline at 1:56 and the take ends at 1:59. At 2:04 an alert lists each tap's planned and actual time. Trim it off the recording.
+6. Anuj says the tagline at 1:56 and the take ends at 1:59. At 2:04 an alert lists each tap's planned and actual time. Trim it off the recording.
 
 To stop a take early, touch the screen with two fingers. The timeline is `takeSteps` in `src/lib/autopilot.ts`; edit timings there.
 
