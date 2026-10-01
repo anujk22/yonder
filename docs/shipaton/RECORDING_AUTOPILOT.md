@@ -6,14 +6,17 @@ The phone take runs from **T+0:00 to T+1:47**. In the edit it sits at 0:10 to 1:
 
 ## Setup
 
-1. **Build.** The take is in every build with the demo screens: development, preview, and TestFlight preview (`eas build --profile testflight-preview`). It is not in the App Store build, which has no demo screens. Record the film in a development build, because only a development build uses RevenueCat's Test Store, which the 1:42 line names. In a TestFlight preview build, Plus is a free App Store sandbox purchase instead, so that line won't match:
+1. **Build.** The take is in every build with the demo screens: development, preview and TestFlight preview. It is not in the App Store build (the `production` profile), which has no demo screens.
 
-   ```sh
-   sudo xcode-select -s /Applications/Xcode.app/Contents/Developer   # once; this Mac points at CommandLineTools
-   cd ~/Documents/ChatGPT/Yonder-next && npx expo run:ios --device
-   ```
+   - **TestFlight:** build with the `testflight-preview` profile, not `production`, then submit it:
 
-   Keep Metro running. This replaces the TestFlight copy of Yonder on the phone. It has no effect on App Store review.
+     ```sh
+     eas build --platform ios --profile testflight-preview
+     eas submit --platform ios --latest
+     ```
+
+     Plus is bought through Apple's sandbox here, which is free in TestFlight. RevenueCat's Test Store can't be used, because its key crashes release builds on purpose, and TestFlight builds are release builds.
+   - **Development build:** `npx expo run:ios --device` (once: `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`). This one uses RevenueCat's Test Store.
 
 2. **Backend.** Production Supabase must have `20261001000000_accessibility_and_plus.sql` applied (`docs/shipaton/CATEGORIES.md`). Without it, the live check fails with an error.
 
@@ -34,9 +37,9 @@ The phone take runs from **T+0:00 to T+1:47**. In the edit it sits at 0:10 to 1:
 Hidden button: in Settings, **press and hold the "Your Yonder" title for 1.5 s**. It exists in development, preview and TestFlight preview builds, never in the App Store build.
 
 1. Start the screen recording, open Settings and hold the title. You can start from any screen; the take resets the demo and replays the intro itself.
-2. If something isn't ready, a "Before you record" alert lists it: live checks not connected, not signed in, the account already has Plus, purchases unavailable, or not the Test Store. Fix it, or choose "Run anyway".
+2. If something isn't ready, a "Before you record" alert lists it: live checks not connected, not signed in, the account already has Plus, purchases unavailable,. Fix it, or choose "Run anyway".
 3. The app goes to onboarding page 1. That frame is **T+0**; place it at film 0:10 in the edit. The first tap is at T+0:10.0 (film 0:20).
-4. **One tap is yours.** The Test Store purchase sheet is native, so the app can't press it. Confirm it when it appears, at about T+1:33.5 (film 1:43.5). The take waits up to 30 s for Plus, then carries on.
+4. **One tap is yours.** The purchase sheet is native (Test Store in a development build, Apple's sandbox in TestFlight), so the app can't press it. Confirm it when it appears, at about T+1:33.5 (film 1:43.5); in TestFlight, confirm with Face ID or your password as quickly as you can. The take waits up to 30 s for Plus, then carries on.
 5. A small dot with a ring marks every tap the app makes.
 6. At T+1:47 an alert lists each tap's planned and actual time. Trim it off the recording.
 

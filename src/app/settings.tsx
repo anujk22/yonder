@@ -7,7 +7,7 @@ import { AppScreen, PrimaryButton, ScreenHeader } from "@/components/ui";
 import { LiveSignIn } from "@/components/LiveSignIn";
 import { liveConfigured } from "@/lib/liveClient";
 import { deleteLiveAccount, signOutLive, useLiveAuth } from "@/lib/liveAuth";
-import { manageSubscription, purchasesAvailable, restorePurchase, hasPlus, testPurchases } from "@/lib/purchases";
+import { manageSubscription, purchasesAvailable, restorePurchase, hasPlus } from "@/lib/purchases";
 import { AUTOPILOT_AVAILABLE, formatTakeReport, startFilmTake } from "@/lib/autopilot";
 import { usePurchaseStore } from "@/lib/purchaseStore";
 import { useOnboarding } from "@/lib/onboarding";
@@ -117,7 +117,6 @@ function startTake(signedIn: boolean, plus: boolean) {
     liveConfigured && !signedIn && "Sign in first (Requests tab), or the live check at 1:01 will stop the take.",
     plus && "This account already has Plus, so there's no plan to buy at 1:32. Use an account that has never bought Plus.",
     !purchasesAvailable && "Purchases aren't available here, so the take will stop at Plus. Use the iPhone app.",
-    purchasesAvailable && !testPurchases && "This build buys Plus through the App Store (a free sandbox purchase in TestFlight), not RevenueCat's Test Store, so the Test Store line won't match the screen.",
   ].filter(Boolean) as string[];
   const run = () => {
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
