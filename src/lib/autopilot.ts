@@ -99,14 +99,15 @@ const takeSteps = (plusConfirmed: () => boolean): Step[] => [
   { at: 92, label: 'Start 1 week free', tap: 'plus-start' },
   // 1:33.5: the store sheet is system UI, which no app can press. A person confirms it.
   { at: 97.9, label: 'Plus purchase confirmed', until: plusConfirmed, untilTimeout: 30 },
-  { at: 98, label: 'Explore tab', tap: 'nav-explore' },
+  // Back to the map as it was left, with the Union Sq card still up.
+  { at: 98, label: 'Explore tab', tap: 'nav-explore-return', fallback: ['nav-explore'] },
   {
-    at: 99.5,
+    at: 98.9,
     label: 'Ask for a live check (1 hr / 2 hr)',
     tap: 'explore-ask-live:unionsq',
     fallback: ['explore-tour', 'explore-all-places', 'explore-result:unionsq', 'explore-ask-live:unionsq'],
   },
-  { at: 100.3, label: 'Show 1 hr and 2 hr', reveal: 'live-deadline-120' },
+  { at: 99.7, label: 'Show 1 hr and 2 hr', reveal: 'live-deadline-120' },
   { at: 103, label: 'Explore tab', tap: 'nav-explore' },
 ];
 
@@ -343,8 +344,8 @@ async function runTake(signal: AbortSignal, startMs: number, steps: Step[], repo
       }
       if (step.fallback) {
         for (const fallbackId of step.fallback) {
-          // The tour link only shows on a fresh map, so don't wait for it.
-          const waitMs = fallbackId === 'explore-tour' ? 0 : DURATION.requiredTimeoutS * 1000;
+          // The tour link only shows on a fresh map, so don't wait long for it.
+          const waitMs = fallbackId === 'explore-tour' ? 800 : DURATION.requiredTimeoutS * 1000;
           if (!(await waitUntil(() => targets.has(fallbackId), waitMs, signal))) {
             if (fallbackId === 'explore-tour') continue;
             throw new TakeStopped(`Couldn't find "${step.label}".`);

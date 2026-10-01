@@ -1,7 +1,7 @@
 import { DEMO_FEATURES_ENABLED, LIVE_FEATURES_ENABLED } from "@/lib/previewFeatures";
 import { useEffect, useRef, useState } from "react";
 import { Keyboard, Platform, StyleSheet, Text, View } from "react-native";
-import { useGlobalSearchParams, usePathname } from "expo-router";
+import { useGlobalSearchParams, usePathname, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BrandImage, type ArtworkKind } from "./BrandImage";
 import { useScoutNavigation } from "@/lib/useScoutNavigation";
@@ -29,12 +29,15 @@ function TabItem({
   active,
   onPress,
   autopilotId,
+  autopilotReturn,
 }: {
   label: string;
   icon: ArtworkKind;
   active: boolean;
   onPress: (origin: { x: number; y: number }) => void;
   autopilotId?: string;
+  /** Recording autopilot: back to this tab's screen already in the stack, as it was left. */
+  autopilotReturn?: () => void;
 }) {
   const theme = useActiveTheme();
   const ref = useRef<View>(null);
@@ -42,6 +45,7 @@ function TabItem({
     const frame = await measureAutopilotRef(ref);
     onPress(frame ? { x: frame.x + frame.width / 2, y: frame.y + frame.height / 2 } : { x: 0, y: 0 });
   });
+  useAutopilotGlobalTarget(autopilotId && autopilotReturn ? `${autopilotId}-return` : undefined, ref, () => autopilotReturn?.());
   const progress = useSharedValue(active ? 1 : 0);
   const reduced = useReducedMotion();
   useEffect(() => {
@@ -102,6 +106,7 @@ export function BottomNavigation() {
   const pathname = usePathname();
   const { from } = useGlobalSearchParams<{ from?: string }>();
   const navigate = useScoutNavigation();
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const theme = useActiveTheme();
   const [keyboard, setKeyboard] = useState(false);
@@ -145,6 +150,7 @@ export function BottomNavigation() {
           {...tab}
           active={current === tab.route}
           autopilotId={tab.route === "/" ? "nav-explore" : undefined}
+          autopilotReturn={tab.route === "/" ? () => router.dismissTo("/") : undefined}
           onPress={(origin) => navigate(tab.route, origin)}
         />
       ))}
