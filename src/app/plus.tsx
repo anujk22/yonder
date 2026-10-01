@@ -33,16 +33,22 @@ export default function PlusScreen() {
   const [attempt, setAttempt] = useState(0);
   const [awaitServer, setAwaitServer] = useState(false);
   const [serverPlus, setServerPlus] = useState(false);
+  const [serverSlow, setServerSlow] = useState(false);
 
   // After a purchase, wait for the webhook to record Plus on the server before saying so.
+  // RevenueCat usually delivers webhooks within 5 to 60 seconds, so keep checking for about 90.
   useEffect(() => {
     if (!awaitServer) return;
     let active = true;
     let tries = 0;
+    const retry = () => {
+      if (++tries < 60) timer = setTimeout(check, 1500);
+      else { setServerSlow(true); setAwaitServer(false); }
+    };
     const check = () => getServerPlus().then((granted) => {
       if (!active) return;
-      if (granted) { setServerPlus(true); setAwaitServer(false); } else if (++tries < 15) timer = setTimeout(check, 1000);
-    }, () => { if (active && ++tries < 15) timer = setTimeout(check, 1000); });
+      if (granted) { setServerPlus(true); setAwaitServer(false); } else retry();
+    }, () => { if (active) retry(); });
     let timer = setTimeout(check, 0);
     return () => { active = false; clearTimeout(timer); };
   }, [awaitServer]);
@@ -71,7 +77,7 @@ export default function PlusScreen() {
     try {
       const info = restore ? await restorePurchase() : await buyPackage(option!);
       usePurchaseStore.getState().accept(info);
-      if (hasPlus(info) && LIVE_FEATURES_ENABLED && signedIn) setAwaitServer(true);
+      if (hasPlus(info) && LIVE_FEATURES_ENABLED && signedIn) { setServerPlus(false); setServerSlow(false); setAwaitServer(true); }
       setMessage(hasPlus(info) ? (restore ? "Plus restored." : "Welcome to Plus.")
         : restore ? "No Plus subscription was found for this store account." : "Your purchase hasn’t unlocked Plus yet. If payment is pending, check again later or restore purchases.");
     } catch (error) {
@@ -82,13 +88,14 @@ export default function PlusScreen() {
   const store = Platform.OS === "android" ? "Google Play account" : "Apple Account";
   return <AppScreen>
     <ScreenHeader eyebrow="YONDER PLUS" />
-    {testPurchases && <Text accessibilityRole="alert" style={styles.notice}>TEST STORE · No real payment. This build uses RevenueCat’s test purchase flow.</Text>}
-    {!purchasesAvailable && <Text style={styles.notice}>Plus can be purchased in the Yonder app on iPhone or Android.</Text>}
+    {testPurchases && <Text accessibilityRole="alert" style={styles.storeNote}>TEST STORE · No real payment. This build uses RevenueCat’s test purchase flow.</Text>}
+    {!purchasesAvailable && <Text style={styles.storeNote}>Plus can be purchased in the Yonder app on iPhone or Android.</Text>}
     <View style={styles.hero}>
-      <BrandObject kind="scoutFront" size={132} playful />
+      <Text accessibilityRole="header" style={[styles.title, { flex: 1 }]}>{plus ? "You’re on Plus." : "For people who plan\naround places."}</Text>
+      <BrandObject kind="scoutFront" size={64} playful />
     </View>
-    <Text accessibilityRole="header" style={styles.title}>{plus ? "You’re on Plus." : "For people who plan\naround places."}</Text>
     <Text style={styles.body}>Plus is for the people who check a lot.</Text>
+    {Boolean(message) && <Text accessibilityRole="alert" style={styles.notice}>{message}{serverPlus ? "\nPlus confirmed on Yonder’s server." : awaitServer ? "\nConfirming Plus on Yonder’s server…" : serverSlow ? "\nYonder’s server hasn’t confirmed Plus yet. It usually does within a minute." : ""}</Text>}
     <View style={styles.perks}>
       {perks.map(([title, body]) => <View key={title} style={styles.perk}>
         <Text style={styles.check}>✓</Text>
@@ -113,7 +120,6 @@ export default function PlusScreen() {
       })}
     </View>}
     {LIVE_FEATURES_ENABLED && !signedIn && <Text style={styles.small}>Sign in from Settings so Plus also applies to your community checks.</Text>}
-    {Boolean(message) && <Text accessibilityRole="alert" style={styles.notice}>{message}{serverPlus ? "\nPlus confirmed on Yonder’s server." : ""}</Text>}
     <View style={styles.actions}>
       {plus ? <>
         <PrimaryButton label="Organize my places" onPress={() => router.replace("/collections")} />
@@ -135,21 +141,22 @@ export default function PlusScreen() {
 }
 
 const styles = StyleSheet.create({
-  hero: { alignItems: "center", marginTop: 4, marginBottom: 8 },
-  title: { fontFamily: font.ui700, fontSize: 32, lineHeight: 38, letterSpacing: -1, color: ask.ink, marginBottom: 10 },
+  hero: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 2, marginBottom: 4 },
+  title: { fontFamily: font.ui700, fontSize: 26, lineHeight: 31, letterSpacing: -0.8, color: ask.ink, marginBottom: 6 },
   body: { ...type.body, color: ask.inkSoft },
   small: { ...type.label, color: ask.inkSoft, lineHeight: 19 },
-  perks: { marginVertical: 22, padding: 20, gap: 16, borderRadius: 22, backgroundColor: ask.surfaceAlt },
+  perks: { marginVertical: 12, paddingHorizontal: 16, paddingVertical: 12, gap: 6, borderRadius: 18, backgroundColor: ask.surfaceAlt },
   perk: { flexDirection: "row", gap: 12, alignItems: "flex-start" },
   check: { fontFamily: font.ui700, fontSize: 15, color: ask.fresh, marginTop: 1 },
   perkTitle: { ...type.label, fontFamily: font.ui700, color: ask.ink, fontSize: 15 },
-  plans: { gap: 10, marginBottom: 14 },
-  plan: { flexDirection: "row", alignItems: "center", gap: 12, padding: 18, borderRadius: 18, borderWidth: 1.5, borderColor: ask.border, backgroundColor: ask.surface },
+  plans: { gap: 8, marginBottom: 12 },
+  plan: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 16, paddingVertical: 11, borderRadius: 18, borderWidth: 1.5, borderColor: ask.border, backgroundColor: ask.surface },
   planActive: { borderColor: ask.ink, backgroundColor: "#FFFCEB" },
   planName: { fontFamily: font.ui700, fontSize: 17, color: ask.ink },
   badge: { ...type.micro, color: ask.onAccent, backgroundColor: ask.accentSoft, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 99, overflow: "hidden" },
-  notice: { ...type.body, color: ask.ink, padding: 16, backgroundColor: ask.surfaceAlt, borderRadius: 16, marginBottom: 16 },
-  actions: { gap: 14 },
+  notice: { ...type.body, color: ask.ink, paddingHorizontal: 14, paddingVertical: 10, backgroundColor: ask.surfaceAlt, borderRadius: 14, marginVertical: 8 },
+  storeNote: { ...type.label, fontSize: 12, lineHeight: 17, color: ask.ink, paddingHorizontal: 12, paddingVertical: 7, backgroundColor: ask.surfaceAlt, borderRadius: 12, marginBottom: 6 },
+  actions: { gap: 12 },
   legal: { ...type.label, fontSize: 11, lineHeight: 17, color: ask.inkSoft },
   links: { flexDirection: "row", justifyContent: "center", flexWrap: "wrap", gap: 6 },
   link: { minHeight: 44, justifyContent: "center", paddingHorizontal: 8 },
