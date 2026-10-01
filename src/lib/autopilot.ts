@@ -6,7 +6,7 @@ import { create } from 'zustand';
 /**
  * Hidden recording autopilot for the submission film. Development builds only, so it never
  * ships in an App Store build. It taps the real buttons on the script's timestamps
- * (phone time: film time minus 10 s, the same timeline as docs/shipaton/AGENT_PROMPT.md).
+ * (phone time: film time minus 10 s; see docs/shipaton/RECORDING_AUTOPILOT.md).
  */
 export const AUTOPILOT_AVAILABLE = __DEV__;
 
@@ -68,7 +68,7 @@ const DURATION = {
   endReportDelayMs: 1500,
 } as const;
 
-/** The film timeline. Film time = phone time + 10 s. Keep in step with AGENT_PROMPT.md. */
+/** The film timeline. Film time = phone time + 10 s. Keep in step with VIDEO_PLAN.md. */
 const takeSteps = (plusConfirmed: () => boolean): Step[] => [
   { at: 10, label: 'Next', tap: 'onboarding-next' },
   { at: 12, label: 'Next', tap: 'onboarding-next' },

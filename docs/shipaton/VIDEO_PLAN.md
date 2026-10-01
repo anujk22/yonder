@@ -2,7 +2,7 @@
 
 Layout: YC-style background, the phone recording in the centre, one speaker bubble bottom left. Caption by the bubble: **Safwan & Anuj · Rutgers University**.
 
-The phone take is recorded first, without voices, by the agent in `AGENT_PROMPT.md`. Its clock runs 10 s behind the film: phone T+0:00 is film 0:10. Voices and webcam are recorded afterwards while watching the take. Record the take in the development build (`RECORDING_AUTOPILOT.md`).
+The phone take is recorded first, without voices: the app plays it by itself (`RECORDING_AUTOPILOT.md`). Its clock runs 10 s behind the film: phone T+0:00 is film 0:10. Voices and webcam are recorded afterwards while watching the take.
 
 Times below are film times, when each line starts. They were checked against a timed run of the app: each line's key words are on screen while it's spoken, at about 170 words a minute. Read along to the take rather than to a clock.
 
