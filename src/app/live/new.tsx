@@ -35,6 +35,7 @@ function NewLiveRequestSession() {
   const [questionKind, setQuestionKind] = useState<LiveQuestionKind>("open_now");
   const [deadlineMinutes, setDeadlineMinutes] = useState(10);
   const [publicConfirmed, setPublicConfirmed] = useState(false);
+  const [showLandmark, setShowLandmark] = useState(() => Boolean(place?.landmark));
   const plus = usePurchaseStore((state) => state.plus);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -88,41 +89,46 @@ function NewLiveRequestSession() {
       <Text style={styles.body}>Choose an available public place from Explore first.</Text>
       <PrimaryButton label="Choose a place" onPress={() => router.push("/")} />
     </View> : <>
-      <View style={styles.card}>
-        <Text style={styles.label}>PLACE</Text>
-        <Text style={styles.cardTitle}>{place.name}</Text>
-        <Text style={styles.body} numberOfLines={2}>{place.area}</Text>
+      <Text style={styles.intro}>No charge during early access. Someone nearby may answer; if nobody does, the check closes on its own.</Text>
+      <View style={styles.placeCard}>
+        <Text style={styles.cardLabel}>PLACE</Text>
+        <Text style={styles.cardTitle} numberOfLines={1}>{place.name}</Text>
+        <Text style={styles.meta} numberOfLines={1}>{place.area}</Text>
       </View>
-      <Text style={styles.label}>WHERE EXACTLY? · OPTIONAL</Text>
-      <TextInput accessibilityLabel="Public landmark or entrance" placeholder="Main entrance, north side of the park…" placeholderTextColor={ask.inkFaint} value={landmark} onChangeText={(value) => { setLandmark(value); setError(""); }} maxLength={180} multiline style={styles.input} />
-      <Text style={styles.meta}>{landmark.length}/180 · Public spots only. No homes, people or security details.</Text>
       <Text style={styles.label}>WHAT SHOULD SOMEONE CHECK?</Text>
       {LIVE_QUESTION_KINDS.map((kind) => <Pressable key={kind} accessibilityRole="radio" accessibilityState={{ checked: questionKind === kind }} onPress={() => setQuestionKind(kind)} style={[styles.option, questionKind === kind && styles.selected]}><Text style={styles.optionText}>{LIVE_QUESTIONS[kind]}</Text></Pressable>)}
       <Text style={styles.label}>KEEP IT OPEN FOR</Text>
       <View style={styles.deadlines}>{liveDeadlines(plus).map((minutes) => <Pressable key={minutes} accessibilityRole="radio" accessibilityState={{ checked: deadlineMinutes === minutes }} onPress={() => setDeadlineMinutes(minutes)} style={[styles.deadline, deadlineMinutes === minutes && styles.selected]}><Text style={styles.optionText}>{minutes < 60 ? `${minutes} min` : `${minutes / 60} hr`}</Text></Pressable>)}</View>
       {!plus && <Pressable accessibilityRole="button" onPress={() => router.push("/plus")}><Text style={styles.plus}>Need longer? Plus keeps checks open for up to 2 hours.</Text></Pressable>}
+      {showLandmark ? <>
+        <Text style={styles.label}>WHERE EXACTLY? · OPTIONAL</Text>
+        <TextInput accessibilityLabel="Public landmark or entrance" placeholder="Main entrance, north side of the park…" placeholderTextColor={ask.inkFaint} value={landmark} onChangeText={(value) => { setLandmark(value); setError(""); }} maxLength={180} multiline style={styles.input} />
+        <Text style={styles.meta}>{landmark.length}/180 · Public spots only. No homes, people or security details.</Text>
+      </> : <Pressable accessibilityRole="button" onPress={() => setShowLandmark(true)}><Text style={styles.plus}>Add a landmark or entrance (optional)</Text></Pressable>}
       <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: publicConfirmed }} onPress={() => { setPublicConfirmed(!publicConfirmed); setError(""); }} style={styles.confirm}><Text style={styles.optionText}>{publicConfirmed ? "☑" : "□"} This is a public place and the details are safe to share.</Text></Pressable>
       <PrimaryButton label={busy ? "Sending…" : "Send check"} onPress={() => void submit()} disabled={busy} />
-      <Text style={styles.meta}>No charge during early access. Someone nearby may answer; if nobody does, the check closes on its own.</Text>
     </>}
     {!!error && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}
   </AppScreen>;
 }
 
 const styles = StyleSheet.create({
-  title: { fontFamily: font.ui700, fontSize: 30, lineHeight: 37, color: ask.ink, marginBottom: 12 },
+  title: { fontFamily: font.ui700, fontSize: 26, lineHeight: 32, color: ask.ink, marginBottom: 6 },
+  intro: { ...type.label, color: ask.inkSoft, marginBottom: 4 },
   body: { ...type.body, color: ask.inkSoft, marginBottom: 8 },
-  label: { ...type.micro, color: ask.inkSoft, marginTop: 22, marginBottom: 10 },
+  label: { ...type.micro, color: ask.inkSoft, marginTop: 14, marginBottom: 8 },
+  cardLabel: { ...type.micro, color: ask.inkSoft },
   card: { backgroundColor: ask.surface, borderColor: ask.border, borderWidth: 1, borderRadius: 18, padding: 20, gap: 8, marginVertical: 14 },
+  placeCard: { backgroundColor: ask.surface, borderColor: ask.border, borderWidth: 1, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 10, gap: 2, marginTop: 10 },
   cardTitle: { ...type.heading, color: ask.ink },
   plus: { ...type.label, color: ask.fresh, paddingVertical: 10 },
   input: { ...type.body, color: ask.ink, backgroundColor: ask.surface, borderColor: ask.border, borderWidth: 1, borderRadius: 12, padding: 14, minHeight: 88, textAlignVertical: "top" },
   meta: { ...type.label, color: ask.inkSoft, marginVertical: 8 },
-  option: { backgroundColor: ask.surface, borderColor: ask.border, borderWidth: 1, borderRadius: 12, padding: 16, marginBottom: 8 },
+  option: { backgroundColor: ask.surface, borderColor: ask.border, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 11, marginBottom: 6 },
   selected: { borderColor: ask.ink, backgroundColor: ask.surfaceAlt },
   optionText: { ...type.body, color: ask.ink },
   deadlines: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
-  deadline: { borderColor: ask.border, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12 },
-  confirm: { paddingVertical: 16, marginVertical: 14 },
+  deadline: { borderColor: ask.border, borderWidth: 1, borderRadius: 12, paddingHorizontal: 13, paddingVertical: 10 },
+  confirm: { paddingVertical: 12, marginVertical: 8 },
   error: { ...type.body, color: ask.danger, marginTop: 14 },
 });
