@@ -58,10 +58,10 @@ You are operating a Mac to record a demo of an iPhone app called Yonder. The iPh
 | 0:32 | "Try the example observer journey" | "WHAT TO LOOK FOR" | to 0:41.5 |
 | 0:41.5 | "Explore an example" | "Let's take a look." | to 0:43 |
 | 0:43 | "Open demo camera" | "PRACTICE OBSERVATION", "No camera-roll uploads." | to 0:46 |
-| 0:46 | the large capture button at the bottom | "PREPARING AN EXAMPLE ANSWER" (about 1.6 s), then the answer opens by itself by about 0:49.5: "One court is available.", "Example answer · not live" | to 0:52 |
-| 0:52 | "Explore" (bottom bar) | map | to 0:53 (short ok) |
-| 0:53 | only if visible: "Take the NYC sample tour" | tour card | to 0:54 (short ok) |
-| 0:54 | "All 12 places" | "THE NYC SAMPLE TOUR" | to 0:55 (short ok) |
+| 0:46 | the large capture button at the bottom | "PREPARING AN EXAMPLE ANSWER" (about 1.6 s), then the answer opens by itself by about 0:49.5: "One court is available.", "Example answer · not live" | to 0:52.5 |
+| 0:52.5 | "Explore" (bottom bar) | map | to 0:53.5 (short ok) |
+| 0:53.5 | only if visible: "Take the NYC sample tour" | tour card | to 0:54.2 (short ok) |
+| 0:54.2 | "All 12 places" | "THE NYC SAMPLE TOUR" | to 0:55 (short ok) |
 | 0:55 | "14 St - Union Sq Station" (arm by scrolling the list) | "Is the elevator working right now?" | to 1:01 |
 | 1:01 | "Ask for a live check" | "WHAT SHOULD SOMEONE CHECK?" | to 1:02.5 |
 | 1:02.5 | "Is the step-free entrance or elevator working?" | option highlighted | to 1:03.5 |
