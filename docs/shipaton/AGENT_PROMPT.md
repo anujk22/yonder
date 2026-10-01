@@ -52,7 +52,7 @@ You are operating a Mac to record a demo of an iPhone app called Yonder. The iPh
 | 0:17.5 | "Try the local demo" (small link under the yellow button) | "What would you like to know?" | to 0:19 |
 | 0:19 | "Are any basketball courts free? ↗" | question filled in | to 0:20 |
 | 0:20 | "+ $0.50" (bounty stepper) | "$2.50" | to 0:21.5 |
-| 0:21.5 | "See answer options" (arm by scrolling down) | "How do you want to know?", "Post a bounty" at $2.50 | to 0:26 |
+| 0:21.5 | "See answer options" (yellow button pinned above the tab bar; no scrolling needed) | "How do you want to know?", "Post a bounty" at $2.50 | to 0:26 |
 | 0:26 | "Post a bounty" | sheet slides up: "Confirm your bounty", "Pay $2.50" | to 0:28.5 |
 | 0:28.5 | "Pay $2.50" | "Your question has a place." | to 0:32 |
 | 0:32 | "Try the example observer journey" | "WHAT TO LOOK FOR" | to 0:42 |
@@ -64,14 +64,15 @@ You are operating a Mac to record a demo of an iPhone app called Yonder. The iPh
 | 0:54 | "All 12 places" | "THE NYC SAMPLE TOUR" | to 0:55 (short ok) |
 | 0:55 | "14 St - Union Sq Station" (arm by scrolling the list) | "Is the elevator working right now?" | to 1:01 |
 | 1:01 | "Ask for a live check" | "WHAT SHOULD SOMEONE CHECK?" | to 1:02.5 |
-| 1:02.5 | "Is the step-free entrance or elevator working?" | option highlighted | to 1:04 |
-| 1:04 | "15 min" | highlighted | to 1:07 |
-| 1:07 | "Send check" (arm by scrolling down) | the check screen for 14 St - Union Sq Station | to 1:18 |
-| 1:18 | the gear icon, top right of the check screen (Explore has no gear) | "Settings" | to 1:21 |
-| 1:21 | "Explore Yonder Plus" | plans with "1 week free" | to 1:28 |
-| 1:28 | "Start 1 week free" | purchase sheet | to 1:29.5 |
-| 1:29.5 | the sheet's purchase or confirm button | "Welcome to Plus." | to 1:34 |
-| 1:34 | "Explore" (bottom bar) | Union Sq card "Is the elevator working right now?"; if it's not there, click "All 12 places", then "14 St - Union Sq Station", as fast as naturally possible | to 1:35.5 (short ok) |
-| 1:35.5 | "Ask for a live check" | "KEEP IT OPEN FOR" with "1 hr" and "2 hr" (scroll them into view right after this screen opens) | to 1:41 |
-| 1:41 | "Explore" (bottom bar) | map | to 1:47 |
+| 1:02.5 | "Is the step-free entrance or elevator working?" | option highlighted | to 1:03.5 |
+| 1:03.5 | "15 min" (then scroll down right away, finished by 1:04, until the checkbox and "Send check" show) | highlighted | to 1:05.5 |
+| 1:05.5 | the checkbox "This is a public place and the details are safe to share." | checkbox ticked (☑) | to 1:07 |
+| 1:07 | "Send check" | the check screen for 14 St - Union Sq Station, "OPEN" | to 1:18 |
+| 1:18 | the gear icon, top right of the check screen (Explore has no gear) | "Settings", "HOW PAYMENTS WORK" | to 1:26.5 |
+| 1:26.5 | "Explore Yonder Plus" | plans with "1 week free" | to 1:32 |
+| 1:32 | "Start 1 week free" | purchase sheet | to 1:33.5 |
+| 1:33.5 | the sheet's purchase or confirm button | "Welcome to Plus." with "Confirming Plus on Yonder's server…" (or "Plus confirmed on Yonder's server.") | to 1:38 |
+| 1:38 | "Explore" (bottom bar) | Union Sq card "Is the elevator working right now?"; if it's not there, click "Take the NYC sample tour" (if visible), then "All 12 places", then "14 St - Union Sq Station", as fast as naturally possible | to 1:39.5 (short ok) |
+| 1:39.5 | "Ask for a live check" | "KEEP IT OPEN FOR" with "1 hr" and "2 hr" (if they're under the tab bar, scroll them into view right after this screen opens) | to 1:43 |
+| 1:43 | "Explore" (bottom bar) | map | to 1:47 |
 | 1:47 | (nothing) | report "take complete" | |
