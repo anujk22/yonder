@@ -50,7 +50,7 @@ export default function StatusScreen() {
     <AppScreen>
       <ScreenHeader eyebrow="03 / LOCAL DEMO REQUEST" />
       <View style={styles.hero}>
-        <BrandObject size={150} playful />
+        <BrandObject size={96} playful />
         <Text accessibilityRole="header" style={styles.title}>
           {cancelled
             ? "Plans change.\nNo worries."
@@ -108,11 +108,11 @@ export default function StatusScreen() {
   );
 }
 const styles = StyleSheet.create({
-  hero: { paddingVertical: 24, alignItems: "center", gap: 15 },
+  hero: { paddingTop: 8, paddingBottom: 6, alignItems: "center", gap: 10 },
   title: {
     fontFamily: font.ui700,
-    fontSize: 32,
-    lineHeight: 38,
+    fontSize: 28,
+    lineHeight: 33,
     letterSpacing: -1,
     color: ask.ink,
     textAlign: "center",
@@ -122,15 +122,15 @@ const styles = StyleSheet.create({
     fontSize: 19,
     textAlign: "center",
     color: ask.ink,
-    marginTop: 8,
+    marginTop: 2,
   },
   place: { ...type.label, color: ask.inkSoft },
   card: {
-    padding: 24,
+    padding: 18,
     borderRadius: 18,
     backgroundColor: ask.surfaceAlt,
-    gap: 14,
-    marginVertical: 20,
+    gap: 10,
+    marginVertical: 14,
   },
   row: {
     flexDirection: "row",
