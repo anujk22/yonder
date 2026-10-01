@@ -55,10 +55,10 @@ You are operating a Mac to record a demo of an iPhone app called Yonder. The iPh
 | 0:21.5 | "See answer options" (yellow button pinned above the tab bar; no scrolling needed) | "How do you want to know?", "Post a bounty" at $2.50 | to 0:26 |
 | 0:26 | "Post a bounty" | sheet slides up: "Confirm your bounty", "Pay $2.50" | to 0:28.5 |
 | 0:28.5 | "Pay $2.50" | "Your question has a place." | to 0:32 |
-| 0:32 | "Try the example observer journey" | "WHAT TO LOOK FOR" | to 0:42 |
-| 0:42 | "Explore an example" | "Let's take a look." | to 0:43.5 |
-| 0:43.5 | "Open demo camera" | "PRACTICE OBSERVATION" | to 0:45.5 |
-| 0:45.5 | the large capture button at the bottom | "PREPARING AN EXAMPLE ANSWER" (about 1.6 s), then the answer opens by itself by about 0:49: "One court is available.", "Example answer · not live" | to 0:52 |
+| 0:32 | "Try the example observer journey" | "WHAT TO LOOK FOR" | to 0:41.5 |
+| 0:41.5 | "Explore an example" | "Let's take a look." | to 0:43 |
+| 0:43 | "Open demo camera" | "PRACTICE OBSERVATION", "No camera-roll uploads." | to 0:46 |
+| 0:46 | the large capture button at the bottom | "PREPARING AN EXAMPLE ANSWER" (about 1.6 s), then the answer opens by itself by about 0:49.5: "One court is available.", "Example answer · not live" | to 0:52 |
 | 0:52 | "Explore" (bottom bar) | map | to 0:53 (short ok) |
 | 0:53 | only if visible: "Take the NYC sample tour" | tour card | to 0:54 (short ok) |
 | 0:54 | "All 12 places" | "THE NYC SAMPLE TOUR" | to 0:55 (short ok) |
