@@ -43,7 +43,7 @@ export default function SettingsScreen() {
   return <AppScreen>
     <ScreenHeader eyebrow="SETTINGS" />
     {AUTOPILOT_AVAILABLE
-      // Development builds only: hold the title for 1.5 s to run the recorded film take.
+      // Builds with the demo screens only: hold the title for 1.5 s to run the recorded film take.
       ? <Pressable accessible={false} delayLongPress={1500} onLongPress={() => startTake(Boolean(user), plus)}><Text accessibilityRole="header" style={styles.title}>Your Yonder</Text></Pressable>
       : <Text accessibilityRole="header" style={styles.title}>Your Yonder</Text>}
 
@@ -116,8 +116,8 @@ function startTake(signedIn: boolean, plus: boolean) {
     !liveConfigured && "Live checks aren't connected in this build, so the live check at 1:01 will fail.",
     liveConfigured && !signedIn && "Sign in first (Requests tab), or the live check at 1:01 will stop the take.",
     plus && "This account already has Plus, so there's no plan to buy at 1:32. Use an account that has never bought Plus.",
-    !purchasesAvailable && "Purchases aren't available here. Run a development build on the iPhone with the RevenueCat test key.",
-    purchasesAvailable && !testPurchases && "This build isn't using RevenueCat's Test Store, so 1:32 would be a real purchase.",
+    !purchasesAvailable && "Purchases aren't available here, so the take will stop at Plus. Use the iPhone app.",
+    purchasesAvailable && !testPurchases && "This build buys Plus through the App Store (a free sandbox purchase in TestFlight), not RevenueCat's Test Store, so the Test Store line won't match the screen.",
   ].filter(Boolean) as string[];
   const run = () => {
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);

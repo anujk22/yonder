@@ -249,7 +249,7 @@ export default function ExploreMap() {
     setPlaces(examples);
     if (examples[0]) focus(examples[0]);
   };
-  // Recording autopilot (development builds): every take starts from a fresh map.
+  // Recording autopilot (builds with the demo screens): every take starts from a fresh map.
   const takeId = useAutopilotTake((s) => s.takeId);
   const seenTake = useRef(takeId);
   useEffect(() => {

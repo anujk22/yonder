@@ -2,13 +2,15 @@ import { RefObject, useEffect, useRef } from 'react';
 import type { LayoutChangeEvent, NativeScrollEvent, NativeSyntheticEvent, ScrollView } from 'react-native';
 import { useIsFocused } from 'expo-router';
 import { create } from 'zustand';
+import { DEMO_FEATURES_ENABLED } from './previewFeatures';
 
 /**
- * Hidden recording autopilot for the submission film. Development builds only, so it never
- * ships in an App Store build. It taps the real buttons on the script's timestamps
+ * Hidden recording autopilot for the submission film. In every build with the demo screens
+ * (development, preview and TestFlight preview), never the App Store build, which has no demo
+ * screens to play. It taps the real buttons on the script's timestamps
  * (phone time: film time minus 10 s; see docs/shipaton/RECORDING_AUTOPILOT.md).
  */
-export const AUTOPILOT_AVAILABLE = __DEV__;
+export const AUTOPILOT_AVAILABLE = DEMO_FEATURES_ENABLED;
 
 /** Kept for the capture screen's frame interval. The film take adds no extra filmstrip dwell. */
 export const AUTOPILOT_FILMSTRIP_DWELL_MS = 800;
@@ -383,7 +385,7 @@ async function runTake(signal: AbortSignal, startMs: number, steps: Step[], repo
  */
 export async function startFilmTake(plusConfirmed: () => boolean): Promise<{ report: TakeReport; stopped?: string }> {
   const report: TakeReport = [];
-  if (!AUTOPILOT_AVAILABLE || !host) return { report, stopped: 'The autopilot only runs in a development build.' };
+  if (!AUTOPILOT_AVAILABLE || !host) return { report, stopped: 'The autopilot only runs in a build with the demo screens.' };
   if (isAutopilotRunning()) return { report, stopped: 'A take is already running.' };
   const run = new AbortController();
   activeRun = run;

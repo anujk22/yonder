@@ -6,7 +6,7 @@ The phone take runs from **T+0:00 to T+1:47**. In the edit it sits at 0:10 to 1:
 
 ## Setup
 
-1. **Build.** Record the whole take in a development build, because only a development build has the take and can use the Test Store:
+1. **Build.** The take is in every build with the demo screens: development, preview, and TestFlight preview (`eas build --profile testflight-preview`). It is not in the App Store build, which has no demo screens. Record the film in a development build, because only a development build uses RevenueCat's Test Store, which the 1:42 line names. In a TestFlight preview build, Plus is a free App Store sandbox purchase instead, so that line won't match:
 
    ```sh
    sudo xcode-select -s /Applications/Xcode.app/Contents/Developer   # once; this Mac points at CommandLineTools
@@ -31,7 +31,7 @@ The phone take runs from **T+0:00 to T+1:47**. In the edit it sits at 0:10 to 1:
 
 ## The take
 
-Hidden button: in Settings, **press and hold the "Your Yonder" title for 1.5 s**. It exists only in development builds, never in TestFlight or App Store builds.
+Hidden button: in Settings, **press and hold the "Your Yonder" title for 1.5 s**. It exists in development, preview and TestFlight preview builds, never in the App Store build.
 
 1. Start the screen recording, open Settings and hold the title. You can start from any screen; the take resets the demo and replays the intro itself.
 2. If something isn't ready, a "Before you record" alert lists it: live checks not connected, not signed in, the account already has Plus, purchases unavailable, or not the Test Store. Fix it, or choose "Run anyway".

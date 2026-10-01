@@ -8,7 +8,7 @@ import { usePurchaseStore } from '@/lib/purchaseStore';
 import { useOnboarding } from '@/lib/onboarding';
 import { useActiveTheme, useYonderStore } from '@/lib/store';
 
-/** Connects the recording autopilot to navigation and draws its taps. Development builds only. */
+/** Connects the recording autopilot to navigation and draws its taps. Builds with the demo screens only. */
 export function AutopilotLayer() {
   const router = useRouter();
   const pathname = usePathname();
