@@ -73,63 +73,13 @@ export default function PlaceScreen() {
       }
     >
       <ScreenHeader eyebrow="LOCAL DEMO REQUEST" title={place.name} />
-      {liveConfigured && (
-        <>
-          <PrimaryButton
-            label="Ask for a live check"
-            variant="secondary"
-            onPress={() => router.push("/live/new")}
-          />
-          <Text style={[styles.note, { marginBottom: 16 }]}>
-            No charge during early access · someone nearby may answer. No guaranteed response.
-          </Text>
-        </>
-      )}
-      <View style={styles.map}>
-        <MapSurface
-          style={StyleSheet.absoluteFill}
-          initialRegion={detailRegion({
-            latitude: place.lat,
-            longitude: place.lng,
-          })}
-          markers={[
-            {
-              id: place.id,
-              coordinate: { latitude: place.lat, longitude: place.lng },
-              label: place.name,
-            },
-          ]}
-          geofence={{
-            center: { latitude: place.lat, longitude: place.lng },
-            radius: place.geofenceM,
-          }}
-        />
-      </View>
-      <Text style={styles.area}>{place.area}</Text>
-      <CommunitySpotDetails place={place}/>
-      <View style={styles.divider} />
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 8,
-          backgroundColor: "#EEE6F7",
-          borderRadius: 22,
-          padding: 16,
-          marginBottom: 16,
-          borderWidth: 1,
-          borderColor: "#FFFFFF",
-        }}
-      >
+      <View style={styles.hero}>
         <View style={{ flex: 1 }}>
           <Text accessibilityRole="header" style={styles.title}>
             What would you like to know?
           </Text>
-          <Text style={styles.body}>
-            Try a specific place question. No one is dispatched in this demo.
-          </Text>
         </View>
-        <CategoryObject place={place} category={categoryFor(place)} size={90} animated />
+        <CategoryObject place={place} category={categoryFor(place)} size={44} animated />
       </View>
       <TextInput
         accessibilityLabel={`Question about ${place.name}`}
@@ -167,30 +117,6 @@ export default function PlaceScreen() {
             style={styles.prompt}
           >
             <Text style={styles.promptText}>{prompt} ↗</Text>
-          </Pressable>
-        ))}
-      </View>
-      <Text style={styles.label}>SIMULATED DEADLINE</Text>
-      <View style={styles.deadlines}>
-        {[5, 10, 15, 30].map((n) => (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityState={{ selected: n === deadline }}
-            key={n}
-            onPress={() => useYonderStore.getState().setDeadline(n)}
-            style={[
-              styles.deadline,
-              n === deadline && {
-                backgroundColor: ask.ink,
-                borderColor: ask.ink,
-              },
-            ]}
-          >
-            <Text
-              style={[type.label, { color: n === deadline ? ask.bg : ask.ink }]}
-            >
-              {n} min
-            </Text>
           </Pressable>
         ))}
       </View>
@@ -242,6 +168,65 @@ export default function PlaceScreen() {
           </Text>
         )}
       </View>
+      <Text style={styles.label}>SIMULATED DEADLINE</Text>
+      <View style={styles.deadlines}>
+        {[5, 10, 15, 30].map((n) => (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ selected: n === deadline }}
+            key={n}
+            onPress={() => useYonderStore.getState().setDeadline(n)}
+            style={[
+              styles.deadline,
+              n === deadline && {
+                backgroundColor: ask.ink,
+                borderColor: ask.ink,
+              },
+            ]}
+          >
+            <Text
+              style={[type.label, { color: n === deadline ? ask.bg : ask.ink }]}
+            >
+              {n} min
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+      <View style={styles.map}>
+        <MapSurface
+          style={StyleSheet.absoluteFill}
+          initialRegion={detailRegion({
+            latitude: place.lat,
+            longitude: place.lng,
+          })}
+          markers={[
+            {
+              id: place.id,
+              coordinate: { latitude: place.lat, longitude: place.lng },
+              label: place.name,
+            },
+          ]}
+          geofence={{
+            center: { latitude: place.lat, longitude: place.lng },
+            radius: place.geofenceM,
+          }}
+        />
+      </View>
+      <Text style={styles.area}>{place.area}</Text>
+      <CommunitySpotDetails place={place}/>
+      <View style={styles.divider} />
+      {liveConfigured && (
+        <>
+          <PrimaryButton
+            label="Ask for a live check"
+            variant="secondary"
+            onPress={() => router.push("/live/new")}
+          />
+          <Text style={[styles.note, { marginBottom: 16 }]}>
+            No charge during early access · someone nearby may answer. No guaranteed response.
+          </Text>
+        </>
+      )}
       <Text style={styles.note}>
         Demo: requests stay on this device. No card is charged and no one is dispatched.
       </Text>
@@ -249,6 +234,18 @@ export default function PlaceScreen() {
   );
 }
 const styles = StyleSheet.create({
+  hero: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "#EEE6F7",
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: "#FFFFFF",
+    marginTop: 4,
+  },
   map: {
     height: 145,
     overflow: "hidden",
@@ -267,8 +264,8 @@ const styles = StyleSheet.create({
   divider: { height: 1, backgroundColor: ask.border, marginVertical: 22 },
   title: {
     fontFamily: font.ui600,
-    fontSize: 24,
-    lineHeight: 30,
+    fontSize: 20,
+    lineHeight: 25,
     color: ask.ink,
     letterSpacing: -1,
   },
@@ -277,21 +274,22 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 21,
     color: ask.inkSoft,
-    marginTop: 7,
+    marginTop: 4,
   },
   input: {
     fontFamily: font.ui500,
-    fontSize: 20,
-    lineHeight: 28,
+    fontSize: 18,
+    lineHeight: 24,
     color: ask.ink,
-    padding: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
     textAlignVertical: "top",
-    minHeight: 110,
+    minHeight: 60,
     backgroundColor: ask.surface,
     borderWidth: 1,
     borderColor: ask.border,
     borderRadius: 14,
-    marginTop: 18,
+    marginTop: 10,
   },
   row: {
     flexDirection: "row",
@@ -303,13 +301,13 @@ const styles = StyleSheet.create({
     fontFamily: font.ui400,
     fontSize: 10,
     color: ask.inkSoft,
-    marginTop: 9,
+    marginTop: 6,
   },
   error: { ...type.label, color: ask.danger, marginTop: 8 },
-  prompts: { gap: 8, marginVertical: 18 },
+  prompts: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 10, marginBottom: 12 },
   prompt: {
-    paddingVertical: 10,
-    paddingHorizontal: 13,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
     borderWidth: 1,
     borderColor: ask.border,
     borderRadius: 10,
@@ -317,7 +315,7 @@ const styles = StyleSheet.create({
   },
   promptText: { ...type.label, fontSize: 11, color: ask.inkSoft },
   label: { ...type.micro, fontSize: 9, color: ask.inkSoft },
-  deadlines: { flexDirection: "row", gap: 9, marginTop: 12, marginBottom: 20 },
+  deadlines: { flexDirection: "row", gap: 9, marginTop: 10, marginBottom: 18 },
   deadline: {
     flex: 1,
     borderRadius: 10,
@@ -329,18 +327,19 @@ const styles = StyleSheet.create({
   price: {
     borderRadius: 16,
     backgroundColor: ask.surfaceAlt,
-    padding: 19,
-    gap: 4,
-    marginBottom: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 2,
+    marginBottom: 18,
   },
   priceValue: {
     fontFamily: font.mono500,
     color: ask.ink,
-    fontSize: 32,
-    marginTop: 6,
+    fontSize: 28,
+    marginTop: 2,
   },
-  priceLink: { ...type.label, color: ask.fresh, paddingVertical: 9 },
-  steppers: { flexDirection: "row", gap: 9, marginTop: 12 },
+  priceLink: { ...type.label, color: ask.fresh, paddingVertical: 6 },
+  steppers: { flexDirection: "row", gap: 9, marginTop: 8 },
   stepper: {
     flex: 1,
     minHeight: 44,
