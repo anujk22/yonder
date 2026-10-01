@@ -9,7 +9,7 @@ import { getServerPlus } from './liveApi';
  * Recording autopilot for the submission film, started from Settings, "Play the demo". In every build with the demo screens
  * (development, preview and TestFlight preview), never the App Store build, which has no demo
  * screens to play. It taps the real buttons on the script's timestamps
- * (take time; the film clock starts at the "Play the demo" press, 0.7 s earlier; see docs/shipaton/RECORDING_AUTOPILOT.md).
+ * (film time: the recording starts on onboarding page 1; see docs/shipaton/RECORDING_AUTOPILOT.md).
  */
 export const AUTOPILOT_AVAILABLE = DEMO_FEATURES_ENABLED;
 
@@ -74,51 +74,51 @@ const DURATION = {
   endReportDelayMs: 5000,
 } as const;
 
-/** The film timeline. Film time (from the button press) = take time + 0.7 s. Keep in step with VIDEO_PLAN.md. */
+/** The film timeline. Film time = take time: the recording starts on onboarding page 1. Keep in step with VIDEO_PLAN.md. */
 const takeSteps = (plusConfirmed: () => boolean): Step[] => [
-  { at: 16, label: 'Next', tap: 'onboarding-next' },
-  { at: 18, label: 'Next', tap: 'onboarding-next' },
-  { at: 19.5, label: 'Maybe later', tap: 'onboarding-later' },
-  { at: 21, label: 'Take the NYC sample tour', tap: 'explore-tour' },
-  { at: 23.5, label: 'Try the local demo', tap: 'explore-local-demo' },
-  { at: 25, label: 'Court question', tap: 'ask-prompt-0' },
-  { at: 26, label: '+ $0.50', tap: 'ask-bounty-up' },
-  { at: 27.5, label: 'See answer options', tap: 'ask-submit' },
-  { at: 32, label: 'Post a bounty', tap: 'options-dispatch' },
-  { at: 34.5, label: 'Pay $2.50', tap: 'options-pay' },
-  { at: 38, label: 'Try the example observer journey', tap: 'status-observe' },
-  { at: 47.5, label: 'Explore an example', tap: 'task-demo' },
-  { at: 49, label: 'Open demo camera', tap: 'approach-capture' },
-  { at: 52, label: 'Capture', tap: 'capture-shutter' },
-  { at: 58.5, label: 'Explore tab', tap: 'nav-explore' },
-  { at: 59.3, label: 'Take the NYC sample tour (if shown)', tap: 'explore-tour', optional: true },
-  { at: 60.3, label: 'All 12 places', tap: 'explore-all-places', minGap: 0.7 },
-  { at: 61.3, label: '14 St - Union Sq Station', tap: 'explore-result:unionsq' },
-  { at: 67, label: 'Ask for a live check', tap: 'explore-ask-live:unionsq' },
-  { at: 68.5, label: 'Step-free entrance or elevator', tap: 'live-kind-accessibility' },
-  { at: 69.5, label: '15 min', tap: 'live-deadline-15' },
-  { at: 69.8, label: 'Scroll to Send check', reveal: 'live-send' },
-  { at: 71.5, label: 'Public place checkbox', tap: 'live-public-confirm' },
-  { at: 73, label: 'Send check', tap: 'live-send' },
-  { at: 84, label: 'Settings', tap: 'header-settings' },
-  { at: 92.5, label: 'Explore Yonder Plus', tap: 'settings-plus' },
-  { at: 98, label: 'Start 1 week free', tap: 'plus-start', skipIfMissing: plusConfirmed },
-  // About 1:40 on the film: the store sheet is system UI, which no app can press. A person confirms it.
-  { at: 103.9, label: 'Plus entitlement confirmed', until: plusConfirmed, untilTimeout: 180 },
-  { at: 103.95, label: 'Plus confirmed on Yonder’s server', until: () => getServerPlus().catch(() => false), untilTimeout: 90, untilPollMs: 1500 },
+  { at: 20.5, label: 'Next', tap: 'onboarding-next' },
+  { at: 22.5, label: 'Next', tap: 'onboarding-next' },
+  { at: 24, label: 'Maybe later', tap: 'onboarding-later' },
+  { at: 25.5, label: 'Take the NYC sample tour', tap: 'explore-tour' },
+  { at: 29, label: 'Try the local demo', tap: 'explore-local-demo' },
+  { at: 31, label: 'Court question', tap: 'ask-prompt-0' },
+  { at: 33.8, label: '+ $0.50', tap: 'ask-bounty-up' },
+  { at: 35.8, label: 'See answer options', tap: 'ask-submit' },
+  { at: 40.8, label: 'Post a bounty', tap: 'options-dispatch' },
+  { at: 44.3, label: 'Pay $2.50', tap: 'options-pay' },
+  { at: 48, label: 'Try the example observer journey', tap: 'status-observe' },
+  { at: 55.6, label: 'Explore an example', tap: 'task-demo' },
+  { at: 56.6, label: 'Open demo camera', tap: 'approach-capture' },
+  { at: 59.6, label: 'Capture', tap: 'capture-shutter' },
+  { at: 65.8, label: 'Explore tab', tap: 'nav-explore' },
+  { at: 66.6, label: 'Take the NYC sample tour (if shown)', tap: 'explore-tour', optional: true },
+  { at: 67.6, label: 'All 12 places', tap: 'explore-all-places', minGap: 0.7 },
+  { at: 68.6, label: '14 St - Union Sq Station', tap: 'explore-result:unionsq' },
+  { at: 73.8, label: 'Ask for a live check', tap: 'explore-ask-live:unionsq' },
+  { at: 81, label: 'Step-free entrance or elevator', tap: 'live-kind-accessibility' },
+  { at: 82, label: '15 min', tap: 'live-deadline-15' },
+  { at: 82.3, label: 'Scroll to Send check', reveal: 'live-send' },
+  { at: 83.5, label: 'Public place checkbox', tap: 'live-public-confirm' },
+  { at: 84.6, label: 'Send check', tap: 'live-send' },
+  { at: 91.4, label: 'Settings', tap: 'header-settings' },
+  { at: 97.3, label: 'Explore Yonder Plus', tap: 'settings-plus' },
+  { at: 103.6, label: 'Start 1 week free', tap: 'plus-start', skipIfMissing: plusConfirmed },
+  // About 1:45 on the film: the store sheet is system UI, which no app can press. A person confirms it.
+  { at: 109.6, label: 'Plus entitlement confirmed', until: plusConfirmed, untilTimeout: 180 },
+  { at: 109.65, label: 'Plus confirmed on Yonder’s server', until: () => getServerPlus().catch(() => false), untilTimeout: 90, untilPollMs: 1500 },
   // Back to the map as it was left, with the Union Sq card still up.
-  { at: 104, label: 'Explore tab', tap: 'nav-explore-return', fallback: ['nav-explore'] },
+  { at: 109.7, label: 'Explore tab', tap: 'nav-explore-return', fallback: ['nav-explore'] },
   {
-    at: 104.9,
+    at: 110.6,
     label: 'Ask for a live check (1 hr / 2 hr)',
     tap: 'explore-ask-live:unionsq',
     fallback: ['explore-tour', 'explore-all-places', 'explore-result:unionsq', 'explore-ask-live:unionsq'],
   },
-  { at: 105.7, label: 'Show 1 hr and 2 hr', reveal: 'live-deadline-120' },
-  { at: 109, label: 'Explore tab', tap: 'nav-explore' },
+  { at: 111.4, label: 'Show 1 hr and 2 hr', reveal: 'live-deadline-120' },
+  { at: 115.6, label: 'Explore tab', tap: 'nav-explore' },
 ];
 
-export const TAKE_LENGTH_S = 113;
+export const TAKE_LENGTH_S = 119;
 
 const targets = new Map<string, AutopilotTarget>();
 const scrollers = new Set<Scroller>();
