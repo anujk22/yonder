@@ -10,7 +10,7 @@ export function TickingNumber({
   value,
   initialValue = 0,
   duration = 620,
-  formatter = (number) => Math.round(number).toString(),
+  formatter = (number) => { 'worklet'; return Math.round(number).toString(); },
   color,
   style,
 }: {

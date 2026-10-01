@@ -99,7 +99,7 @@ export function AnswerTierCard({
               value={priceCents}
               duration={620}
               color={foreground}
-              formatter={(value) => `$${(Math.round(value) / 100).toFixed(2)}`}
+              formatter={(value) => { 'worklet'; return `$${(Math.round(value) / 100).toFixed(2)}`; }}
               style={isDispatch ? styles.dispatchPrice : styles.price}
             />
           )}

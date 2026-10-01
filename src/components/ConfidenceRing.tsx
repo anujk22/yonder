@@ -44,7 +44,7 @@ export function ConfidenceRing({ value }: { value: number }) {
         value={value * 100}
         duration={900}
         color={theme.ink}
-        formatter={(number) => `${Math.round(number)}%`}
+        formatter={(number) => { 'worklet'; return `${Math.round(number)}%`; }}
         style={styles.number}
       />
       <Text style={[type.micro, styles.label, { color: theme.ink }]}>CONFIDENCE</Text>
