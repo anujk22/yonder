@@ -8,7 +8,7 @@ The phone take runs from **T+0:00 to T+1:47**. In the edit it sits at 0:10 to 1:
 
 1. **Build.** The take is in every build with the demo screens: development, preview and TestFlight preview. It is not in the App Store build (the `production` profile), which has no demo screens.
 
-   - **TestFlight:** build with the `testflight-preview` profile, not `production`, then submit it:
+   - **TestFlight (the film is recorded here):** build with the `testflight-preview` profile, not `production`, then submit it:
 
      ```sh
      eas build --platform ios --profile testflight-preview
@@ -16,7 +16,7 @@ The phone take runs from **T+0:00 to T+1:47**. In the edit it sits at 0:10 to 1:
      ```
 
      Plus is bought through Apple's sandbox here, which is free in TestFlight. RevenueCat's Test Store can't be used, because its key crashes release builds on purpose, and TestFlight builds are release builds.
-   - **Development build:** `npx expo run:ios --device` (once: `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`). This one uses RevenueCat's Test Store.
+   - **Development build:** `npx expo run:ios --device` (once: `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`). This one uses RevenueCat's Test Store, which the script doesn't mention, so use it for rehearsing only.
 
 2. **Backend.** Production Supabase must have `20261001000000_accessibility_and_plus.sql` applied (`docs/shipaton/CATEGORIES.md`). Without it, the live check fails with an error.
 
