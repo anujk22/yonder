@@ -28,7 +28,7 @@ Generated shots, labelled "concept animation". The example is still being chosen
 | 1:17 | Saf | The check screen, "OPEN" | A Scout nearby answers yes or no, and every answer shows how old it is. Answers are labelled self-reported, never presented as verified. |
 | 1:28 | Anuj | Settings, "HOW PAYMENTS WORK" (bounty, Scout paid out, platform fee) | Our business model has two parts. On bounties, the Scout gets paid and Yonder keeps a platform fee. |
 | 1:36.5 | Anuj | Plus perks and plans, "1 week free" | Second, Yonder Plus: longer check windows, more open checks, and a one-week free trial. |
-| 1:42 | Anuj | "TEST STORE" note, purchase sheet, "Welcome to Plus.", "Confirming Plus on Yonder's server…" | This purchase uses RevenueCat's Test Store. Our server confirms Plus access. |
+| 1:42 | Anuj | "TEST STORE" note, purchase sheet, "Welcome to Plus.", "Confirming Plus on Yonder's server…" | This purchase uses RevenueCat's Test Store. Our server confirms Plus access. (Recorded in TestFlight instead: "This purchase runs through RevenueCat in Apple's sandbox. Our server confirms Plus access.") |
 | 1:49 | Anuj | Live check form with "1 hr" and "2 hr" | Plus keeps your check open for up to two hours. |
 | 1:52.5 | Anuj | Map | We want every trip to start with an answer instead of a guess. |
 | 1:57.5 | Saf | End card (added in edit): yonder. · Go with confidence. · github.com/anujk22/yonder | Yonder. Go with confidence. |
