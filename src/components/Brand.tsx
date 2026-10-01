@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { DEMO_FEATURES_ENABLED, LIVE_FEATURES_ENABLED } from "@/lib/previewFeatures";
 import { useScoutNavigation } from "@/lib/useScoutNavigation";
 import {
@@ -14,6 +15,7 @@ import { brand, font, type } from "@/lib/theme";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Settings } from "lucide-react-native";
 import { MotionPressable } from "./MotionPressable";
+import { useAutopilotGlobalTarget } from "@/lib/autopilot";
 
 export function Scout({
   size = 44,
@@ -57,6 +59,9 @@ export function AppHeader() {
   const wide = width >= 900;
   const insets = useSafeAreaInsets();
   const go = useScoutNavigation();
+  const settingsRef = useRef<View>(null);
+  const openSettings = () => { if (pathname !== "/settings") router.push("/settings"); };
+  useAutopilotGlobalTarget(!wide ? "header-settings" : undefined, settingsRef, openSettings);
   if (!wide)
     return (
       <View style={{ paddingTop: insets.top, backgroundColor: theme.bg }}>
@@ -73,9 +78,10 @@ export function AppHeader() {
             </Text>
           </MotionPressable>
           <MotionPressable
+            ref={settingsRef}
             accessibilityRole="button"
             accessibilityLabel="Settings"
-            onPress={() => { if (pathname !== "/settings") router.push("/settings"); }}
+            onPress={openSettings}
             style={[styles.previewPill, { borderColor: theme.border }]}
           >
             <Settings size={20} color={theme.inkSoft} />

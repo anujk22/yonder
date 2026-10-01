@@ -1,12 +1,14 @@
 import { useState } from "react";
-import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Linking, Pressable, StyleSheet, Text, View } from "react-native";
+import * as Haptics from "expo-haptics";
 import Constants from "expo-constants";
 import { useRouter } from "expo-router";
 import { AppScreen, PrimaryButton, ScreenHeader } from "@/components/ui";
 import { LiveSignIn } from "@/components/LiveSignIn";
 import { liveConfigured } from "@/lib/liveClient";
 import { deleteLiveAccount, signOutLive, useLiveAuth } from "@/lib/liveAuth";
-import { manageSubscription, purchasesAvailable, restorePurchase, hasPlus } from "@/lib/purchases";
+import { manageSubscription, purchasesAvailable, restorePurchase, hasPlus, testPurchases } from "@/lib/purchases";
+import { AUTOPILOT_AVAILABLE, formatTakeReport, startFilmTake } from "@/lib/autopilot";
 import { usePurchaseStore } from "@/lib/purchaseStore";
 import { useOnboarding } from "@/lib/onboarding";
 import { useActiveTheme } from "@/lib/store";
@@ -40,7 +42,10 @@ export default function SettingsScreen() {
 
   return <AppScreen>
     <ScreenHeader eyebrow="SETTINGS" />
-    <Text accessibilityRole="header" style={styles.title}>Your Yonder</Text>
+    {AUTOPILOT_AVAILABLE
+      // Development builds only: hold the title for 1.5 s to run the recorded film take.
+      ? <Pressable accessible={false} delayLongPress={1500} onLongPress={() => startTake(Boolean(user), plus)}><Text accessibilityRole="header" style={styles.title}>Your Yonder</Text></Pressable>
+      : <Text accessibilityRole="header" style={styles.title}>Your Yonder</Text>}
 
     <View style={styles.section}>
       <Text style={styles.label}>HOW PAYMENTS WORK</Text>
@@ -51,7 +56,7 @@ export default function SettingsScreen() {
       <Text style={styles.label}>YONDER PLUS</Text>
       <Text style={styles.value}>{plus ? "Plus is active" : "Free plan"}</Text>
       <Text style={styles.body}>{plus ? "Longer check windows, more open checks and unlimited collections." : "Plus is for people who check a lot: longer check windows, more open checks and unlimited collections."}</Text>
-      <PrimaryButton label={plus ? "See your Plus benefits" : "Explore Yonder Plus"} variant={plus ? "secondary" : "primary"} onPress={() => router.push("/plus")} />
+      <PrimaryButton testID="settings-plus" label={plus ? "See your Plus benefits" : "Explore Yonder Plus"} variant={plus ? "secondary" : "primary"} onPress={() => router.push("/plus")} />
       {purchasesAvailable && <PrimaryButton label="Restore purchases" variant="secondary" disabled={busy} onPress={() => void run(async () => {
         const info = await restorePurchase();
         usePurchaseStore.getState().accept(info);
@@ -104,3 +109,25 @@ const settingsStyles = (theme: AppTheme) => StyleSheet.create({
   error: { ...type.body, color: theme.danger, marginTop: 14 },
   version: { ...type.label, color: theme.inkFaint, textAlign: "center", marginTop: 24 },
 });
+
+/** The recording autopilot's preflight and start. See docs/shipaton/RECORDING_AUTOPILOT.md. */
+function startTake(signedIn: boolean, plus: boolean) {
+  const problems = [
+    !liveConfigured && "Live checks aren't connected in this build, so the live check at 1:01 will fail.",
+    liveConfigured && !signedIn && "Sign in first (Requests tab), or the live check at 1:01 will stop the take.",
+    plus && "This account already has Plus, so there's no plan to buy at 1:32. Use an account that has never bought Plus.",
+    !purchasesAvailable && "Purchases aren't available here. Run a development build on the iPhone with the RevenueCat test key.",
+    purchasesAvailable && !testPurchases && "This build isn't using RevenueCat's Test Store, so 1:32 would be a real purchase.",
+  ].filter(Boolean) as string[];
+  const run = () => {
+    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    void startFilmTake(() => usePurchaseStore.getState().plus).then(({ report, stopped }) => {
+      Alert.alert(stopped ? "Take stopped" : "Take complete", [stopped, formatTakeReport(report)].filter(Boolean).join("\n\n"));
+    });
+  };
+  if (!problems.length) run();
+  else Alert.alert("Before you record", problems.join("\n\n"), [
+    { text: "Cancel", style: "cancel" },
+    { text: "Run anyway", style: "destructive", onPress: run },
+  ]);
+}

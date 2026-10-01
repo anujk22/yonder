@@ -124,7 +124,7 @@ export default function PlusScreen() {
       {plus ? <>
         <PrimaryButton label="Organize my places" onPress={() => router.replace("/collections")} />
         {purchasesAvailable && <PrimaryButton label="Manage subscription" variant="secondary" onPress={() => void manageSubscription().catch(() => setMessage("Open your store account settings to manage your subscription."))} />}
-      </> : <PrimaryButton label={busy ? "Connecting to the store…" : loading ? "Loading plans…" : option ? trial ? `Start ${trial}` : `Subscribe · ${option.product.priceString}` : "Plus currently unavailable"}
+      </> : <PrimaryButton testID="plus-start" label={busy ? "Connecting to the store…" : loading ? "Loading plans…" : option ? trial ? `Start ${trial}` : `Subscribe · ${option.product.priceString}` : "Plus currently unavailable"}
           onPress={() => void transact(false)} disabled={busy || loading || !option} />}
       {purchasesAvailable && !plus && <PrimaryButton label="Restore purchases" variant="secondary" disabled={busy || loading} onPress={() => void transact(true)} />}
       {purchasesAvailable && !loading && !packages.length && <PrimaryButton label="Try loading again" variant="secondary" disabled={busy} onPress={() => { setLoading(true); setMessage(""); setAttempt((n) => n + 1); }} />}

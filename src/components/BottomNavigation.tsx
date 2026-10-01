@@ -1,5 +1,5 @@
 import { DEMO_FEATURES_ENABLED, LIVE_FEATURES_ENABLED } from "@/lib/previewFeatures";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Keyboard, Platform, StyleSheet, Text, View } from "react-native";
 import { useGlobalSearchParams, usePathname } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -14,6 +14,7 @@ import Animated, {
 import { MotionPressable } from "./MotionPressable";
 import { useActiveTheme } from "@/lib/store";
 import { font } from "@/lib/theme";
+import { measureAutopilotRef, useAutopilotGlobalTarget } from "@/lib/autopilot";
 
 const tabs = [
   { route: "/", label: "Explore", icon: "compass" },
@@ -27,13 +28,20 @@ function TabItem({
   icon,
   active,
   onPress,
+  autopilotId,
 }: {
   label: string;
   icon: ArtworkKind;
   active: boolean;
-  onPress: (event: import("react-native").GestureResponderEvent) => void;
+  onPress: (origin: { x: number; y: number }) => void;
+  autopilotId?: string;
 }) {
   const theme = useActiveTheme();
+  const ref = useRef<View>(null);
+  useAutopilotGlobalTarget(autopilotId, ref, async () => {
+    const frame = await measureAutopilotRef(ref);
+    onPress(frame ? { x: frame.x + frame.width / 2, y: frame.y + frame.height / 2 } : { x: 0, y: 0 });
+  });
   const progress = useSharedValue(active ? 1 : 0);
   const reduced = useReducedMotion();
   useEffect(() => {
@@ -56,10 +64,11 @@ function TabItem({
   }));
   return (
     <MotionPressable
+      ref={ref}
       accessibilityRole="tab"
       accessibilityLabel={label}
       accessibilityState={{ selected: active }}
-      onPress={onPress}
+      onPress={(event) => onPress({ x: event.nativeEvent.pageX, y: event.nativeEvent.pageY })}
       style={styles.tab}
     >
       <View style={styles.icon}>
@@ -135,12 +144,8 @@ export function BottomNavigation() {
           key={tab.route}
           {...tab}
           active={current === tab.route}
-          onPress={(event) =>
-            navigate(tab.route, {
-              x: event.nativeEvent.pageX,
-              y: event.nativeEvent.pageY,
-            })
-          }
+          autopilotId={tab.route === "/" ? "nav-explore" : undefined}
+          onPress={(origin) => navigate(tab.route, origin)}
         />
       ))}
     </View>

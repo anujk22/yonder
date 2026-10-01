@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Modal, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { AnswerTierCard } from "@/components/AnswerTierCard";
+import { AutopilotTouches } from "@/components/AutopilotLayer";
 import { AppScreen, MissingDataState, PrimaryButton, ScreenHeader } from "@/components/ui";
 import { answerTier, MIN_BOUNTY_CENTS, money, RECENT_ANSWER_CENTS } from "@/lib/pricing";
 import { sameQuestion } from "@/lib/queryMatching";
@@ -104,7 +105,7 @@ export default function OptionsScreen() {
             <View style={styles.row}><Text style={styles.rowLabel}>Scout gets</Text><Text style={styles.rowValue}>{money(query.observerRewardCents)}</Text></View>
             <View style={styles.row}><Text style={styles.rowLabel}>Yonder fee</Text><Text style={styles.rowValue}>{money(query.bountyCents - query.observerRewardCents)}</Text></View>
             <Text style={styles.body}>Billed only if someone answers within {query.deadlineMinutes} minutes.</Text>
-            <PrimaryButton label={`Pay ${money(query.bountyCents)}`} onPress={() => {
+            <PrimaryButton testID="options-pay" label={`Pay ${money(query.bountyCents)}`} onPress={() => {
               setPaying(false);
               useYonderStore.getState().postActiveQuery();
               if (
@@ -120,6 +121,7 @@ export default function OptionsScreen() {
             <PrimaryButton label="Cancel" variant="secondary" onPress={() => setPaying(false)} />
             <Text style={styles.note}>Demo · you won’t be charged.</Text>
           </View>
+          <AutopilotTouches />
         </View>
       </Modal>
       <Text style={styles.note}>

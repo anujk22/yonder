@@ -89,7 +89,7 @@ export default function StatusScreen() {
       </View>
       {!cancelled && !expired && (
         <View style={styles.actions}>
-          <PrimaryButton label="Try the example observer journey" onPress={simulate} />
+          <PrimaryButton testID="status-observe" label="Try the example observer journey" onPress={simulate} />
           <PrimaryButton
             label="Cancel this request"
             variant="secondary"

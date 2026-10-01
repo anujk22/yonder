@@ -1,6 +1,8 @@
-# Runbook: record the phone take with a computer-use agent
+# Runbook: record the phone take
 
-This file is the human's setup. The agent's instructions are in `AGENT_PROMPT.md`. The agent drives an iPhone through the macOS **iPhone Mirroring** window while the screen is recorded. It records **phone only, no voices**. Voices and webcam are recorded afterwards over this take, following `VIDEO_PLAN.md`.
+The app can play the whole take by itself (Part C). A computer-use agent (Part B) is the backup. Either way, do the setup in Part A first.
+
+The agent's instructions are in `AGENT_PROMPT.md`. The agent drives an iPhone through the macOS **iPhone Mirroring** window while the screen is recorded. It records **phone only, no voices**. Voices and webcam are recorded afterwards over this take, following `VIDEO_PLAN.md`.
 
 The phone take runs from **T+0:00 to T+1:47**. In the edit it sits at 0:10 to 1:57, after the 10 s opening animation.
 
@@ -35,6 +37,20 @@ The phone take runs from **T+0:00 to T+1:47**. In the edit it sits at 0:10 to 1:
 ## Part B: the agent
 
 Paste `AGENT_PROMPT.md` (below its line) into the agent. It holds the rules and the only copy of the timeline; edit timings there.
+
+## Part C: the built-in take (development builds only)
+
+Hidden button: in Settings, **press and hold the "Your Yonder" title for 1.5 s**. It exists only in development builds, never in TestFlight or App Store builds.
+
+1. Do Part A, steps 1 to 6. You can start from any screen; the take resets the demo and replays the intro itself.
+2. Start the screen recording, open Settings and hold the title.
+3. If something isn't ready, a "Before you record" alert lists it: live checks not connected, not signed in, the account already has Plus, purchases unavailable, or not the Test Store. Fix it, or choose "Run anyway".
+4. The app goes to onboarding page 1. That frame is **T+0**; place it at film 0:10 in the edit. The first tap is at T+0:10.0 (film 0:20).
+5. **One tap is yours.** The Test Store purchase sheet is native, so the app can't press it. Confirm it when it appears, at about T+1:33.5 (film 1:43.5). The take waits up to 30 s for Plus, then carries on.
+6. A small dot with a ring marks every tap the app makes.
+7. At T+1:47 an alert lists each tap's planned and actual time. Trim it off the recording.
+
+To stop a take early, touch the screen with two fingers. The timeline is `takeSteps` in `src/lib/autopilot.ts`, and it matches `AGENT_PROMPT.md`.
 
 ## After the take
 

@@ -21,7 +21,7 @@ import { MotionPressable } from "./MotionPressable";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Glyph } from "@/components/Glyph";
-import { useAutopilotPressTarget } from "@/lib/autopilot";
+import { useAutopilotGlobalTarget, useAutopilotPressTarget, useAutopilotScroller } from "@/lib/autopilot";
 import { useActiveTheme } from "@/lib/store";
 import { font, space, type } from "@/lib/theme";
 
@@ -38,8 +38,12 @@ export function AppScreen({
   footer?: ReactNode;
 }>) {
   const theme = useActiveTheme();
+  const scrollRef = useRef<ScrollView>(null);
+  const autopilotScroll = useAutopilotScroller(scrollRef);
   const body = scroll ? (
     <ScrollView
+      ref={scrollRef}
+      {...autopilotScroll}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
       contentContainerStyle={[
@@ -182,6 +186,7 @@ export function PrimaryButton({
   icon = "arrow",
   variant = "primary",
   testID,
+  autopilotGlobal = false,
 }: {
   label: string;
   onPress: () => void;
@@ -189,6 +194,8 @@ export function PrimaryButton({
   icon?: "arrow" | "camera" | "check" | "lock";
   variant?: "primary" | "secondary" | "danger";
   testID?: string;
+  /** For buttons outside the navigator, such as the intro. */
+  autopilotGlobal?: boolean;
 }) {
   const theme = useActiveTheme();
   const ref = useRef<View>(null);
@@ -215,7 +222,10 @@ export function PrimaryButton({
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onPress();
   };
-  useAutopilotPressTarget(testID, ref, handlePress);
+  // A disabled button is not a target yet, so the autopilot waits for it to enable.
+  const autopilotId = disabled ? undefined : testID;
+  useAutopilotPressTarget(autopilotGlobal ? undefined : autopilotId, ref, handlePress);
+  useAutopilotGlobalTarget(autopilotGlobal ? autopilotId : undefined, ref, handlePress);
   return (
     <MotionPressable
       ref={ref}

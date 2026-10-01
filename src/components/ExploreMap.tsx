@@ -14,7 +14,7 @@ import {
   View,
   useWindowDimensions,
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useIsFocused, useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import {
@@ -51,6 +51,7 @@ import { categoryFor, questionFor, Category } from "@/lib/discovery";
 import { Place } from "@/lib/places";
 import { distanceMeters } from "@/lib/geo";
 import { ask, font } from "@/lib/theme";
+import { AUTOPILOT_AVAILABLE, measureAutopilotRef, registerAutopilotTarget, useAutopilotPressTarget, useAutopilotScroller, useAutopilotTake } from "@/lib/autopilot";
 
 const USA: MapRegion = {
   latitude: 39.5,
@@ -248,6 +249,53 @@ export default function ExploreMap() {
     setPlaces(examples);
     if (examples[0]) focus(examples[0]);
   };
+  // Recording autopilot (development builds): every take starts from a fresh map.
+  const takeId = useAutopilotTake((s) => s.takeId);
+  const seenTake = useRef(takeId);
+  useEffect(() => {
+    if (takeId === seenTake.current) return;
+    seenTake.current = takeId;
+    version.current++;
+    setLocationRequested(false);
+    setBusy(false);
+    setError("");
+    setSearch("");
+    setCategory("All places");
+    setSource("start");
+    setPlaces([]);
+    setSelectedId(null);
+    setExpanded(false);
+  }, [takeId]);
+  const isFocused = useIsFocused();
+  const tourRef = useRef<View>(null);
+  const localDemoRef = useRef<View>(null);
+  const allPlacesRef = useRef<View>(null);
+  const askLiveRef = useRef<View>(null);
+  const resultRefs = useRef(new Map<string, View | null>());
+  const sheetScrollRef = useRef<ScrollView>(null);
+  const sheetScroll = useAutopilotScroller(sheetScrollRef);
+  const showingCard = Boolean(selected) && (!expanded || desktop) && source !== "start" && source !== "location";
+  const showingList = !showingCard && source !== "start" && source !== "location" && !busy;
+  useAutopilotPressTarget(DEMO_FEATURES_ENABLED && source === "start" ? "explore-tour" : undefined, tourRef, tour);
+  useAutopilotPressTarget(showingCard ? "explore-all-places" : undefined, allPlacesRef, () => {
+    setSelectedId(null);
+    setExpanded(true);
+  });
+  // Without live checks the card's main button is the demo request.
+  useAutopilotPressTarget(showingCard && DEMO_FEATURES_ENABLED ? "explore-local-demo" : undefined, LIVE_FEATURES_ENABLED ? localDemoRef : askLiveRef, () => {
+    if (selected) openPlaceDraft(selected, router, true);
+  });
+  useAutopilotPressTarget(showingCard && selected && (LIVE_FEATURES_ENABLED || DEMO_FEATURES_ENABLED) ? `explore-ask-live:${selected.id}` : undefined, askLiveRef, () => {
+    if (selected) openPlaceDraft(selected, router);
+  });
+  useEffect(() => {
+    if (!AUTOPILOT_AVAILABLE || !isFocused || !showingList) return undefined;
+    const unregister = results.map((place) => registerAutopilotTarget(`explore-result:${place.id}`, {
+      press: () => focus(place),
+      measure: () => measureAutopilotRef({ current: resultRefs.current.get(place.id) ?? null }),
+    }));
+    return () => unregister.forEach((off) => off());
+  }, [focus, isFocused, results, showingList]);
   const searchField = (
     <View style={styles.search}>
       <Search size={20} color={ask.inkSoft} />
@@ -379,6 +427,7 @@ export default function ExploreMap() {
           </Text>
           <View style={styles.startLinks}>
             {DEMO_FEATURES_ENABLED && <MotionPressable
+              ref={tourRef}
               accessibilityRole="button"
               onPress={tour}
               style={styles.textButton}
@@ -432,6 +481,7 @@ export default function ExploreMap() {
       ) : selected && (!expanded || desktop) ? (
         <>
           <MotionPressable
+            ref={allPlacesRef}
             accessibilityRole="button"
             onPress={() => {
               setSelectedId(null);
@@ -487,6 +537,7 @@ export default function ExploreMap() {
             <Text style={styles.small}>Place data © OpenStreetMap contributors · ODbL ↗</Text>
           </Pressable>}
           {(LIVE_FEATURES_ENABLED || DEMO_FEATURES_ENABLED) && <><MotionPressable
+            ref={askLiveRef}
             accessibilityRole="button"
             onPress={() => openPlaceDraft(selected, router)}
             style={styles.primary}
@@ -501,7 +552,7 @@ export default function ExploreMap() {
               ? "Sample tour · try a demo request, no card charged."
               : "Real place · requests currently run as a local demo."}
           </Text>
-          {DEMO_FEATURES_ENABLED && LIVE_FEATURES_ENABLED && <MotionPressable accessibilityRole="button" onPress={() => openPlaceDraft(selected, router, true)} style={styles.textButton}><Text style={styles.link}>Try the local demo</Text></MotionPressable>}
+          {DEMO_FEATURES_ENABLED && LIVE_FEATURES_ENABLED && <MotionPressable ref={localDemoRef} accessibilityRole="button" onPress={() => openPlaceDraft(selected, router, true)} style={styles.textButton}><Text style={styles.link}>Try the local demo</Text></MotionPressable>}
           </>}
         </>
       ) : (
@@ -549,6 +600,7 @@ export default function ExploreMap() {
             results.map((place) => (
               <MotionPressable
                 key={place.id}
+                ref={(node) => { resultRefs.current.set(place.id, node); }}
                 accessibilityRole="button"
                 accessibilityLabel={`Show ${place.name} on map`}
                 onPress={() => focus(place)}
@@ -753,6 +805,8 @@ export default function ExploreMap() {
             </MotionPressable>
           </View>
           <ScrollView
+            ref={sheetScrollRef}
+            {...sheetScroll}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={styles.sheetBody}

@@ -1,5 +1,5 @@
 import { CommunitySpotDetails } from "@/components/CommunitySpotDetails";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useRouter } from "expo-router";
 import { MapSurface, detailRegion } from "@/components/MapSurface";
@@ -18,6 +18,7 @@ import { inferQueryType } from "@/lib/places";
 import { BOUNTY_STEP_CENTS, MIN_BOUNTY_CENTS, money, priceQuery, splitBounty } from "@/lib/pricing";
 import { isUnsafeQuestion } from "@/lib/safety";
 import { liveConfigured } from "@/lib/liveClient";
+import { useAutopilotPressTarget } from "@/lib/autopilot";
 
 export default function PlaceScreen() {
   const router = useRouter();
@@ -29,6 +30,22 @@ export default function PlaceScreen() {
   const chosenBounty = useYonderStore((s) => s.draftBountyCents);
   const [error, setError] = useState("");
   const [details, setDetails] = useState(false);
+  const promptRef = useRef<View>(null);
+  const bountyUpRef = useRef<View>(null);
+  // Recording autopilot: the same changes as tapping the first suggestion and "+ $0.50".
+  useAutopilotPressTarget(place ? "ask-prompt-0" : undefined, promptRef, () => {
+    const state = useYonderStore.getState();
+    const current = state.places.find((p) => p.id === state.resolvedPlaceId);
+    if (current) state.setDraftQuestion(questionFor(current));
+    setError("");
+  });
+  useAutopilotPressTarget(place ? "ask-bounty-up" : undefined, bountyUpRef, () => {
+    const state = useYonderStore.getState();
+    const current = state.places.find((p) => p.id === state.resolvedPlaceId);
+    if (!current) return;
+    const bounty = splitBounty(state.draftBountyCents ?? priceQuery(current.id, inferQueryType(state.draftQuestion || questionFor(current)), state.deadlineMinutes).bountyCents).bountyCents;
+    state.setDraftBountyCents(Math.max(MIN_BOUNTY_CENTS, bounty + BOUNTY_STEP_CENTS));
+  });
   if (!place)
     return <MissingDataState title="Choose a place to take a closer look." />;
   const suggested = priceQuery(
@@ -106,9 +123,10 @@ export default function PlaceScreen() {
         </Text>
       )}
       <View style={styles.prompts}>
-        {prompts.map((prompt) => (
+        {prompts.map((prompt, index) => (
           <Pressable
             key={prompt}
+            ref={index === 0 ? promptRef : undefined}
             accessibilityRole="button"
             onPress={() => {
               useYonderStore.getState().setDraftQuestion(prompt);
@@ -139,6 +157,7 @@ export default function PlaceScreen() {
             <Text style={styles.stepperText}>− $0.50</Text>
           </Pressable>
           <Pressable
+            ref={bountyUpRef}
             accessibilityRole="button"
             accessibilityLabel="Raise bounty by 50 cents"
             onPress={() => stepBounty(BOUNTY_STEP_CENTS)}

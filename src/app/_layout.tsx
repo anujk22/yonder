@@ -39,7 +39,7 @@ import { ModeReveal } from "@/components/ModeReveal";
 import { ModeToggle } from "@/components/ModeToggle";
 import { useActiveTheme, useYonderStore } from "@/lib/store";
 import { DEMO_FLAGS } from "@/lib/demoFlags";
-import { abortAutopilot } from "@/lib/autopilot";
+import { AUTOPILOT_AVAILABLE, abortAutopilot } from "@/lib/autopilot";
 import { AppHeader } from "@/components/Brand";
 import { observeLiveAuth } from "@/lib/liveAuth";
 import { observePurchases } from "@/lib/purchaseStore";
@@ -107,9 +107,8 @@ export default function RootLayout() {
   }, [fontsLoaded, pathname, router]);
 
   const handleTouchStart = useCallback((event: GestureResponderEvent) => {
-    // DEMO: deterministic path for recording. Real implementation below.
-    if (DEMO_FLAGS.autopilotEnabled && event.nativeEvent.touches.length >= 2)
-      abortAutopilot();
+    // Recording autopilot: a two-finger touch stops the take.
+    if (event.nativeEvent.touches.length >= 2) abortAutopilot();
   }, []);
 
   if (fontError) throw fontError;
@@ -120,7 +119,7 @@ export default function RootLayout() {
       <SafeAreaProvider initialMetrics={initialWindowMetrics}>
         <View
           onTouchStart={
-            __DEV__ && DEMO_FLAGS.autopilotEnabled ? handleTouchStart : undefined
+            AUTOPILOT_AVAILABLE ? handleTouchStart : undefined
           }
           style={[styles.root, { backgroundColor: theme.bg }]}
         >
@@ -170,7 +169,7 @@ export default function RootLayout() {
           {!isImmersive && width < 900 && <BottomNavigation />}
           {!hideModeToggle ? <ModeToggle /> : null}
           {DEMO_FEATURES_ENABLED || LIVE_FEATURES_ENABLED ? <ModeReveal /> : null}
-          {__DEV__ && DEMO_FLAGS.autopilotEnabled ? <AutopilotLayer /> : null}
+          {AUTOPILOT_AVAILABLE ? <AutopilotLayer /> : null}
           {showOnboarding && !DEMO_FLAGS.skipOnboarding ? <Onboarding /> : null}
         </View>
       </SafeAreaProvider>

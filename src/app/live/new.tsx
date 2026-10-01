@@ -10,6 +10,7 @@ import { LIVE_QUESTION_KINDS, LIVE_QUESTIONS, type LiveQuestionKind } from "@/li
 import { liveDeadlines } from "@/lib/livePolicy";
 import { usePurchaseStore } from "@/lib/purchaseStore";
 import { askForPushAfterFirstCheck } from "@/lib/push";
+import { isAutopilotRunning, useAutopilotPressTargets } from "@/lib/autopilot";
 import { useYonderStore } from "@/lib/store";
 import { ask, font, type } from "@/lib/theme";
 
@@ -64,7 +65,8 @@ function NewLiveRequestSession() {
       const id = await createLiveRequest({ placeName: place.name, latitude: place.latitude, longitude: place.longitude, landmark, questionKind, deadlineMinutes }, plus);
       if (mounted.current && useLiveAuth.getState().user?.id === user.id) {
         router.replace(`/live/${id}`);
-        void askForPushAfterFirstCheck();
+        // The recording autopilot never stops for a system permission prompt.
+        if (!isAutopilotRunning()) void askForPushAfterFirstCheck();
       }
     } catch (cause) {
       if (mounted.current && useLiveAuth.getState().user?.id === user.id) setError(cause instanceof Error ? cause.message : "Couldn’t create this check.");
@@ -72,6 +74,15 @@ function NewLiveRequestSession() {
   };
 
   const allowed = access && access.userId === userId && access.allowed;
+  const [autopilotRefs] = useState(() => new Map<string, View | null>());
+  const autopilotRef = (id: string) => (node: View | null) => { autopilotRefs.set(id, node); };
+  const formShown = liveConfigured && ready && Boolean(user) && Boolean(allowed) && Boolean(place) && !place?.blocked;
+  useAutopilotPressTargets(formShown ? [
+    ...LIVE_QUESTION_KINDS.map((kind) => [`live-kind-${kind}`, () => setQuestionKind(kind)] as const),
+    ...liveDeadlines(plus).map((minutes) => [`live-deadline-${minutes}`, () => setDeadlineMinutes(minutes)] as const),
+    ["live-public-confirm", () => { setPublicConfirmed((value) => !value); setError(""); }] as const,
+    ["live-send", () => void submit()] as const,
+  ] : undefined, autopilotRefs);
   return <AppScreen>
     <ScreenHeader eyebrow="NEW LIVE CHECK" />
     <Text accessibilityRole="header" style={styles.title}>What do you want to know?</Text>
@@ -96,17 +107,19 @@ function NewLiveRequestSession() {
         <Text style={styles.meta} numberOfLines={1}>{place.area}</Text>
       </View>
       <Text style={styles.label}>WHAT SHOULD SOMEONE CHECK?</Text>
-      {LIVE_QUESTION_KINDS.map((kind) => <Pressable key={kind} accessibilityRole="radio" accessibilityState={{ checked: questionKind === kind }} onPress={() => setQuestionKind(kind)} style={[styles.option, questionKind === kind && styles.selected]}><Text style={styles.optionText}>{LIVE_QUESTIONS[kind]}</Text></Pressable>)}
+      {LIVE_QUESTION_KINDS.map((kind) => <Pressable key={kind} ref={autopilotRef(`live-kind-${kind}`)} accessibilityRole="radio" accessibilityState={{ checked: questionKind === kind }} onPress={() => setQuestionKind(kind)} style={[styles.option, questionKind === kind && styles.selected]}><Text style={styles.optionText}>{LIVE_QUESTIONS[kind]}</Text></Pressable>)}
       <Text style={styles.label}>KEEP IT OPEN FOR</Text>
-      <View style={styles.deadlines}>{liveDeadlines(plus).map((minutes) => <Pressable key={minutes} accessibilityRole="radio" accessibilityState={{ checked: deadlineMinutes === minutes }} onPress={() => setDeadlineMinutes(minutes)} style={[styles.deadline, deadlineMinutes === minutes && styles.selected]}><Text style={styles.optionText}>{minutes < 60 ? `${minutes} min` : `${minutes / 60} hr`}</Text></Pressable>)}</View>
+      <View style={styles.deadlines}>{liveDeadlines(plus).map((minutes) => <Pressable key={minutes} ref={autopilotRef(`live-deadline-${minutes}`)} accessibilityRole="radio" accessibilityState={{ checked: deadlineMinutes === minutes }} onPress={() => setDeadlineMinutes(minutes)} style={[styles.deadline, deadlineMinutes === minutes && styles.selected]}><Text style={styles.optionText}>{minutes < 60 ? `${minutes} min` : `${minutes / 60} hr`}</Text></Pressable>)}</View>
       {!plus && <Pressable accessibilityRole="button" onPress={() => router.push("/plus")}><Text style={styles.plus}>Need longer? Plus keeps checks open for up to 2 hours.</Text></Pressable>}
       {showLandmark ? <>
         <Text style={styles.label}>WHERE EXACTLY? · OPTIONAL</Text>
         <TextInput accessibilityLabel="Public landmark or entrance" placeholder="Main entrance, north side of the park…" placeholderTextColor={ask.inkFaint} value={landmark} onChangeText={(value) => { setLandmark(value); setError(""); }} maxLength={180} multiline style={styles.input} />
         <Text style={styles.meta}>{landmark.length}/180 · Public spots only. No homes, people or security details.</Text>
       </> : <Pressable accessibilityRole="button" onPress={() => setShowLandmark(true)}><Text style={styles.plus}>Add a landmark or entrance (optional)</Text></Pressable>}
-      <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: publicConfirmed }} onPress={() => { setPublicConfirmed(!publicConfirmed); setError(""); }} style={styles.confirm}><Text style={styles.optionText}>{publicConfirmed ? "☑" : "□"} This is a public place and the details are safe to share.</Text></Pressable>
-      <PrimaryButton label={busy ? "Sending…" : "Send check"} onPress={() => void submit()} disabled={busy} />
+      <Pressable ref={autopilotRef("live-public-confirm")} accessibilityRole="checkbox" accessibilityState={{ checked: publicConfirmed }} onPress={() => { setPublicConfirmed(!publicConfirmed); setError(""); }} style={styles.confirm}><Text style={styles.optionText}>{publicConfirmed ? "☑" : "□"} This is a public place and the details are safe to share.</Text></Pressable>
+      <View ref={autopilotRef("live-send")} collapsable={false}>
+        <PrimaryButton label={busy ? "Sending…" : "Send check"} onPress={() => void submit()} disabled={busy} />
+      </View>
     </>}
     {!!error && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}
   </AppScreen>;
