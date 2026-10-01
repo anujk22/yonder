@@ -44,7 +44,7 @@ export default function SettingsScreen() {
 
     <View style={styles.section}>
       <Text style={styles.label}>HOW PAYMENTS WORK</Text>
-      <Text style={styles.body}>Askers post a bounty of $2 or more and are billed only if someone answers. The Scout who answers is paid out, and Yonder keeps a small platform fee. Payments are a demo in this build.</Text>
+      <Text style={styles.body}>Askers post a bounty of $2 or more and are billed only if someone answers. The Scout who answers is paid out, and Yonder keeps a platform fee. Payments are a demo in this build.</Text>
     </View>
 
     <View style={styles.section}>
