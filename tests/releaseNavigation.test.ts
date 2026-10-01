@@ -25,7 +25,7 @@ test("full features require development or the explicit preview flag", () => {
 test("live and preview screens have independent route guards", () => {
   const files = readdirSync(new URL("../src/app/", import.meta.url), { recursive: true })
     .filter((name): name is string => typeof name === "string")
-    .filter((name) => /\.tsx?$/.test(name)).map((name) => `./${name}`);
+    .filter((name) => /\.tsx?$/.test(name)).map((name) => `./${name.replaceAll("\\", "/")}`);
   const context = Object.assign(() => ({ default: () => null }), {
     keys: () => files, resolve: (name: string) => name, id: "app",
   });

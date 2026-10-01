@@ -2,7 +2,7 @@
 
 This file is the human's setup. The agent's instructions are in `AGENT_PROMPT.md`. The agent drives an iPhone through the macOS **iPhone Mirroring** window while the screen is recorded. It records **phone only, no voices**. Voices and webcam are recorded afterwards over this take, following `VIDEO_PLAN.md`.
 
-The phone take runs from **T+0:00 to T+1:45**. In the edit it sits at 0:10 to 1:55, after the trailer.
+The phone take runs from **T+0:00 to T+1:47**. In the edit it sits at 0:10 to 1:57, after the 10 s opening animation.
 
 ## Part A: the human sets up (not the agent)
 
