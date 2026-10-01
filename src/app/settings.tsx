@@ -42,10 +42,7 @@ export default function SettingsScreen() {
 
   return <AppScreen>
     <ScreenHeader eyebrow="SETTINGS" />
-    {AUTOPILOT_AVAILABLE
-      // Builds with the demo screens only: hold the title for 1.5 s to run the recorded film take.
-      ? <Pressable accessible={false} delayLongPress={1500} onLongPress={() => startTake(Boolean(user), plus)}><Text accessibilityRole="header" style={styles.title}>Your Yonder</Text></Pressable>
-      : <Text accessibilityRole="header" style={styles.title}>Your Yonder</Text>}
+    <Text accessibilityRole="header" style={styles.title}>Your Yonder</Text>
 
     <View style={styles.section}>
       <Text style={styles.label}>HOW PAYMENTS WORK</Text>
@@ -88,6 +85,13 @@ export default function SettingsScreen() {
       <Pressable accessibilityRole="link" onPress={() => void Linking.openURL("https://yonder.expo.app/privacy")} style={styles.row}><Text style={styles.link}>Privacy policy ↗</Text></Pressable>
       <Pressable accessibilityRole="link" onPress={() => void Linking.openURL("https://yonder.expo.app/support")} style={styles.row}><Text style={styles.link}>Support ↗</Text></Pressable>
     </View>
+
+    {AUTOPILOT_AVAILABLE && <View style={styles.section}>
+      <Text style={styles.label}>DEMO</Text>
+      <Text style={styles.value}>Watch Yonder on its own</Text>
+      <Text style={styles.body}>Plays the whole app from the intro to Plus, about 1 min 47 s, tapping each button for you. You confirm the purchase sheet yourself. Touch the screen with two fingers to stop.</Text>
+      <PrimaryButton label="Play the demo" onPress={() => startTake(Boolean(user), plus)} />
+    </View>}
 
     {!!message && <Text accessibilityRole="alert" style={styles.notice}>{message}</Text>}
     {!!error && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}

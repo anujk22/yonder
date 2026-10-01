@@ -34,9 +34,9 @@ The phone take runs from **T+0:00 to T+1:47**. In the edit it sits at 0:10 to 1:
 
 ## The take
 
-Hidden button: in Settings, **press and hold the "Your Yonder" title for 1.5 s**. It exists in development, preview and TestFlight preview builds, never in the App Store build.
+Start button: in Settings, scroll to the bottom and tap **Play the demo** (the DEMO card, below Help). It exists in development, preview and TestFlight preview builds, never in the App Store build.
 
-1. Start the screen recording, open Settings and hold the title. You can start from any screen; the take resets the demo and replays the intro itself.
+1. Start the screen recording, open Settings and tap Play the demo. You can start from any screen; the take resets the demo and replays the intro itself.
 2. If something isn't ready, a "Before you record" alert lists it: live checks not connected, not signed in, the account already has Plus, purchases unavailable,. Fix it, or choose "Run anyway".
 3. The app goes to onboarding page 1. That frame is **T+0**; place it at film 0:10 in the edit. The first tap is at T+0:10.0 (film 0:20).
 4. **One tap is yours.** The purchase sheet is native (Test Store in a development build, Apple's sandbox in TestFlight), so the app can't press it. Confirm it when it appears, at about T+1:33.5 (film 1:43.5); in TestFlight, confirm with Face ID or your password as quickly as you can. The take waits up to 30 s for Plus, then carries on.

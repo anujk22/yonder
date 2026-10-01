@@ -5,7 +5,7 @@ import { create } from 'zustand';
 import { DEMO_FEATURES_ENABLED } from './previewFeatures';
 
 /**
- * Hidden recording autopilot for the submission film. In every build with the demo screens
+ * Recording autopilot for the submission film, started from Settings, "Play the demo". In every build with the demo screens
  * (development, preview and TestFlight preview), never the App Store build, which has no demo
  * screens to play. It taps the real buttons on the script's timestamps
  * (phone time: film time minus 10 s; see docs/shipaton/RECORDING_AUTOPILOT.md).
