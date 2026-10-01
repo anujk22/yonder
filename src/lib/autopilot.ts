@@ -3,6 +3,7 @@ import type { LayoutChangeEvent, NativeScrollEvent, NativeSyntheticEvent, Scroll
 import { useIsFocused } from 'expo-router';
 import { create } from 'zustand';
 import { DEMO_FEATURES_ENABLED } from './previewFeatures';
+import { getServerPlus } from './liveApi';
 
 /**
  * Recording autopilot for the submission film, started from Settings, "Play the demo". In every build with the demo screens
@@ -48,13 +49,16 @@ type Step = {
   reveal?: string;
   /** Skip the step if the target isn't on screen at its mark. */
   optional?: boolean;
+  /** Skip an absent target only when its outcome is already verified. */
+  skipIfMissing?: () => boolean;
   /** Never tap sooner than this many seconds after the previous tap. */
   minGap?: number;
   /** Taps to try, in order, when `tap` isn't on screen at its mark. */
   fallback?: string[];
   /** Hold here until this is true (the store sheet is confirmed by a person). */
-  until?: () => boolean;
+  until?: () => boolean | Promise<boolean>;
   untilTimeout?: number;
+  untilPollMs?: number;
 };
 
 const DURATION = {
@@ -98,9 +102,10 @@ const takeSteps = (plusConfirmed: () => boolean): Step[] => [
   { at: 67, label: 'Send check', tap: 'live-send' },
   { at: 78, label: 'Settings', tap: 'header-settings' },
   { at: 86.5, label: 'Explore Yonder Plus', tap: 'settings-plus' },
-  { at: 92, label: 'Start 1 week free', tap: 'plus-start' },
+  { at: 92, label: 'Start 1 week free', tap: 'plus-start', skipIfMissing: plusConfirmed },
   // 1:33.5: the store sheet is system UI, which no app can press. A person confirms it.
-  { at: 97.9, label: 'Plus purchase confirmed', until: plusConfirmed, untilTimeout: 30 },
+  { at: 97.9, label: 'Plus entitlement confirmed', until: plusConfirmed, untilTimeout: 180 },
+  { at: 97.95, label: 'Plus confirmed on Yonder’s server', until: () => getServerPlus().catch(() => false), untilTimeout: 90, untilPollMs: 1500 },
   // Back to the map as it was left, with the Union Sq card still up.
   { at: 98, label: 'Explore tab', tap: 'nav-explore-return', fallback: ['nav-explore'] },
   {
@@ -151,12 +156,12 @@ const delay = (durationMs: number, signal: AbortSignal) => new Promise<boolean>(
   signal.addEventListener('abort', cancel, { once: true });
 });
 
-const waitUntil = async (predicate: () => boolean, timeoutMs: number, signal: AbortSignal) => {
+const waitUntil = async (predicate: () => boolean | Promise<boolean>, timeoutMs: number, signal: AbortSignal, pollMs: number = DURATION.pollMs) => {
   const startedAt = now();
   while (!signal.aborted) {
-    if (predicate()) return true;
+    if (await predicate()) return !signal.aborted;
     if (now() - startedAt >= timeoutMs) return false;
-    if (!(await delay(DURATION.pollMs, signal))) return false;
+    if (!(await delay(pollMs, signal))) return false;
   }
   return false;
 };
@@ -322,13 +327,16 @@ class TakeStopped extends Error {}
 async function runTake(signal: AbortSignal, startMs: number, steps: Step[], report: TakeReport) {
   const seconds = (ms: number) => Math.round((ms - startMs) / 10) / 100;
   let lastTapMs = startMs;
+  let confirmationDelayMs = 0;
   for (const step of steps) {
     if (signal.aborted) return;
-    const markMs = startMs + step.at * 1000;
+    const markMs = startMs + step.at * 1000 + confirmationDelayMs;
     if (step.until) {
       if (!(await delay(markMs - now(), signal))) return;
-      const ok = await waitUntil(step.until, (step.untilTimeout ?? 10) * 1000, signal);
+      const ok = await waitUntil(step.until, (step.untilTimeout ?? 10) * 1000, signal, step.untilPollMs);
+      if (signal.aborted) return;
       if (!ok) throw new TakeStopped(`${step.label} didn't happen within ${step.untilTimeout} s.`);
+      confirmationDelayMs += Math.max(0, now() - markMs);
       report.push({ label: step.label, plannedS: step.at, actualS: seconds(now()) });
       continue;
     }
@@ -340,8 +348,8 @@ async function runTake(signal: AbortSignal, startMs: number, steps: Step[], repo
     const found = await waitUntil(() => targets.has(id), Math.max(0, deadline - now()), signal);
     if (signal.aborted) return;
     if (!found) {
-      if (step.optional) {
-        report.push({ label: step.label, plannedS: step.at, actualS: null, note: 'not shown, skipped' });
+      if (step.optional || step.skipIfMissing?.()) {
+        report.push({ label: step.label, plannedS: step.at, actualS: null, note: step.optional ? 'not shown, skipped' : 'existing Plus entitlement, purchase skipped' });
         continue;
       }
       if (step.fallback) {
@@ -376,7 +384,7 @@ async function runTake(signal: AbortSignal, startMs: number, steps: Step[], repo
     lastTapMs = tapMs;
     report.push({ label: step.label, plannedS: step.at, actualS: seconds(tapMs) });
   }
-  await delay(startMs + TAKE_LENGTH_S * 1000 - now(), signal);
+  await delay(startMs + TAKE_LENGTH_S * 1000 + confirmationDelayMs - now(), signal);
 }
 
 /**

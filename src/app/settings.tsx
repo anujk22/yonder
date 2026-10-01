@@ -89,8 +89,8 @@ export default function SettingsScreen() {
     {AUTOPILOT_AVAILABLE && <View style={styles.section}>
       <Text style={styles.label}>DEMO</Text>
       <Text style={styles.value}>Watch Yonder on its own</Text>
-      <Text style={styles.body}>Plays the whole app from the intro to Plus, about 1 min 47 s, tapping each button for you. You confirm the purchase sheet yourself. Touch the screen with two fingers to stop.</Text>
-      <PrimaryButton label="Play the demo" onPress={() => startTake(Boolean(user), plus)} />
+      <Text style={styles.body}>Plays the whole app from the intro to Plus, about 1 min 47 s plus purchase confirmation time, tapping each button for you. You confirm the purchase sheet yourself. If Plus is already active, the demo shows your benefits. Touch the screen with two fingers to stop.</Text>
+      <PrimaryButton label="Play the demo" onPress={() => startTake(Boolean(user))} />
     </View>}
 
     {!!message && <Text accessibilityRole="alert" style={styles.notice}>{message}</Text>}
@@ -115,11 +115,10 @@ const settingsStyles = (theme: AppTheme) => StyleSheet.create({
 });
 
 /** The recording autopilot's preflight and start. See docs/shipaton/RECORDING_AUTOPILOT.md. */
-function startTake(signedIn: boolean, plus: boolean) {
+function startTake(signedIn: boolean) {
   const problems = [
     !liveConfigured && "Live checks aren't connected in this build, so the live check at 1:01 will fail.",
     liveConfigured && !signedIn && "Sign in first (Requests tab), or the live check at 1:01 will stop the take.",
-    plus && "This account already has Plus, so there's no plan to buy at 1:32. Use an account that has never bought Plus.",
     !purchasesAvailable && "Purchases aren't available here, so the take will stop at Plus. Use the iPhone app.",
   ].filter(Boolean) as string[];
   const run = () => {
