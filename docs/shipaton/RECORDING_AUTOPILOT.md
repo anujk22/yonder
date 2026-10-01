@@ -1,8 +1,6 @@
 # Runbook: record the phone take
 
-The app plays the whole take by itself. It records **phone only, no voices**. Voices and webcam are recorded afterwards over this take, following `VIDEO_PLAN.md`.
-
-The phone take runs from **T+0:00 to T+1:47**. In the edit it sits at 0:10 to 1:57, after the 10 s opening animation.
+The app plays the whole take by itself while Saf and Anuj speak live over it, following `VIDEO_PLAN.md`. **The film starts at the "Play the demo" tap**, and nobody speaks before it. All times below count from that tap.
 
 ## Setup
 
@@ -37,11 +35,11 @@ The phone take runs from **T+0:00 to T+1:47**. In the edit it sits at 0:10 to 1:
 Start button: in Settings, scroll to the bottom and tap **Play the demo** (the DEMO card, below Help). It exists in development, preview and TestFlight preview builds, never in the App Store build.
 
 1. Start the screen recording, open Settings and tap Play the demo. You can start from any screen; the take resets the demo and replays the intro itself.
-2. If something isn't ready, a "Before you record" alert lists it: live checks not connected, not signed in, the account already has Plus, purchases unavailable,. Fix it, or choose "Run anyway".
-3. The app goes to onboarding page 1. That frame is **T+0**; place it at film 0:10 in the edit. The first tap is at T+0:10.0 (film 0:20).
-4. **One tap is yours.** The purchase sheet is native (Test Store in a development build, Apple's sandbox in TestFlight), so the app can't press it. Confirm it when it appears, at about T+1:33.5 (film 1:43.5); in TestFlight, confirm with Face ID or your password as quickly as you can. The take waits up to 30 s for Plus, then carries on.
+2. If something isn't ready, a "Before you record" alert lists it: live checks not connected, not signed in, purchases unavailable. It no longer warns about an account that already has Plus: the take then skips the purchase, so always record with a fresh account. Fix it, or choose "Run anyway".
+3. The app goes to onboarding page 1 at 0:00.7, and Saf starts speaking. The first tap is at 0:16.7.
+4. **One tap is yours.** The purchase sheet is native (Test Store in a development build, Apple's sandbox in TestFlight), so the app can't press it. Confirm it when it appears, at about 1:40; in TestFlight, confirm with Face ID or your password as quickly as you can. The take waits up to 3 min for the purchase and then up to 90 s for Yonder's server to confirm Plus, and every later tap moves back by that wait. Keep talking over "Confirming Plus on Yonder's server…" until the map moves on; if it takes longer than about 5 s, the film runs past 2:00 and the tagline needs trimming in the edit.
 5. A small dot with a ring marks every tap the app makes.
-6. At T+1:47 an alert lists each tap's planned and actual time. Trim it off the recording.
+6. The take ends at 1:53.7, just as Saf says the tagline. At 1:58.7 an alert lists each tap's planned and actual time (take time, 0.7 s behind the film). Trim it off the recording.
 
 To stop a take early, touch the screen with two fingers. The timeline is `takeSteps` in `src/lib/autopilot.ts`; edit timings there.
 
@@ -50,4 +48,4 @@ To stop a take early, touch the screen with two fingers. The timeline is `takeSt
 - Stop the screen recording.
 - Cancel the live check from the take.
 - Restore: the recording account now has Plus. For a second take, use a fresh account.
-- Voices: play the take and record webcam and voice while reading `VIDEO_PLAN.md`. Its timings are the take's timings plus 0:10.
+- A flubbed line means a retake, and a retake needs a fresh account that has never bought Plus.
